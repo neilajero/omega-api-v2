@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<persistence version="2.2"
+             xmlns="http://xmlns.jcp.org/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_2.xsd">
+
+    <persistence-unit name="24hDS" transaction-type="JTA">
+        <jta-data-source>java:jboss/datasources/24hDS</jta-data-source>
+        <mapping-file>META-INF/mapping.xml</mapping-file>
+        <validation-mode>AUTO</validation-mode>
+        <properties>
+            <property name="hibernate.use_sql_comments" value="true"/>
+            <property name="hibernate.cache.use_query_cache" value="true"/>
+            <property name="hibernate.cache.use_second_level_cache" value="true"/>
+            <property name="hibernate.batch_fetch_style" value="dynamic"/>
+            <property name="hibernate.generate_statistics" value="no"/>
+            <property name="jakarta.persistence.sharedCache.mode" value="DISABLE_SELECTIVE"/>
+            <!--
+            <property name="hibernate.dialect" value="org.hibernate.engine.jdbc.env.spi.JdbcEnvironment" />
+            <property name="hibernate.dialect" value="org.hibernate.dialect.Oracle12cDialect" />
+            <property name="hibernate.show_sql" value="true" />
+            <property name="hibernate.format_sql" value="true" />
+            -->
+        </properties>
+    </persistence-unit>
+
+    <persistence-unit name="TaguigLGUDS" transaction-type="JTA">
+        <jta-data-source>java:jboss/datasources/TaguigLGUDS</jta-data-source>
+        <mapping-file>META-INF/mapping.xml</mapping-file>
+        <validation-mode>AUTO</validation-mode>
+        <properties>
+            <property name="hibernate.use_sql_comments" value="true"/>
+            <property name="hibernate.cache.use_query_cache" value="true"/>
+            <property name="hibernate.cache.use_second_level_cache" value="true"/>
+            <property name="hibernate.batch_fetch_style" value="dynamic"/>
+            <property name="hibernate.generate_statistics" value="no"/>
+            <property name="jakarta.persistence.sharedCache.mode" value="DISABLE_SELECTIVE"/>
+            <!--
+            <property name="hibernate.dialect" value="org.hibernate.engine.jdbc.env.spi.JdbcEnvironment" />
+            <property name="hibernate.dialect" value="org.hibernate.dialect.Oracle12cDialect" />
+            <property name="hibernate.show_sql" value="true" />
+            <property name="hibernate.format_sql" value="true" />
+            -->
+        </properties>
+    </persistence-unit>
+
+</persistence>

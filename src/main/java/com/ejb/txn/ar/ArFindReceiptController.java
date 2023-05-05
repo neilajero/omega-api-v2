@@ -1,0 +1,26 @@
+package com.ejb.txn.ar;
+
+import com.ejb.exception.global.GlobalNoRecordFoundException;
+
+import jakarta.ejb.Local;
+
+@Local
+public interface ArFindReceiptController {
+
+    java.util.ArrayList getArOpenRbAll(java.lang.Integer AD_BRNCH, java.lang.Integer AD_CMPNY);
+
+    byte getAdPrfEnableArReceiptBatch(java.lang.Integer AD_CMPNY);
+
+    java.lang.String getArPrfDefaultReceiptType(java.lang.Integer AD_CMPNY);
+
+    byte getAdPrfEnableInvShift(java.lang.Integer AD_CMPNY);
+
+    java.util.ArrayList getArRctByCriteria(java.util.HashMap criteria, java.lang.String ORDER_BY, java.lang.Integer OFFSET, java.lang.Integer LIMIT, java.lang.Integer AD_BRNCH, java.lang.Integer AD_CMPNY) throws GlobalNoRecordFoundException;
+
+    java.lang.Integer getArRctSizeByCriteria(java.util.HashMap criteria, java.lang.Integer AD_BRNCH, java.lang.Integer AD_CMPNY) throws GlobalNoRecordFoundException;
+
+    short getGlFcPrecisionUnit(java.lang.Integer AD_CMPNY);
+
+    short getInvGpQuantityPrecisionUnit(java.lang.Integer AD_CMPNY);
+
+}

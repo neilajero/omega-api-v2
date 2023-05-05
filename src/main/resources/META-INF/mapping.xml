@@ -1,0 +1,1592 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<entity-mappings xmlns="http://xmlns.jcp.org/xml/ns/persistence/orm"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence/orm
+                 http://xmlns.jcp.org/xml/ns/persistence/orm_2_2.xsd"
+                 version="2.2">
+
+    <!-- AD Entities -->
+    <entity class="com.ejb.entities.ad.LocalAdAgingBucket">
+        <table name="AD_AGNG_BCKT"/>
+        <attributes>
+            <id name="abCode">
+                <column name="AB_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdAgingBucketValue">
+        <table name="AD_AGNG_BCKT_VL"/>
+        <attributes>
+            <id name="avCode">
+                <column name="AD_AV_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdAmountLimit">
+        <table name="AD_AMNT_LMT"/>
+        <attributes>
+            <id name="calCode">
+                <column name="AD_CAL_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdApplication">
+        <table name="AD_APPLCTN"/>
+        <attributes>
+            <id name="appCode">
+                <column name="APP_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdApproval">
+        <table name="AD_APPRVL"/>
+        <attributes>
+            <id name="aprCode">
+                <column name="APR_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdApprovalCoaLine">
+        <table name="AD_APPRVL_COA_LN"/>
+        <attributes>
+            <id name="aclCode">
+                <column name="ACL_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdApprovalDocument">
+        <table name="AD_APPRVL_DCMNT"/>
+        <attributes>
+            <id name="adcCode">
+                <column name="ADC_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdApprovalQueue">
+        <table name="AD_APPRVL_QUEUE"/>
+        <attributes>
+            <id name="aqCode">
+                <column name="AQ_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdApprovalUser">
+        <table name="AD_APPRVL_USR"/>
+        <attributes>
+            <id name="auCode">
+                <column name="AU_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdBankAccountBalance">
+        <table name="AD_BNK_ACCNT_BLNC"/>
+        <attributes>
+            <id name="babCode">
+                <column name="BAB_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdBankAccount">
+        <table name="AD_BNK_ACCNT"/>
+        <attributes>
+            <id name="baCode">
+                <column name="BA_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdBank">
+        <table name="AD_BNK"/>
+        <attributes>
+            <id name="bnkCode">
+                <column name="BNK_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdBranchApTaxCode">
+        <table name="AD_BR_AP_TC"/>
+        <attributes>
+            <id name="btcCode">
+                <column name="AP_BTC_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdBranchArTaxCode">
+        <table name="AD_BR_AR_TC"/>
+        <attributes>
+            <id name="btcCode">
+                <column name="AR_BTC_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdBranchBankAccount">
+        <table name="AD_BR_BA"/>
+        <attributes>
+            <id name="bbaCode">
+                <column name="BBA_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdBranch">
+        <table name="AD_BRNCH"/>
+        <attributes>
+            <id name="brCode">
+                <column name="BR_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdBranchCoa">
+        <table name="AD_BR_COA"/>
+        <attributes>
+            <id name="bcoaCode">
+                <column name="BCOA_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdBranchCustomer">
+        <table name="AD_BR_CST"/>
+        <attributes>
+            <id name="bcstCode">
+                <column name="BCST_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdBranchDocumentSequenceAssignment">
+        <table name="AD_BR_DSA"/>
+        <attributes>
+            <id name="bdsCode">
+                <column name="BDS_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdBranchItemLocation">
+        <table name="AD_BR_IL"/>
+        <attributes>
+            <id name="bilCode">
+                <column name="BIL_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdBranchProjectTypeType">
+        <table name="AD_BR_PTT"/>
+        <attributes>
+            <id name="bpttCode">
+                <column name="BPTT_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdBranchResponsibility">
+        <table name="AD_BR_RS"/>
+        <attributes>
+            <id name="brsCode">
+                <column name="BRS_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdBranchSalesperson">
+        <table name="AD_BR_SLP"/>
+        <attributes>
+            <id name="bslpCode">
+                <column name="BSLP_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdBranchStandardMemoLine">
+        <table name="AD_BR_SML"/>
+        <attributes>
+            <id name="bsmlCode">
+                <column name="BSML_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdBranchSupplier">
+        <table name="AD_BR_SPL"/>
+        <attributes>
+            <id name="bsplCode">
+                <column name="BSPL_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdCompany">
+        <table name="AD_CMPNY"/>
+        <attributes>
+            <id name="cmpCode">
+                <column name="CMP_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdDeleteAuditTrail">
+        <table name="AD_DLT_ADT_TRL"/>
+        <attributes>
+            <id name="datCode">
+                <column name="DAT_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdDiscount">
+        <table name="AD_DSCNT"/>
+        <attributes>
+            <id name="dscCode">
+                <column name="DSC_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdDocumentCategory">
+        <table name="AD_DCMNT_CTGRY"/>
+        <attributes>
+            <id name="dcCode">
+                <column name="DC_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdDocumentSequenceAssignment">
+        <table name="AD_DCMNT_SQNC_ASSGNMNT"/>
+        <attributes>
+            <id name="dsaCode">
+                <column name="DSA_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdDocumentSequence">
+        <table name="AD_DCMNT_SQNC"/>
+        <attributes>
+            <id name="dsCode">
+                <column name="DS_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdFormFunction">
+        <table name="AD_FRM_FNCTN"/>
+        <attributes>
+            <id name="ffCode">
+                <column name="FF_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdFormFunctionResponsibility">
+        <table name="AD_FF_RSPNSBLTY"/>
+        <attributes>
+            <id name="frCode">
+                <column name="FR_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdLog">
+        <table name="AD_LOG"/>
+        <attributes>
+            <id name="logCode">
+                <column name="LOG_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdLookUp">
+        <table name="AD_LK_UP"/>
+        <attributes>
+            <id name="luCode">
+                <column name="LU_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdLookUpValue">
+        <table name="AD_LK_UP_VL"/>
+        <attributes>
+            <id name="lvCode">
+                <column name="LV_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdPaymentSchedule">
+        <table name="AD_PYMNT_SCHDL"/>
+        <attributes>
+            <id name="psCode">
+                <column name="PS_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdPaymentTerm">
+        <table name="AD_PYMNT_TRM"/>
+        <attributes>
+            <id name="pytCode">
+                <column name="PYT_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdPreference">
+        <table name="AD_PRFRNC"/>
+        <attributes>
+            <id name="prfCode">
+                <column name="PRF_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdResponsibility">
+        <table name="AD_RSPNSBLTY"/>
+        <attributes>
+            <id name="rsCode">
+                <column name="AD_RS_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdRole">
+        <table name="AD_ROLE"/>
+        <attributes>
+            <id name="rlCode">
+                <column name="RL_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdStoredProcedure">
+        <table name="AD_STRD_PRC"/>
+        <attributes>
+            <id name="spCode">
+                <column name="SP_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdUser">
+        <table name="AD_USR"/>
+        <attributes>
+            <id name="usrCode">
+                <column name="USR_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ad.LocalAdUserResponsibility">
+        <table name="AD_USR_RSPNSBLTY"/>
+        <attributes>
+            <id name="urCode">
+                <column name="UR_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+
+    <!-- AP Entities -->
+    <entity class="com.ejb.entities.ap.LocalApAppliedVoucher">
+        <table name="AP_APPLD_VCHR"/>
+        <attributes>
+            <id name="avCode">
+                <column name="AP_AV_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ap.LocalApCanvass">
+        <table name="AP_CNVSS"/>
+        <attributes>
+            <id name="cnvCode">
+                <column name="CNV_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ap.LocalApCheckBatch">
+        <table name="AP_CHCK_BTCH"/>
+        <attributes>
+            <id name="cbCode">
+                <column name="AP_CB_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ap.LocalApCheck">
+        <table name="AP_CHCK"/>
+        <attributes>
+            <id name="chkCode">
+                <column name="CHK_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ap.LocalApDistributionRecord">
+        <table name="AP_DSTRBTN_RCRD"/>
+        <attributes>
+            <id name="drCode">
+                <column name="AP_DR_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ap.LocalApPurchaseOrder">
+        <table name="AP_PRCHS_ORDR"/>
+        <attributes>
+            <id name="poCode">
+                <column name="PO_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ap.LocalApPurchaseOrderLine">
+        <table name="AP_PRCHS_ORDR_LN"/>
+        <attributes>
+            <id name="plCode">
+                <column name="AP_PL_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ap.LocalApPurchaseRequisition">
+        <table name="AP_PRCHS_RQSTN"/>
+        <attributes>
+            <id name="prCode">
+                <column name="PR_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ap.LocalApPurchaseRequisitionLine">
+        <table name="AP_PRCHS_RQSTN_LN"/>
+        <attributes>
+            <id name="prlCode">
+                <column name="PRL_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ap.LocalApRecurringVoucher">
+        <table name="AP_RCRRNG_VCHR"/>
+        <attributes>
+            <id name="rvCode">
+                <column name="AP_RV_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ap.LocalApSupplierBalance">
+        <table name="AP_SPPLR_BLNC"/>
+        <attributes>
+            <id name="sbCode">
+                <column name="SB_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ap.LocalApSupplier">
+        <table name="AP_SPPLR"/>
+        <attributes>
+            <id name="splCode">
+                <column name="SPL_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ap.LocalApSupplierClass">
+        <table name="AP_SPPLR_CLSS"/>
+        <attributes>
+            <id name="scCode">
+                <column name="SC_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ap.LocalApSupplierType">
+        <table name="AP_SPPLR_TYP"/>
+        <attributes>
+            <id name="stCode">
+                <column name="AP_ST_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ap.LocalApTaxCode">
+        <table name="AP_TX_CD"/>
+        <attributes>
+            <id name="tcCode">
+                <column name="AP_TC_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.dao.ap.LocalApVoucherBatch">
+        <table name="AP_VCHR_BTCH"/>
+        <attributes>
+            <id name="vbCode">
+                <column name="VB_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ap.LocalApVoucher">
+        <table name="AP_VCHR"/>
+        <attributes>
+            <id name="vouCode">
+                <column name="VOU_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ap.LocalApVoucherLineItem">
+        <table name="AP_VCHR_LN_ITM"/>
+        <attributes>
+            <id name="vliCode">
+                <column name="VLI_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ap.LocalApVoucherPaymentSchedule">
+        <table name="AP_VCHR_PYMNT_SCHDL"/>
+        <attributes>
+            <id name="vpsCode">
+                <column name="VPS_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ap.LocalApWithholdingTaxCode">
+        <table name="AP_WTHHLDNG_TX_CD"/>
+        <attributes>
+            <id name="wtcCode">
+                <column name="AP_WTC_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+
+    <!-- AR Entities -->
+    <entity class="com.ejb.entities.ar.LocalArAppliedCredit">
+        <table name="AR_APPLD_CRDT"/>
+        <attributes>
+            <id name="acCode">
+                <column name="AR_AC_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ar.LocalArAppliedInvoice">
+        <table name="AR_APPLD_INVC"/>
+        <attributes>
+            <id name="aiCode">
+                <column name="AI_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ar.LocalArAutoAccounting">
+        <table name="AR_AT_ACCNTNG"/>
+        <attributes>
+            <id name="aaCode">
+                <column name="AR_AA_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ar.LocalArAutoAccountingSegment">
+        <table name="AR_AT_ACCNTNG_SGMNT"/>
+        <attributes>
+            <id name="aasCode">
+                <column name="AAS_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ar.LocalArCustomerBalance">
+        <table name="AR_CSTMR_BLNC"/>
+        <attributes>
+            <id name="cbCode">
+                <column name="AR_CB_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ar.LocalArCustomer">
+        <table name="AR_CSTMR"/>
+        <attributes>
+            <id name="cstCode">
+                <column name="AR_CST_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ar.LocalArCustomerClass">
+        <table name="AR_CSTMR_CLSS"/>
+        <attributes>
+            <id name="ccCode">
+                <column name="CC_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ar.LocalArCustomerType">
+        <table name="AR_CSTMR_TYP"/>
+        <attributes>
+            <id name="ctCode">
+                <column name="CT_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ar.LocalArDelivery">
+        <table name="AR_DLVRY"/>
+        <attributes>
+            <id name="dvCode">
+                <column name="DV_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ar.LocalArDistributionRecord">
+        <table name="AR_DSTRBTN_RCRD"/>
+        <attributes>
+            <id name="drCode">
+                <column name="AR_DR_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ar.LocalArInvoiceBatch">
+        <table name="AR_INVC_BTCH"/>
+        <attributes>
+            <id name="ibCode">
+                <column name="IB_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ar.LocalArInvoice">
+        <table name="AR_INVC"/>
+        <attributes>
+            <id name="invCode">
+                <column name="INV_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ar.LocalArInvoiceLine">
+        <table name="AR_INVC_LN"/>
+        <attributes>
+            <id name="ilCode">
+                <column name="AR_IL_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ar.LocalArInvoiceLineItem">
+        <table name="AR_INVC_LN_ITM"/>
+        <attributes>
+            <id name="iliCode">
+                <column name="ILI_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ar.LocalArInvoicePaymentSchedule">
+        <table name="AR_INVC_PYMNT_SCHDL"/>
+        <attributes>
+            <id name="ipsCode">
+                <column name="IPS_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ar.LocalArJobOrderAssignment">
+        <table name="AR_JB_ORDR_ASSGNMNT"/>
+        <attributes>
+            <id name="jaCode">
+                <column name="JA_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ar.LocalArJobOrder">
+        <table name="AR_JB_ORDR"/>
+        <attributes>
+            <id name="joCode">
+                <column name="JO_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ar.LocalArJobOrderInvoiceLine">
+        <table name="AR_JB_ORDR_INVC_LN"/>
+        <attributes>
+            <id name="jilCode">
+                <column name="JIL_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ar.LocalArJobOrderLine">
+        <table name="AR_JB_ORDR_LN"/>
+        <attributes>
+            <id name="jolCode">
+                <column name="JOL_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ar.LocalArJobOrderType">
+        <table name="AR_JB_ORDR_TYP"/>
+        <attributes>
+            <id name="jotCode">
+                <column name="JOT_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ar.LocalArPdc">
+        <table name="AR_PDC"/>
+        <attributes>
+            <id name="pdcCode">
+                <column name="PDC_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ar.LocalArPersonel">
+        <table name="AR_PRSNL"/>
+        <attributes>
+            <id name="peCode">
+                <column name="PE_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ar.LocalArPersonelType">
+        <table name="AR_PRSNL_TYP"/>
+        <attributes>
+            <id name="ptCode">
+                <column name="AR_PT_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ar.LocalArReceiptBatch">
+        <table name="AR_RCPT_BTCH"/>
+        <attributes>
+            <id name="rbCode">
+                <column name="RB_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ar.LocalArReceipt">
+        <table name="AR_RCPT"/>
+        <attributes>
+            <id name="rctCode">
+                <column name="RCT_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <!-- Review why this entity is not included?
+    <entity class="com.ejb.entities.ar.LocalArReceiptCreditBalance">
+    </entity>-->
+    <entity class="com.ejb.entities.ar.LocalArReceiptImportPreference">
+        <table name="AR_RCPT_IMPRT_PRFRNC"/>
+        <attributes>
+            <id name="ripCode">
+                <column name="RIP_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ar.LocalArReceiptImportPreferenceLine">
+        <table name="AR_RCPT_IMPRT_PRFRNC_LN"/>
+        <attributes>
+            <id name="rilCode">
+                <column name="RIL_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ar.LocalArSalesOrder">
+        <table name="AR_SLS_ORDR"/>
+        <attributes>
+            <id name="soCode">
+                <column name="SO_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ar.LocalArSalesOrderInvoiceLine">
+        <table name="AR_SLS_ORDR_INVC_LN"/>
+        <attributes>
+            <id name="silCode">
+                <column name="AR_SIL_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ar.LocalArSalesOrderLine">
+        <table name="AR_SLS_ORDR_LN"/>
+        <attributes>
+            <id name="solCode">
+                <column name="SOL_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ar.LocalArSalesperson">
+        <table name="AR_SLSPRSN"/>
+        <attributes>
+            <id name="slpCode">
+                <column name="SLP_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ar.LocalArStandardMemoLine">
+        <table name="AR_STNDRD_MMO_LN"/>
+        <attributes>
+            <id name="smlCode">
+                <column name="SML_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ar.LocalArStandardMemoLineClass">
+        <table name="AR_STNDRD_MMO_LN_CLSS"/>
+        <attributes>
+            <id name="smcCode">
+                <column name="SMC_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ar.LocalArTaxCode">
+        <table name="AR_TX_CD"/>
+        <attributes>
+            <id name="tcCode">
+                <column name="AR_TC_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.ar.LocalArWithholdingTaxCode">
+        <table name="AR_WTHHLDNG_TX_CD"/>
+        <attributes>
+            <id name="wtcCode">
+                <column name="AR_WTC_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+
+    <!-- CM Entities -->
+    <entity class="com.ejb.entities.cm.LocalCmAdjustment">
+        <table name="CM_ADJSTMNT"/>
+        <attributes>
+            <id name="adjCode">
+                <column name="CM_ADJ_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.cm.LocalCmDistributionRecord">
+        <table name="CM_DSTRBTN_RCRD"/>
+        <attributes>
+            <id name="drCode">
+                <column name="CM_DR_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.cm.LocalCmFundTransfer">
+        <table name="CM_FND_TRNSFR"/>
+        <attributes>
+            <id name="ftCode">
+                <column name="FT_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.cm.LocalCmFundTransferReceipt">
+        <table name="CM_FND_TRNSFR_RCPT"/>
+        <attributes>
+            <id name="ftrCode">
+                <column name="FTR_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+
+    <!-- GEN Entities -->
+    <entity class="com.ejb.entities.gen.LocalGenChildRange">
+        <table name="GEN_CHLD_RNG"/>
+        <attributes>
+            <id name="crCode">
+                <column name="CR_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gen.LocalGenField">
+        <table name="GEN_FLD"/>
+        <attributes>
+            <id name="flCode">
+                <column name="FL_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gen.LocalGenQualifier">
+        <table name="GEN_QLFR"/>
+        <attributes>
+            <id name="qlCode">
+                <column name="QL_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gen.LocalGenRollupGroupAssignment">
+        <table name="GEN_RLLP_GRP_ASSGNMNT"/>
+        <attributes>
+            <id name="rlgaCode">
+                <column name="RLGA_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gen.LocalGenRollupGroup">
+        <table name="GEN_RLLP_GRP"/>
+        <attributes>
+            <id name="rlgCode">
+                <column name="RLG_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gen.LocalGenSegment">
+        <table name="GEN_SGMNT"/>
+        <attributes>
+            <id name="sgCode">
+                <column name="SG_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gen.LocalGenValueSet">
+        <table name="GEN_VL_ST"/>
+        <attributes>
+            <id name="vsCode">
+                <column name="VS_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gen.LocalGenValueSetValue">
+        <table name="GEN_VL_ST_VL"/>
+        <attributes>
+            <id name="vsvCode">
+                <column name="VSV_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+
+    <!-- GL Entities -->
+    <entity class="com.ejb.entities.gl.LocalGlAccountingCalendar">
+        <table name="GL_ACCNTNG_CLNDR"/>
+        <attributes>
+            <id name="acCode">
+                <column name="GL_AC_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlAccountingCalendarValue">
+        <table name="GL_ACCNTNG_CLNDR_VL"/>
+        <attributes>
+            <id name="acvCode">
+                <column name="ACV_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlAccountRange">
+        <table name="GL_ACCNT_RNG"/>
+        <attributes>
+            <id name="arCode">
+                <column name="AR_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlBudgetAccountAssignment">
+        <table name="GL_BDGT_ACCNT_ASSGNMNT"/>
+        <attributes>
+            <id name="baaCode">
+                <column name="BAA_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlBudgetAmount">
+        <table name="GL_BDGT_AMNT"/>
+        <attributes>
+            <id name="bgaCode">
+                <column name="BGA_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlBudgetAmountCoa">
+        <table name="GL_BDGT_AMNT_COA"/>
+        <attributes>
+            <id name="bcCode">
+                <column name="BC_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlBudgetAmountPeriod">
+        <table name="GL_BDGT_AMNT_PRD"/>
+        <attributes>
+            <id name="bapCode">
+                <column name="BAP_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlBudget">
+        <table name="GL_BDGT"/>
+        <attributes>
+            <id name="bgtCode">
+                <column name="BGT_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlBudgetOrganization">
+        <table name="GL_BDGT_ORGNZTN"/>
+        <attributes>
+            <id name="boCode">
+                <column name="BO_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlChartOfAccountBalance">
+        <table name="GL_COA_BLNC"/>
+        <attributes>
+            <id name="coabCode">
+                <column name="COAB_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlChartOfAccount">
+        <table name="GL_COA"/>
+        <attributes>
+            <id name="coaCode">
+                <column name="COA_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlForexLedger">
+        <table name="GL_FRX_LDGR"/>
+        <attributes>
+            <id name="frlCode">
+                <column name="FRL_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlFrgAccountAssignment">
+        <table name="GL_FRG_ACCNT_ASSGNMNT"/>
+        <attributes>
+            <id name="aaCode">
+                <column name="GL_AA_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlFrgCalculation">
+        <table name="GL_FRG_CLCLTN"/>
+        <attributes>
+            <id name="calCode">
+                <column name="GL_CAL_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlFrgColumn">
+        <table name="GL_FRG_CLMN"/>
+        <attributes>
+            <id name="colCode">
+                <column name="COL_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlFrgColumnSet">
+        <table name="GL_FRG_CLMN_ST"/>
+        <attributes>
+            <id name="csCode">
+                <column name="CS_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlFrgFinancialReport">
+        <table name="GL_FRG_FNNCL_RPRT"/>
+        <attributes>
+            <id name="frCode">
+                <column name="FR_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlFrgRow">
+        <table name="GL_FRG_RW"/>
+        <attributes>
+            <id name="rowCode">
+                <column name="ROW_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlFrgRowSet">
+        <table name="GL_FRG_RW_ST"/>
+        <attributes>
+            <id name="rsCode">
+                <column name="GL_RS_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlFunctionalCurrency">
+        <table name="GL_FNCTNL_CRRNCY"/>
+        <attributes>
+            <id name="fcCode">
+                <column name="FC_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlFunctionalCurrencyRate">
+        <table name="GL_FC_RT"/>
+        <attributes>
+            <id name="frCode">
+                <column name="FR_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlInvestorAccountBalance">
+        <table name="GL_INVTR_BLNC"/>
+        <attributes>
+            <id name="irabCode">
+                <column name="IRAB_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlJournalBatch">
+        <table name="GL_JRNL_BTCH"/>
+        <attributes>
+            <id name="jbCode">
+                <column name="JB_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlJournal">
+        <table name="GL_JRNL"/>
+        <attributes>
+            <id name="jrCode">
+                <column name="JR_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlJournalCategory">
+        <table name="GL_JRNL_CTGRY"/>
+        <attributes>
+            <id name="jcCode">
+                <column name="JC_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlJournalInterface">
+        <table name="GL_JRNL_INTRFC"/>
+        <attributes>
+            <id name="jriCode">
+                <column name="JRI_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlJournalLine">
+        <table name="GL_JRNL_LN"/>
+        <attributes>
+            <id name="jlCode">
+                <column name="JL_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlJournalLineInterface">
+        <table name="GL_JRNL_LN_INTRFC"/>
+        <attributes>
+            <id name="jliCode">
+                <column name="JLI_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlJournalSource">
+        <table name="GL_JRNL_SRC"/>
+        <attributes>
+            <id name="jsCode">
+                <column name="JS_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlOrganization">
+        <table name="GL_ORGNZTN"/>
+        <attributes>
+            <id name="orgCode">
+                <column name="ORG_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlPeriodType">
+        <table name="GL_PRD_TYP"/>
+        <attributes>
+            <id name="ptCode">
+                <column name="GL_PT_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlRecurringJournal">
+        <table name="GL_RCRRNG_JRNL"/>
+        <attributes>
+            <id name="rjCode">
+                <column name="RJ_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlRecurringJournalLine">
+        <table name="GL_RCRRNG_JRNL_LN"/>
+        <attributes>
+            <id name="rjlCode">
+                <column name="RJL_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlReportValue">
+        <table name="GL_RPRT_VL"/>
+        <attributes>
+            <id name="rvCode">
+                <column name="GL_RV_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlResponsibility">
+        <table name="GL_RSPNSBLTY"/>
+        <attributes>
+            <id name="resCode">
+                <column name="RES_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlSetOfBook">
+        <table name="GL_SOB"/>
+        <attributes>
+            <id name="sobCode">
+                <column name="SOB_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlStaticReport">
+        <table name="GL_STTC_RPRT"/>
+        <attributes>
+            <id name="srCode">
+                <column name="SR_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlSuspenseAccount">
+        <table name="GL_SSPNS_ACCNT"/>
+        <attributes>
+            <id name="saCode">
+                <column name="SA_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlTaxInterface">
+        <table name="GL_TX_INTRFC"/>
+        <attributes>
+            <id name="tiCode">
+                <column name="TI_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlTransactionCalendar">
+        <table name="GL_TRNSCTN_CLNDR"/>
+        <attributes>
+            <id name="tcCode">
+                <column name="GL_TC_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlTransactionCalendarValue">
+        <table name="GL_TRNSCTN_CLNDR_VL"/>
+        <attributes>
+            <id name="tcvCode">
+                <column name="TCV_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.gl.LocalGlUserStaticReport">
+        <table name="GL_USR_STTC_RPRT"/>
+        <attributes>
+            <id name="ustrCode">
+                <column name="USTR_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+
+    <!-- INV Entities -->
+    <entity class="com.ejb.entities.inv.LocalInvAdjustment">
+        <table name="INV_ADJSTMNT"/>
+        <attributes>
+            <id name="adjCode">
+                <column name="INV_ADJ_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.inv.LocalInvAdjustmentLine">
+        <table name="INV_ADJSTMNT_LN"/>
+        <attributes>
+            <id name="alCode">
+                <column name="AL_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.inv.LocalInvBranchStockTransfer">
+        <table name="INV_BRNCH_STCK_TRNSFR"/>
+        <attributes>
+            <id name="bstCode">
+                <column name="BST_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.inv.LocalInvBranchStockTransferLine">
+        <table name="INV_BRNCH_STCK_TRNSFR_LN"/>
+        <attributes>
+            <id name="bslCode">
+                <column name="BSL_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.inv.LocalInvCosting">
+        <table name="INV_CSTNG"/>
+        <attributes>
+            <id name="cstCode">
+                <column name="INV_CST_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.inv.LocalInvDepreciationLedger">
+        <table name="INV_DPRCTN_LDGR"/>
+        <attributes>
+            <id name="dlCode">
+                <column name="DL_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.inv.LocalInvDistributionRecord">
+        <table name="INV_DSTRBTN_RCRD"/>
+        <attributes>
+            <id name="drCode">
+                <column name="INV_DR_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.inv.LocalInvItem">
+        <table name="INV_ITM"/>
+        <attributes>
+            <id name="iiCode">
+                <column name="II_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.inv.LocalInvItemLocation">
+        <table name="INV_ITM_LCTN"/>
+        <attributes>
+            <id name="ilCode">
+                <column name="INV_IL_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.inv.LocalInvLineItem">
+        <table name="INV_LN_ITM"/>
+        <attributes>
+            <id name="liCode">
+                <column name="LI_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.inv.LocalInvLineItemTemplate">
+        <table name="INV_LN_ITM_TMPLT"/>
+        <attributes>
+            <id name="litCode">
+                <column name="LIT_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.inv.LocalInvLocation">
+        <table name="INV_LCTN"/>
+        <attributes>
+            <id name="locCode">
+                <column name="LOC_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.inv.LocalInvPhysicalInventory">
+        <table name="INV_PHYSCL_INVNTRY"/>
+        <attributes>
+            <id name="piCode">
+                <column name="PI_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.inv.LocalInvPhysicalInventoryLine">
+        <table name="INV_PHYSCL_INVNTRY_LN"/>
+        <attributes>
+            <id name="pilCode">
+                <column name="PIL_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.inv.LocalInvPriceLevel">
+        <table name="INV_PRC_LVL"/>
+        <attributes>
+            <id name="plCode">
+                <column name="INV_PL_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.inv.LocalInvStockTransfer">
+        <table name="INV_STCK_TRNSFR"/>
+        <attributes>
+            <id name="stCode">
+                <column name="INV_ST_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.inv.LocalInvStockTransferLine">
+        <table name="INV_STCK_TRNSFR_LN"/>
+        <attributes>
+            <id name="stlCode">
+                <column name="STL_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.inv.LocalInvTag">
+        <table name="INV_TAG"/>
+        <attributes>
+            <id name="tgCode">
+                <column name="TG_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.inv.LocalInvTransactionalBudget">
+        <table name="INV_TRNSCTNL_BDGT"/>
+        <attributes>
+            <id name="tbCode">
+                <column name="TB_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.inv.LocalInvUnitOfMeasure">
+        <table name="INV_UNT_OF_MSR"/>
+        <attributes>
+            <id name="uomCode">
+                <column name="UOM_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+    <entity class="com.ejb.entities.inv.LocalInvUnitOfMeasureConversion">
+        <table name="INV_UNT_OF_MSR_CNVRSN"/>
+        <attributes>
+            <id name="umcCode">
+                <column name="UMC_CODE"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+        </attributes>
+    </entity>
+
+</entity-mappings>
