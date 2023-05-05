@@ -4,6 +4,7 @@ import com.ejb.ConfigurationClass;
 import com.ejb.restfulapi.OfsApiResponse;
 import com.ejb.restfulapi.ar.models.InvoiceItemRequest;
 import com.ejb.restfulapi.ar.models.InvoiceMemoLineRequest;
+import com.ejb.restfulapi.ar.models.InvoiceMemoLineResponse;
 import com.ejb.txnapi.ar.ArCreditMemoEntryApiController;
 import com.ejb.txnapi.ar.ArInvoiceEntryApiController;
 import com.util.EJBCommon;
@@ -44,8 +45,8 @@ public class ArInvoiceRestApi {
             }
             // Create the invoice
             response = arInvoiceEntryApiController.createInvoiceItems(request);
-            return Response.status(response.getCode().equals(EJBCommonAPIErrCodes.OAPI_ERR_000) ? Response.Status.OK : Response.Status.BAD_REQUEST)
-                    .entity(response.toString()).build();
+            return Response.status(response.getCode().equals(EJBCommonAPIErrCodes.OAPI_ERR_000) ?
+                    Response.Status.OK : Response.Status.BAD_REQUEST).entity(response.toString()).build();
         }
         catch (Exception e) {
             response.setCode(EJBCommonAPIErrCodes.OAPI_ERR_007);
@@ -60,22 +61,30 @@ public class ArInvoiceRestApi {
     public Response createInvoiceMemoLines(InvoiceMemoLineRequest request) {
 
         OfsApiResponse response = new OfsApiResponse();
+        InvoiceMemoLineResponse memoLineResponse = new InvoiceMemoLineResponse();
         String defaultDateFormat = ConfigurationClass.DEFAULT_DATE_FORMAT;
         try {
             if (EJBCommon.validateApiDate(request.getInvoiceDate(), defaultDateFormat)) {
-                response.setCode(EJBCommonAPIErrCodes.OAPI_ERR_021);
-                response.setMessage(String.format(EJBCommonAPIErrCodes.OAPI_ERR_021_MSG, defaultDateFormat));
-                return Response.status(Response.Status.BAD_REQUEST).entity(response.toString()).build();
+                memoLineResponse.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_021);
+                memoLineResponse.setMessage(String.format(EJBCommonAPIErrCodes.OAPI_ERR_021_MSG, defaultDateFormat));
+                return Response.status(Response.Status.BAD_REQUEST).entity(memoLineResponse).build();
             }
             // Create the invoice memo lines
             response = arInvoiceEntryApiController.createInvoiceMemoLines(request);
-            return Response.status(response.getCode().equals(EJBCommonAPIErrCodes.OAPI_ERR_000) ? Response.Status.OK : Response.Status.BAD_REQUEST)
-                    .entity(response.toString()).build();
+
+            // Return the response to client
+            memoLineResponse.setStatusCode(response.getCode());
+            memoLineResponse.setStatus(response.getStatus());
+            memoLineResponse.setMessage(response.getMessage());
+            memoLineResponse.setInvoiceNumber(response.getDocumentNumber());
+
+            return Response.status(response.getCode().equals(EJBCommonAPIErrCodes.OAPI_ERR_000) ?
+                    Response.Status.OK : Response.Status.BAD_REQUEST).entity(memoLineResponse).build();
         }
         catch (Exception e) {
             response.setCode(EJBCommonAPIErrCodes.OAPI_ERR_007);
             response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_007_MSG);
-            return Response.status(Response.Status.BAD_REQUEST).entity(response.toString()).build();
+            return Response.status(Response.Status.BAD_REQUEST).entity(memoLineResponse).build();
         }
     }
 
@@ -96,5 +105,4 @@ public class ArInvoiceRestApi {
             return Response.status(Response.Status.BAD_REQUEST).entity(response.toString()).build();
         }
     }
-
 }

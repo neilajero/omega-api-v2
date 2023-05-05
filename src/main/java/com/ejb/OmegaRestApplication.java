@@ -9,7 +9,6 @@ import com.ejb.restfulapi.ar.ArStandardMemoLineRestApi;
 import com.ejb.restfulapi.filters.CORSFilter;
 import com.ejb.restfulapi.filters.OmegaJWTTokenFilter;
 import com.ejb.restfulapi.inv.InvItemRestApi;
-import com.web.UserService;
 import jakarta.ws.rs.ApplicationPath;
 import jakarta.ws.rs.core.Application;
 
@@ -27,8 +26,6 @@ public class OmegaRestApplication extends Application {
     public Set<Class<?>> getClasses() {
 
         Set<Class<?>> classes = new HashSet<>();
-
-        classes.add(UserService.class);
 
         // Filters
         classes.add(CORSFilter.class);

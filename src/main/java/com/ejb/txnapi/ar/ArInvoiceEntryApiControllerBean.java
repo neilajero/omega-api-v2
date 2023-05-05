@@ -31,7 +31,6 @@ import com.util.mod.ar.ArModInvoiceLineDetails;
 import com.util.mod.ar.ArModInvoiceLineItemDetails;
 import jakarta.ejb.*;
 
-
 import javax.naming.NamingException;
 import java.util.*;
 
@@ -500,8 +499,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
                     apiResponse.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_047_MSG);
                     return apiResponse;
                 }
-                adBranch = adBranchHome.findByBrBranchCode(invoiceMemoLineRequest.getBranchCode(),
-                        invoiceDetails.getInvAdCompany(), invoiceDetails.getCompanyShortName());
+                adBranch = adBranchHome.findByBrBranchCode(invoiceMemoLineRequest.getBranchCode(), invoiceDetails.getInvAdCompany(), invoiceDetails.getCompanyShortName());
                 if (adBranch != null) {
                     invoiceDetails.setInvAdBranch(adBranch.getBrCode());
                 }
@@ -519,8 +517,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
                     apiResponse.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_042_MSG);
                     return apiResponse;
                 }
-                adUser = adUserHome.findByUsrName(invoiceMemoLineRequest.getUsername(),
-                        invoiceDetails.getInvAdCompany(), invoiceDetails.getCompanyShortName());
+                adUser = adUserHome.findByUsrName(invoiceMemoLineRequest.getUsername(), invoiceDetails.getInvAdCompany(), invoiceDetails.getCompanyShortName());
                 if (adUser != null) {
                     invoiceDetails.setInvCreatedBy(adUser.getUsrName());
                     invoiceDetails.setInvLastModifiedBy(adUser.getUsrName());
@@ -540,8 +537,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
                     apiResponse.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_047_MSG);
                     return apiResponse;
                 }
-                arCustomer = arCustomerHome.findByCstCustomerCode(invoiceMemoLineRequest.getCustomerCode(),
-                        invoiceDetails.getInvAdCompany(), invoiceDetails.getCompanyShortName());
+                arCustomer = arCustomerHome.findByCstCustomerCode(invoiceMemoLineRequest.getCustomerCode(), invoiceDetails.getInvAdCompany(), invoiceDetails.getCompanyShortName());
             }
             catch (FinderException ex) {
                 apiResponse.setCode(EJBCommonAPIErrCodes.OAPI_ERR_009);
@@ -556,8 +552,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
                     apiResponse.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_071_MSG);
                     return apiResponse;
                 }
-                functionalCurrency = glFunctionalCurrencyHome.findByFcName(invoiceMemoLineRequest.getCurrency(),
-                        invoiceDetails.getInvAdCompany(), invoiceDetails.getCompanyShortName());
+                functionalCurrency = glFunctionalCurrencyHome.findByFcName(invoiceMemoLineRequest.getCurrency(), invoiceDetails.getInvAdCompany(), invoiceDetails.getCompanyShortName());
                 if (functionalCurrency != null) {
                     invoiceDetails.setCurrencyCode(functionalCurrency.getFcName());
                 }
@@ -570,9 +565,10 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
 
             // Tax Code
             try {
-                if (!invoiceMemoLineRequest.getTaxCode().isEmpty()) {
-                    taxCode = arTaxCodeHome.findByTcName(invoiceMemoLineRequest.getTaxCode(),
-                            invoiceDetails.getInvAdCompany(), invoiceDetails.getCompanyShortName());
+                if (invoiceMemoLineRequest.getTaxCode() != null) {
+                    if (!invoiceMemoLineRequest.getTaxCode().isEmpty()) {
+                        taxCode = arTaxCodeHome.findByTcName(invoiceMemoLineRequest.getTaxCode(), invoiceDetails.getInvAdCompany(), invoiceDetails.getCompanyShortName());
+                    }
                 }
                 invoiceDetails.setTaxCode((taxCode == null) ? "NONE" : taxCode.getTcName());
             }
@@ -584,9 +580,10 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
 
             // Withholding Tax Code
             try {
-                if (!invoiceMemoLineRequest.getWithholdingTaxCode().isEmpty()) {
-                    withholdingTaxCode = arWithholdingTaxCodeHome.findByWtcName(invoiceMemoLineRequest.getWithholdingTaxCode(),
-                            invoiceDetails.getInvAdCompany(), invoiceDetails.getCompanyShortName());
+                if (invoiceMemoLineRequest.getWithholdingTaxCode() != null) {
+                    if (!invoiceMemoLineRequest.getWithholdingTaxCode().isEmpty()) {
+                        withholdingTaxCode = arWithholdingTaxCodeHome.findByWtcName(invoiceMemoLineRequest.getWithholdingTaxCode(), invoiceDetails.getInvAdCompany(), invoiceDetails.getCompanyShortName());
+                    }
                 }
                 invoiceDetails.setWithholdingTaxCode((withholdingTaxCode == null) ? "NONE" : withholdingTaxCode.getWtcName());
             }
@@ -598,9 +595,10 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
 
             // Payment Term
             try {
-                if (!invoiceMemoLineRequest.getPaymentTerm().isEmpty()) {
-                    adPaymentTerm = adPaymentTermHome.findByPytName(invoiceMemoLineRequest.getPaymentTerm(),
-                            invoiceDetails.getInvAdCompany(), invoiceDetails.getCompanyShortName());
+                if (invoiceMemoLineRequest.getPaymentTerm() != null) {
+                    if (!invoiceMemoLineRequest.getPaymentTerm().isEmpty()) {
+                        adPaymentTerm = adPaymentTermHome.findByPytName(invoiceMemoLineRequest.getPaymentTerm(), invoiceDetails.getInvAdCompany(), invoiceDetails.getCompanyShortName());
+                    }
                 }
                 invoiceDetails.setPaymentTerm((adPaymentTerm == null) ? "IMMEDIATE" : adPaymentTerm.getPytName());
             }
@@ -611,7 +609,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
             }
 
             double totalAmount = 0;
-            ArrayList memoLines = new ArrayList();
+            ArrayList<ArModInvoiceLineDetails> memoLines = new ArrayList<ArModInvoiceLineDetails>();
 
             for (MemolineDetails memoLineDetails : invoiceMemoLineRequest.getMemoLineDetails()) {
                 ArModInvoiceLineDetails details = new ArModInvoiceLineDetails();
@@ -688,7 +686,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
     }
 
     @Override
-    public Integer saveInvoiceItems(ArInvoiceDetails invoiceDetails, ArrayList invoiceLines)
+    public Integer saveInvoiceItems(ArInvoiceDetails invoiceDetails, ArrayList<ArModInvoiceLineItemDetails> invoiceLines)
             throws GlobalInvItemLocationNotFoundException, GlobalInventoryDateException, GlobalMiscInfoIsRequiredException,
             GlobalBranchAccountNumberInvalidException, GlobalRecordInvalidException, ArINVAmountExceedsCreditLimitException,
             GlobalRecordAlreadyDeletedException, GlobalTransactionAlreadyPostedException, GlobalTransactionAlreadyVoidException,
@@ -714,39 +712,21 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
                 throw new GlobalPaymentTermInvalidException();
             }
 
-            arInvoice = arInvoiceHome
-                    .InvType(invoiceDetails.getInvType())
-                    .InvDescription(invoiceDetails.getInvDescription())
-                    .InvDate(invoiceDetails.getInvDate())
-                    .InvNumber(invoiceDetails.getInvNumber())
-                    .InvReferenceNumber(invoiceDetails.getInvReferenceNumber())
-                    .InvCmInvoiceNumber(null)
-                    .InvCmReferenceNumber(null)
-                    .InvCreditMemo(EJBCommon.FALSE)
-                    .InvEffectivityDate(invoiceDetails.getInvEffectivityDate())
-                    .InvConversionRate(1.0)
-                    .InvCreatedBy(invoiceDetails.getInvCreatedBy())
-                    .InvDateCreated(invoiceDetails.getInvDateCreated())
-                    .InvAdBranch(branchCode)
-                    .InvAdCompany(companyCode)
-                    .buildInvoice(companyShortName);
+            arInvoice = arInvoiceHome.InvType(invoiceDetails.getInvType()).InvDescription(invoiceDetails.getInvDescription()).InvDate(invoiceDetails.getInvDate()).InvNumber(invoiceDetails.getInvNumber()).InvReferenceNumber(invoiceDetails.getInvReferenceNumber()).InvCmInvoiceNumber(null).InvCmReferenceNumber(null).InvCreditMemo(EJBCommon.FALSE).InvEffectivityDate(invoiceDetails.getInvEffectivityDate()).InvConversionRate(1.0).InvCreatedBy(invoiceDetails.getInvCreatedBy()).InvDateCreated(invoiceDetails.getInvDateCreated()).InvAdBranch(branchCode).InvAdCompany(companyCode).buildInvoice(companyShortName);
 
             arInvoice.setInvDocumentType(invoiceDetails.getInvDocumentType());
             arInvoice.setAdPaymentTerm(adPaymentTerm);
 
-            LocalGlFunctionalCurrency glFunctionalCurrency = glFunctionalCurrencyHome.findByFcName(
-                    invoiceDetails.getCurrencyCode(), companyCode, companyShortName);
+            LocalGlFunctionalCurrency glFunctionalCurrency = glFunctionalCurrencyHome.findByFcName(invoiceDetails.getCurrencyCode(), companyCode, companyShortName);
             arInvoice.setGlFunctionalCurrency(glFunctionalCurrency);
 
             LocalArTaxCode arTaxCode = arTaxCodeHome.findByTcName(invoiceDetails.getTaxCode(), companyCode, companyShortName);
             arInvoice.setArTaxCode(arTaxCode);
 
-            LocalArWithholdingTaxCode arWithholdingTaxCode = arWithholdingTaxCodeHome.findByWtcName(
-                    invoiceDetails.getWithholdingTaxCode(), companyCode, companyShortName);
+            LocalArWithholdingTaxCode arWithholdingTaxCode = arWithholdingTaxCodeHome.findByWtcName(invoiceDetails.getWithholdingTaxCode(), companyCode, companyShortName);
             arInvoice.setArWithholdingTaxCode(arWithholdingTaxCode);
 
-            LocalArCustomer arCustomer = arCustomerHome.findByCstCustomerCode(
-                    invoiceDetails.getCustomerCode(), companyCode, companyShortName);
+            LocalArCustomer arCustomer = arCustomerHome.findByCstCustomerCode(invoiceDetails.getCustomerCode(), companyCode, companyShortName);
             arInvoice.setArCustomer(arCustomer);
 
             LocalAdPreference adPreference = adPreferenceHome.findByPrfAdCompany(companyCode, companyShortName);
@@ -763,8 +743,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
             double totalDownpayment = arInvoice.getInvDownPayment();
 
             // Make sure Global AD Preference apply validation to avoid this fall back value.
-            String centralWarehouse = !adPreference.getPrfInvCentralWarehouse().equals("") &&
-                    adPreference.getPrfInvCentralWarehouse() != null ? adPreference.getPrfInvCentralWarehouse() : "POM WAREHOUSE LOCATION";
+            String centralWarehouse = !adPreference.getPrfInvCentralWarehouse().equals("") && adPreference.getPrfInvCentralWarehouse() != null ? adPreference.getPrfInvCentralWarehouse() : "POM WAREHOUSE LOCATION";
             LocalAdBranch centralWarehouseBranchCode = adBranchHome.findByBrName(centralWarehouse, companyCode, companyShortName);
 
             if (centralWarehouseBranchCode == null) {
@@ -785,20 +764,17 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
 
                 // Get average costing from Main Warehouse only
                 double COST = getItemCosting(companyCode, centralWarehouseBranchCode.getBrCode(), arInvoice, itemLocation, arInvoiceLineItem);
-                double quantitySold = this.convertByUomFromAndItemAndQuantity(arInvoiceLineItem.getInvUnitOfMeasure(),
-                        arInvoiceLineItem.getInvItemLocation().getInvItem(), arInvoiceLineItem.getIliQuantity(), companyCode, companyShortName);
+                double quantitySold = this.convertByUomFromAndItemAndQuantity(arInvoiceLineItem.getInvUnitOfMeasure(), arInvoiceLineItem.getInvItemLocation().getInvItem(), arInvoiceLineItem.getIliQuantity(), companyCode, companyShortName);
 
                 LocalAdBranchItemLocation adBranchItemLocation = null;
                 try {
-                    adBranchItemLocation = adBranchItemLocationHome.findBilByIlCodeAndBrCode(
-                            arInvoiceLineItem.getInvItemLocation().getIlCode(), branchCode, companyCode);
+                    adBranchItemLocation = adBranchItemLocationHome.findBilByIlCodeAndBrCode(arInvoiceLineItem.getInvItemLocation().getIlCode(), branchCode, companyCode);
                 }
                 catch (FinderException ex) {
                 }
 
                 String distributionRecordClass = getDistributionRecordClass(companyCode, adBranchItemLocation);
-                costOfGoodsSoldJournals(companyCode, branchCode, arInvoice, adPreference, itemLocation, arInvoiceLineItem,
-                        COST, quantitySold, adBranchItemLocation, companyShortName);
+                costOfGoodsSoldJournals(companyCode, branchCode, arInvoice, adPreference, itemLocation, arInvoiceLineItem, COST, quantitySold, adBranchItemLocation, companyShortName);
                 inventoryRevenueJournals(companyCode, branchCode, arInvoice, arInvoiceLineItem, adBranchItemLocation, distributionRecordClass, companyShortName);
 
                 if (lineDetails.getIliTotalDiscount() > 0) {
@@ -826,19 +802,15 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
                     catch (FinderException ex) {
                         Debug.print(ex.getMessage());
                     }
-                    this.addArDrEntry(arInvoice.getArDrNextLine(), TAX, EJBCommon.FALSE, totalConvertedTaxAmount,
-                            (adBranchTaxCode != null) ? adBranchTaxCode.getBtcGlCoaTaxCode() : arTaxCode.getGlChartOfAccount().getCoaCode(),
-                            null, arInvoice, (adBranchTaxCode != null) ? branchCode : centralWarehouseBranchCode.getBrCode(), companyCode, companyShortName);
+                    this.addArDrEntry(arInvoice.getArDrNextLine(), TAX, EJBCommon.FALSE, totalConvertedTaxAmount, (adBranchTaxCode != null) ? adBranchTaxCode.getBtcGlCoaTaxCode() : arTaxCode.getGlChartOfAccount().getCoaCode(), null, arInvoice, (adBranchTaxCode != null) ? branchCode : centralWarehouseBranchCode.getBrCode(), companyCode, companyShortName);
                 } else {
-                    this.addArDrEntry(arInvoice.getArDrNextLine(), "DEFERRED TAX", EJBCommon.FALSE,
-                            totalConvertedTaxAmount, arTaxCode.getTcInterimAccount(), null, arInvoice, branchCode, companyCode, companyShortName);
+                    this.addArDrEntry(arInvoice.getArDrNextLine(), "DEFERRED TAX", EJBCommon.FALSE, totalConvertedTaxAmount, arTaxCode.getTcInterimAccount(), null, arInvoice, branchCode, companyCode, companyShortName);
                 }
             }
 
             // add unearned interest
             double unearnedInterestAmount = 0d;
-            unearnedInterestAmount = getUnearnedInterestAmount(companyCode, branchCode, arInvoice, adPaymentTerm,
-                    totalTaxAmount, totalAmount, totalInterestExceptionAmount, totalDownpayment, unearnedInterestAmount, companyShortName);
+            unearnedInterestAmount = getUnearnedInterestAmount(companyCode, branchCode, arInvoice, adPaymentTerm, totalTaxAmount, totalAmount, totalInterestExceptionAmount, totalDownpayment, unearnedInterestAmount, companyShortName);
             arInvoice.setInvAmountUnearnedInterest(unearnedInterestAmount);
 
             // add wtax distribution if necessary
@@ -847,8 +819,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
             if (arWithholdingTaxCode.getWtcRate() != 0 && adPreference.getPrfArWTaxRealization().equals(INVOICE)) {
                 withholdingTaxAmount = EJBCommon.roundIt(totalAmount * (arWithholdingTaxCode.getWtcRate() / 100), this.getGlFcPrecisionUnit(companyCode, companyShortName));
                 double convertedWithholdingTax = this.convertForeignToFunctionalCurrency(arInvoice.getInvConversionRate(), withholdingTaxAmount, companyCode, invoiceDetails.getCompanyShortName());
-                this.addArDrEntry(arInvoice.getArDrNextLine(), W_TAX, EJBCommon.TRUE, convertedWithholdingTax,
-                        arWithholdingTaxCode.getGlChartOfAccount().getCoaCode(), null, arInvoice, branchCode, companyCode, companyShortName);
+                this.addArDrEntry(arInvoice.getArDrNextLine(), W_TAX, EJBCommon.TRUE, convertedWithholdingTax, arWithholdingTaxCode.getGlChartOfAccount().getCoaCode(), null, arInvoice, branchCode, companyCode, companyShortName);
             }
 
             amountDue = totalAmount + totalTaxAmount - withholdingTaxAmount - totalDiscount;
@@ -858,8 +829,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
                 LocalAdBranchCustomer adBranchCustomer = adBranchCustomerHome.findBcstByCstCodeAndBrCode(arInvoice.getArCustomer().getCstCode(), branchCode, companyCode);
                 double convertedAmountDue = this.convertForeignToFunctionalCurrency(arInvoice.getInvConversionRate(), amountDue, companyCode, invoiceDetails.getCompanyShortName());
 
-                this.addArDrIliEntry(arInvoice.getArDrNextLine(), RECEIVABLE, EJBCommon.TRUE, convertedAmountDue,
-                        adBranchCustomer.getBcstGlCoaReceivableAccount(), arInvoice, branchCode, companyCode, invoiceDetails.getCompanyShortName());
+                this.addArDrIliEntry(arInvoice.getArDrNextLine(), RECEIVABLE, EJBCommon.TRUE, convertedAmountDue, adBranchCustomer.getBcstGlCoaReceivableAccount(), arInvoice, branchCode, companyCode, invoiceDetails.getCompanyShortName());
             }
             catch (FinderException ex) {
             }
@@ -868,8 +838,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
             arInvoice.setInvAmountDue(amountDue);
 
             // create invoice payment schedule
-            invoicePaymentSchedule(companyCode, arInvoice, adPaymentTerm, totalTaxAmount, totalAmount,
-                    totalPaymentTermExceptionAmount, totalDownpayment, companyShortName);
+            invoicePaymentSchedule(companyCode, arInvoice, adPaymentTerm, totalTaxAmount, totalAmount, totalPaymentTermExceptionAmount, totalDownpayment, companyShortName);
 
             // TODO: This functionality is not yet setup and implemented correctly.
             // The default UOM of each items are all setup to EACH with conversion factor are all set to 1.
@@ -888,12 +857,9 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
                         continue;
                     }
 
-                    double ILI_QTY = this.convertByUomAndQuantity(arInvoiceLineItem.getInvUnitOfMeasure(),
-                            arInvoiceLineItem.getInvItemLocation().getInvItem(), Math.abs(arInvoiceLineItem.getIliQuantity()), companyCode);
+                    double ILI_QTY = this.convertByUomAndQuantity(arInvoiceLineItem.getInvUnitOfMeasure(), arInvoiceLineItem.getInvItemLocation().getInvItem(), Math.abs(arInvoiceLineItem.getIliQuantity()), companyCode);
 
-                    LocalInvCosting invCosting = invCostingHome.getItemAverageCost(arInvoice.getInvDate(),
-                            arInvoiceLineItem.getInvItemLocation().getInvItem().getIiName(),
-                            arInvoiceLineItem.getInvItemLocation().getInvLocation().getLocName(), branchCode, companyCode);
+                    LocalInvCosting invCosting = invCostingHome.getItemAverageCost(arInvoice.getInvDate(), arInvoiceLineItem.getInvItemLocation().getInvItem().getIiName(), arInvoiceLineItem.getInvItemLocation().getInvLocation().getLocName(), branchCode, companyCode);
 
                     double LOWEST_QTY = this.convertByUomAndQuantity(arInvoiceLineItem.getInvUnitOfMeasure(), arInvoiceLineItem.getInvItemLocation().getInvItem(), 1, companyCode);
 
@@ -947,14 +913,12 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
     }
 
     @Override
-    public Integer saveInvoiceMemoLines(ArInvoiceDetails invoiceDetails, ArrayList invoiceLines)
+    public Integer saveInvoiceMemoLines(ArInvoiceDetails invoiceDetails, ArrayList<ArModInvoiceLineDetails> invoiceLines)
             throws GlobalRecordAlreadyDeletedException, GlobalDocumentNumberNotUniqueException,
-            GlobalConversionDateNotExistException, GlobalPaymentTermInvalidException,
-            ArINVAmountExceedsCreditLimitException, GlobalTransactionAlreadyApprovedException,
-            GlobalTransactionAlreadyPendingException, GlobalTransactionAlreadyPostedException,
-            GlobalTransactionAlreadyVoidException, GlobalNoApprovalRequesterFoundException,
-            GlobalNoApprovalApproverFoundException, GlJREffectiveDateNoPeriodExistException,
-            GlJREffectiveDatePeriodClosedException, GlobalJournalNotBalanceException,
+            GlobalConversionDateNotExistException, GlobalPaymentTermInvalidException, ArINVAmountExceedsCreditLimitException,
+            GlobalTransactionAlreadyApprovedException, GlobalTransactionAlreadyPendingException, GlobalTransactionAlreadyPostedException,
+            GlobalTransactionAlreadyVoidException, GlobalNoApprovalRequesterFoundException, GlobalNoApprovalApproverFoundException,
+            GlJREffectiveDateNoPeriodExistException, GlJREffectiveDatePeriodClosedException, GlobalJournalNotBalanceException,
             GlobalBranchAccountNumberInvalidException, ArInvDuplicateUploadNumberException {
 
         Debug.print("ArInvoiceEntryApiControllerBean saveInvoice");
@@ -977,41 +941,24 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
 
             invoiceDetails.setInvInterestNextRunDate(calendar.getTime());
 
-            arInvoice = arInvoiceHome
-                    .InvType(invoiceDetails.getInvType())
-                    .InvDescription(invoiceDetails.getInvDescription())
-                    .InvDate(invoiceDetails.getInvDate())
-                    .InvNumber(invoiceDetails.getInvNumber())
-                    .InvReferenceNumber(invoiceDetails.getInvReferenceNumber())
-                    .InvEffectivityDate(invoiceDetails.getInvEffectivityDate())
-                    .InvConversionRate(1.0)
-                    .InvCreatedBy(invoiceDetails.getInvCreatedBy())
-                    .InvDateCreated(invoiceDetails.getInvDateCreated())
-                    .InvAdBranch(branchCode)
-                    .InvAdCompany(companyCode)
-                    .buildInvoice(companyShortName);
+            arInvoice = arInvoiceHome.InvType(invoiceDetails.getInvType()).InvDescription(invoiceDetails.getInvDescription()).InvDate(invoiceDetails.getInvDate()).InvNumber(invoiceDetails.getInvNumber()).InvReferenceNumber(invoiceDetails.getInvReferenceNumber()).InvEffectivityDate(invoiceDetails.getInvEffectivityDate()).InvConversionRate(1.0).InvCreatedBy(invoiceDetails.getInvCreatedBy()).InvDateCreated(invoiceDetails.getInvDateCreated()).InvAdBranch(branchCode).InvAdCompany(companyCode).buildInvoice(companyShortName);
 
             arInvoice.setReportParameter(invoiceDetails.getReportParameter());
             arInvoice.setInvDocumentType(invoiceDetails.getInvDocumentType());
 
-            LocalAdPaymentTerm adPaymentTerm = adPaymentTermHome.findByPytName(
-                    invoiceDetails.getPaymentTerm(), companyCode, companyShortName);
+            LocalAdPaymentTerm adPaymentTerm = adPaymentTermHome.findByPytName(invoiceDetails.getPaymentTerm(), companyCode, companyShortName);
             arInvoice.setAdPaymentTerm(adPaymentTerm);
 
-            LocalGlFunctionalCurrency glFunctionalCurrency = glFunctionalCurrencyHome.findByFcName(
-                    invoiceDetails.getCurrencyCode(), companyCode, companyShortName);
+            LocalGlFunctionalCurrency glFunctionalCurrency = glFunctionalCurrencyHome.findByFcName(invoiceDetails.getCurrencyCode(), companyCode, companyShortName);
             arInvoice.setGlFunctionalCurrency(glFunctionalCurrency);
 
-            LocalArTaxCode arTaxCode = arTaxCodeHome.findByTcName(
-                    invoiceDetails.getTaxCode(), companyCode, companyShortName);
+            LocalArTaxCode arTaxCode = arTaxCodeHome.findByTcName(invoiceDetails.getTaxCode(), companyCode, companyShortName);
             arInvoice.setArTaxCode(arTaxCode);
-            LocalArWithholdingTaxCode arWithholdingTaxCode = arWithholdingTaxCodeHome.findByWtcName(
-                    invoiceDetails.getWithholdingTaxCode(), companyCode, companyShortName);
+            LocalArWithholdingTaxCode arWithholdingTaxCode = arWithholdingTaxCodeHome.findByWtcName(invoiceDetails.getWithholdingTaxCode(), companyCode, companyShortName);
 
             arInvoice.setArWithholdingTaxCode(arWithholdingTaxCode);
 
-            LocalArCustomer arCustomer = arCustomerHome.findByCstCustomerCode(
-                    invoiceDetails.getCustomerCode(), companyCode, companyShortName);
+            LocalArCustomer arCustomer = arCustomerHome.findByCstCustomerCode(invoiceDetails.getCustomerCode(), companyCode, companyShortName);
             arInvoice.setArCustomer(arCustomer);
 
             // add new invoice lines and distribution record
@@ -1024,13 +971,10 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
                 ArModInvoiceLineDetails mInvDetails = (ArModInvoiceLineDetails) o;
                 LocalArInvoiceLine arInvoiceLine = this.addArIlEntry(mInvDetails, arInvoice, companyCode, companyShortName);
 
-                double itemAmount = this.convertForeignToFunctionalCurrency(arInvoice.getInvConversionRate(),
-                        arInvoiceLine.getIlAmount(), companyCode, companyShortName);
+                double itemAmount = this.convertForeignToFunctionalCurrency(arInvoice.getInvConversionRate(), arInvoiceLine.getIlAmount(), companyCode, companyShortName);
 
                 // add revenue/credit distributions
-                this.addArDrEntry(arInvoice.getArDrNextLine(), REVENUE, EJBCommon.FALSE, itemAmount,
-                        this.getArGlCoaRevenueAccount(arInvoiceLine, branchCode, companyCode, companyShortName),
-                        null, arInvoice, branchCode, companyCode, companyShortName);
+                this.addArDrEntry(arInvoice.getArDrNextLine(), REVENUE, EJBCommon.FALSE, itemAmount, this.getArGlCoaRevenueAccount(arInvoiceLine, branchCode, companyCode, companyShortName), null, arInvoice, branchCode, companyCode, companyShortName);
 
                 totalAmount += arInvoiceLine.getIlAmount();
                 totalTaxAmount += arInvoiceLine.getIlTaxAmount();
@@ -1042,27 +986,19 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
 
             // add tax distribution if necessary
             if (!arTaxCode.getTcType().equals("NONE") && !arTaxCode.getTcType().equals("EXEMPT")) {
-                double totalConvertedTaxAmount = this.convertForeignToFunctionalCurrency(
-                        arInvoice.getInvConversionRate(), totalTaxAmount, companyCode, companyShortName);
+                double totalConvertedTaxAmount = this.convertForeignToFunctionalCurrency(arInvoice.getInvConversionRate(), totalTaxAmount, companyCode, companyShortName);
                 if (arTaxCode.getTcInterimAccount() == null) {
                     // add branch tax code
                     LocalAdBranchArTaxCode adBranchTaxCode;
                     try {
-                        adBranchTaxCode = adBranchArTaxCodeHome.findBtcByTcCodeAndBrCode(
-                                arInvoice.getArTaxCode().getTcCode(), branchCode, companyCode, companyShortName);
-                        this.addArDrEntry(arInvoice.getArDrNextLine(), TAX, EJBCommon.FALSE,
-                                totalConvertedTaxAmount, adBranchTaxCode.getBtcGlCoaTaxCode(),
-                                null, arInvoice, branchCode, companyCode, companyShortName);
+                        adBranchTaxCode = adBranchArTaxCodeHome.findBtcByTcCodeAndBrCode(arInvoice.getArTaxCode().getTcCode(), branchCode, companyCode, companyShortName);
+                        this.addArDrEntry(arInvoice.getArDrNextLine(), TAX, EJBCommon.FALSE, totalConvertedTaxAmount, adBranchTaxCode.getBtcGlCoaTaxCode(), null, arInvoice, branchCode, companyCode, companyShortName);
                     }
                     catch (FinderException ex) {
-                        this.addArDrEntry(arInvoice.getArDrNextLine(), TAX, EJBCommon.FALSE,
-                                totalConvertedTaxAmount, arTaxCode.getGlChartOfAccount().getCoaCode(),
-                                null, arInvoice, branchCode, companyCode, companyShortName);
+                        this.addArDrEntry(arInvoice.getArDrNextLine(), TAX, EJBCommon.FALSE, totalConvertedTaxAmount, arTaxCode.getGlChartOfAccount().getCoaCode(), null, arInvoice, branchCode, companyCode, companyShortName);
                     }
                 } else {
-                    this.addArDrEntry(arInvoice.getArDrNextLine(), "DEFERRED TAX", EJBCommon.FALSE,
-                            totalConvertedTaxAmount, arTaxCode.getTcInterimAccount(),
-                            null, arInvoice, branchCode, companyCode, companyShortName);
+                    this.addArDrEntry(arInvoice.getArDrNextLine(), "DEFERRED TAX", EJBCommon.FALSE, totalConvertedTaxAmount, arTaxCode.getTcInterimAccount(), null, arInvoice, branchCode, companyCode, companyShortName);
                 }
             }
 
@@ -1070,24 +1006,17 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
             LocalAdPreference adPreference = adPreferenceHome.findByPrfAdCompany(companyCode, companyShortName);
             double withholdingTaxAmount = 0d;
             if (arWithholdingTaxCode.getWtcRate() != 0 && adPreference.getPrfArWTaxRealization().equals(INVOICE)) {
-                withholdingTaxAmount = EJBCommon.roundIt((totalAmount - totalUntaxableAmount) * (arWithholdingTaxCode.getWtcRate() / 100),
-                        this.getGlFcPrecisionUnit(companyCode, companyShortName));
-                double W_TAX_AMOUNT_CONV = this.convertForeignToFunctionalCurrency(arInvoice.getInvConversionRate(),
-                        withholdingTaxAmount, companyCode, companyShortName);
-                this.addArDrEntry(arInvoice.getArDrNextLine(), W_TAX, EJBCommon.TRUE, W_TAX_AMOUNT_CONV,
-                        arWithholdingTaxCode.getGlChartOfAccount().getCoaCode(),
-                        null, arInvoice, branchCode, companyCode, companyShortName);
+                withholdingTaxAmount = EJBCommon.roundIt((totalAmount - totalUntaxableAmount) * (arWithholdingTaxCode.getWtcRate() / 100), this.getGlFcPrecisionUnit(companyCode, companyShortName));
+                double W_TAX_AMOUNT_CONV = this.convertForeignToFunctionalCurrency(arInvoice.getInvConversionRate(), withholdingTaxAmount, companyCode, companyShortName);
+                this.addArDrEntry(arInvoice.getArDrNextLine(), W_TAX, EJBCommon.TRUE, W_TAX_AMOUNT_CONV, arWithholdingTaxCode.getGlChartOfAccount().getCoaCode(), null, arInvoice, branchCode, companyCode, companyShortName);
             }
 
             // add receivable distribution
             double amountDue = totalAmount + totalTaxAmount - withholdingTaxAmount;
             try {
-                LocalAdBranchCustomer adBranchCustomer = adBranchCustomerHome.findBcstByCstCodeAndBrCode(
-                        arInvoice.getArCustomer().getCstCode(), branchCode, companyCode, companyShortName);
-                double convertedAmountDue = this.convertForeignToFunctionalCurrency(arInvoice.getInvConversionRate(),
-                        amountDue, companyCode, companyShortName);
-                this.addArDrEntry(arInvoice.getArDrNextLine(), RECEIVABLE, EJBCommon.TRUE, convertedAmountDue, adBranchCustomer.getBcstGlCoaReceivableAccount(),
-                        null, arInvoice, branchCode, companyCode, companyShortName);
+                LocalAdBranchCustomer adBranchCustomer = adBranchCustomerHome.findBcstByCstCodeAndBrCode(arInvoice.getArCustomer().getCstCode(), branchCode, companyCode, companyShortName);
+                double convertedAmountDue = this.convertForeignToFunctionalCurrency(arInvoice.getInvConversionRate(), amountDue, companyCode, companyShortName);
+                this.addArDrEntry(arInvoice.getArDrNextLine(), RECEIVABLE, EJBCommon.TRUE, convertedAmountDue, adBranchCustomer.getBcstGlCoaReceivableAccount(), null, arInvoice, branchCode, companyCode, companyShortName);
             }
             catch (FinderException ex) {
             }
@@ -1096,8 +1025,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
             arInvoice.setInvAmountDue(amountDue);
 
             // Invoice payment schedule
-            invoicePaymentSchedule(companyCode, arInvoice, adPaymentTerm, totalTaxAmount, totalAmount,
-                    0d, 0d, companyShortName);
+            invoicePaymentSchedule(companyCode, arInvoice, adPaymentTerm, totalTaxAmount, totalAmount, 0d, 0d, companyShortName);
 
             // Invoice posting process
             this.executeArInvPost(arInvoice, branchCode, companyCode, companyShortName);
@@ -1116,20 +1044,16 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
                 if (arCustomer.getCstCreditLimit() > 0) {
                     balance = computeTotalBalance(arInvoice.getInvCode(), customerCode, companyCode);
                     balance += amountDue;
-                    if (arCustomer.getCstCreditLimit() < balance && (adApproval.getAprEnableArInvoice() == EJBCommon.FALSE ||
-                            (adApproval.getAprEnableArInvoice() == EJBCommon.TRUE &&
-                                    adInvoiceApprovalDocument.getAdcEnableCreditLimitChecking() == EJBCommon.FALSE))) {
+                    if (arCustomer.getCstCreditLimit() < balance && (adApproval.getAprEnableArInvoice() == EJBCommon.FALSE || (adApproval.getAprEnableArInvoice() == EJBCommon.TRUE && adInvoiceApprovalDocument.getAdcEnableCreditLimitChecking() == EJBCommon.FALSE))) {
                         throw new ArINVAmountExceedsCreditLimitException();
                     }
                 }
 
                 // find overdue invoices
-                Collection arOverdueInvoices = arInvoicePaymentScheduleHome.findOverdueIpsByInvDateAndCstCustomerCode(
-                        arInvoice.getInvDate(), customerCode, companyCode);
+                Collection arOverdueInvoices = arInvoicePaymentScheduleHome.findOverdueIpsByInvDateAndCstCustomerCode(arInvoice.getInvDate(), customerCode, companyCode);
 
                 // check if ar invoice approval is enabled
-                if (adApproval.getAprEnableArInvoice() != EJBCommon.FALSE ||
-                        (arCustomer.getCstCreditLimit() < balance && arOverdueInvoices.size() > 0)) {
+                if (adApproval.getAprEnableArInvoice() != EJBCommon.FALSE || (arCustomer.getCstCreditLimit() < balance && arOverdueInvoices.size() > 0)) {
                     // check if invoice is self approved
                     LocalAdUser adUser = adUserHome.findByUsrName(invoiceLastModifiedBy, companyCode);
                     //TODO: Continue code review of this process
@@ -1213,8 +1137,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
         // calculate net amount
         itemDiscountAmount = EJBCommon.calculateNetAmount(lineDetails.getIliTotalDiscount(), lineDetails.getIliTax(), arTaxCode.getTcRate(), arTaxCode.getTcType(), precisionUnit);
 
-        this.addArDrEntry(arInvoice.getArDrNextLine(), "SALES DISCOUNT", EJBCommon.TRUE, itemDiscountAmount,
-                discountCoa, null, arInvoice, branchCode, companyCode, companyShortName);
+        this.addArDrEntry(arInvoice.getArDrNextLine(), "SALES DISCOUNT", EJBCommon.TRUE, itemDiscountAmount, discountCoa, null, arInvoice, branchCode, companyCode, companyShortName);
 
         // calculate tax
         itemDiscountTaxAmount = EJBCommon.calculateTaxAmount(lineDetails.getIliTotalDiscount(), lineDetails.getIliTax(), arTaxCode.getTcRate(), arTaxCode.getTcType(), itemDiscountAmount, precisionUnit);
@@ -1224,12 +1147,10 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
         try {
             //TODO: Review this finder method that is causing finder exception
             adBranchTaxCode = adBranchArTaxCodeHome.findBtcByTcCodeAndBrCode(arInvoice.getArTaxCode().getTcCode(), branchCode, companyCode);
-            this.addArDrEntry(arInvoice.getArDrNextLine(), TAX, EJBCommon.TRUE, itemDiscountTaxAmount, adBranchTaxCode.getBtcGlCoaTaxCode(),
-                    null, arInvoice, branchCode, companyCode, companyShortName);
+            this.addArDrEntry(arInvoice.getArDrNextLine(), TAX, EJBCommon.TRUE, itemDiscountTaxAmount, adBranchTaxCode.getBtcGlCoaTaxCode(), null, arInvoice, branchCode, companyCode, companyShortName);
         }
         catch (FinderException ex) {
-            this.addArDrEntry(arInvoice.getArDrNextLine(), TAX, EJBCommon.TRUE, itemDiscountTaxAmount, arTaxCode.getGlChartOfAccount().getCoaCode(),
-                    null, arInvoice, branchCode, companyCode, companyShortName);
+            this.addArDrEntry(arInvoice.getArDrNextLine(), TAX, EJBCommon.TRUE, itemDiscountTaxAmount, arTaxCode.getGlChartOfAccount().getCoaCode(), null, arInvoice, branchCode, companyCode, companyShortName);
         }
     }
 
@@ -1262,21 +1183,17 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
                 case EJBCommon.BI_MONTHLY:
                     gcDateDue = gcPrevDateDue;
                     if (gcPrevDateDue.get(Calendar.MONTH) != 1) {
-                        if (gcPrevDateDue.getActualMaximum(Calendar.DATE) == 31 &&
-                                gcPrevDateDue.get(Calendar.DATE) > 15 && gcPrevDateDue.get(Calendar.DATE) < 31) {
+                        if (gcPrevDateDue.getActualMaximum(Calendar.DATE) == 31 && gcPrevDateDue.get(Calendar.DATE) > 15 && gcPrevDateDue.get(Calendar.DATE) < 31) {
                             gcDateDue.add(Calendar.DATE, 16);
                         } else {
                             gcDateDue.add(Calendar.DATE, 15);
                         }
                     } else if (gcPrevDateDue.get(Calendar.MONTH) == 1) {
-                        if (gcPrevDateDue.getActualMaximum(Calendar.DATE) == 28 &&
-                                gcPrevDateDue.get(Calendar.DATE) == 14) {
+                        if (gcPrevDateDue.getActualMaximum(Calendar.DATE) == 28 && gcPrevDateDue.get(Calendar.DATE) == 14) {
                             gcDateDue.add(Calendar.DATE, 14);
-                        } else if (gcPrevDateDue.getActualMaximum(Calendar.DATE) == 28 &&
-                                gcPrevDateDue.get(Calendar.DATE) >= 15 && gcPrevDateDue.get(Calendar.DATE) < 28) {
+                        } else if (gcPrevDateDue.getActualMaximum(Calendar.DATE) == 28 && gcPrevDateDue.get(Calendar.DATE) >= 15 && gcPrevDateDue.get(Calendar.DATE) < 28) {
                             gcDateDue.add(Calendar.DATE, 13);
-                        } else if (gcPrevDateDue.getActualMaximum(Calendar.DATE) == 29 &&
-                                gcPrevDateDue.get(Calendar.DATE) >= 15 && gcPrevDateDue.get(Calendar.DATE) < 29) {
+                        } else if (gcPrevDateDue.getActualMaximum(Calendar.DATE) == 29 && gcPrevDateDue.get(Calendar.DATE) >= 15 && gcPrevDateDue.get(Calendar.DATE) < 29) {
                             gcDateDue.add(Calendar.DATE, 14);
                         } else {
                             gcDateDue.add(Calendar.DATE, 15);
@@ -1293,22 +1210,12 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
                 LocalArInvoicePaymentSchedule arInvoicePaymentScheduleDownPayment;
                 // Down payment
                 if (arInvoice.getInvDownPayment() > 0) {
-                    arInvoicePaymentScheduleDownPayment = arInvoicePaymentScheduleHome
-                            .IpsDueDate(arInvoice.getInvEffectivityDate())
-                            .IpsAmountDue(arInvoice.getInvDownPayment())
-                            .IpsPenaltyDueDate(arInvoice.getInvEffectivityDate())
-                            .IpsAdCompany(companyCode)
-                            .buildInvoicePaymentSchedule(companyShortName);
+                    arInvoicePaymentScheduleDownPayment = arInvoicePaymentScheduleHome.IpsDueDate(arInvoice.getInvEffectivityDate()).IpsAmountDue(arInvoice.getInvDownPayment()).IpsPenaltyDueDate(arInvoice.getInvEffectivityDate()).IpsAdCompany(companyCode).buildInvoicePaymentSchedule(companyShortName);
                     arInvoice.addArInvoicePaymentSchedule(arInvoicePaymentScheduleDownPayment);
                 }
                 // Payment term exception amount
                 if (totalPaymentTermExceptionAmount > 0) {
-                    arInvoicePaymentScheduleDownPayment = arInvoicePaymentScheduleHome
-                            .IpsDueDate(arInvoice.getInvEffectivityDate())
-                            .IpsAmountDue(totalPaymentTermExceptionAmount)
-                            .IpsPenaltyDueDate(arInvoice.getInvEffectivityDate())
-                            .IpsAdCompany(companyCode)
-                            .buildInvoicePaymentSchedule(companyShortName);
+                    arInvoicePaymentScheduleDownPayment = arInvoicePaymentScheduleHome.IpsDueDate(arInvoice.getInvEffectivityDate()).IpsAmountDue(totalPaymentTermExceptionAmount).IpsPenaltyDueDate(arInvoice.getInvEffectivityDate()).IpsAdCompany(companyCode).buildInvoicePaymentSchedule(companyShortName);
                     arInvoice.addArInvoicePaymentSchedule(arInvoicePaymentScheduleDownPayment);
                 }
                 first = false;
@@ -1321,8 +1228,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
 
             // if last payment schedule subtract to avoid rounding difference error
             if (i.hasNext()) {
-                PAYMENT_SCHEDULE_AMOUNT = EJBCommon.roundIt((adPaymentSchedule.getPsRelativeAmount() /
-                        adPaymentTerm.getPytBaseAmount()) * (arInvoice.getInvAmountDue() - arInvoice.getInvDownPayment()), precisionUnit);
+                PAYMENT_SCHEDULE_AMOUNT = EJBCommon.roundIt((adPaymentSchedule.getPsRelativeAmount() / adPaymentTerm.getPytBaseAmount()) * (arInvoice.getInvAmountDue() - arInvoice.getInvDownPayment()), precisionUnit);
                 PAYMENT_SCHEDULE_INT = EJBCommon.roundIt((totalPaymentScheduleInt) * (adPaymentTerm.getPytMonthlyInterestRate() / 100), precisionUnit);
                 PAYMENT_SCHEDULE_PRINCIPAL = -(PAYMENT_SCHEDULE_AMOUNT) + PAYMENT_SCHEDULE_INT;
             } else {
@@ -1331,13 +1237,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
                 PAYMENT_SCHEDULE_PRINCIPAL = -(PAYMENT_SCHEDULE_AMOUNT) + PAYMENT_SCHEDULE_INT;
             }
 
-            LocalArInvoicePaymentSchedule arInvoicePaymentSchedule = arInvoicePaymentScheduleHome
-                    .IpsDueDate(gcDateDue.getTime())
-                    .IpsNumber(adPaymentSchedule.getPsLineNumber())
-                    .IpsAmountDue(PAYMENT_SCHEDULE_AMOUNT)
-                    .IpsPenaltyDueDate(gcDateDue.getTime())
-                    .IpsAdCompany(companyCode)
-                    .buildInvoicePaymentSchedule(companyShortName);
+            LocalArInvoicePaymentSchedule arInvoicePaymentSchedule = arInvoicePaymentScheduleHome.IpsDueDate(gcDateDue.getTime()).IpsNumber(adPaymentSchedule.getPsLineNumber()).IpsAmountDue(PAYMENT_SCHEDULE_AMOUNT).IpsPenaltyDueDate(gcDateDue.getTime()).IpsAdCompany(companyCode).buildInvoicePaymentSchedule(companyShortName);
             arInvoicePaymentSchedule.setIpsInterestDue(PAYMENT_SCHEDULE_INT);
             arInvoice.addArInvoicePaymentSchedule(arInvoicePaymentSchedule);
 
@@ -1347,11 +1247,9 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
         }
     }
 
-    private double getUnearnedInterestAmount(Integer companyCode, Integer branchCode,
-                                             LocalArInvoice arInvoice, LocalAdPaymentTerm adPaymentTerm,
-                                             double totalTaxAmount, double totalAmount, double totalInterestExceptionAmount,
-                                             double totalDownpayment, double unearnedInterestAmount, String companyShortName)
-            throws GlobalBranchAccountNumberInvalidException {
+    private double getUnearnedInterestAmount(Integer companyCode, Integer branchCode, LocalArInvoice arInvoice,
+                                             LocalAdPaymentTerm adPaymentTerm, double totalTaxAmount, double totalAmount,
+                                             double totalInterestExceptionAmount, double totalDownpayment, double unearnedInterestAmount, String companyShortName) throws GlobalBranchAccountNumberInvalidException {
 
         if (arInvoice.getArCustomer().getCstAutoComputeInterest() == EJBCommon.TRUE && adPaymentTerm.getPytEnableInterest() == EJBCommon.TRUE) {
 
@@ -1363,13 +1261,10 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
                 }
 
                 LocalAdBranchCustomer adBranchCustomer = adBranchCustomerHome.findBcstByCstCodeAndBrCode(arInvoice.getArCustomer().getCstCode(), branchCode, companyCode);
-                unearnedInterestAmount = EJBCommon.roundIt((totalAmount + totalTaxAmount - totalDownpayment - totalInterestExceptionAmount) * adPaymentTerm.getAdPaymentSchedules().size() * (monthlyInterestRate / 100),
-                        this.getGlFcPrecisionUnit(companyCode, companyShortName));
+                unearnedInterestAmount = EJBCommon.roundIt((totalAmount + totalTaxAmount - totalDownpayment - totalInterestExceptionAmount) * adPaymentTerm.getAdPaymentSchedules().size() * (monthlyInterestRate / 100), this.getGlFcPrecisionUnit(companyCode, companyShortName));
                 double UNEARNED_INT_AMOUNT_CONV = this.convertForeignToFunctionalCurrency(arInvoice.getInvConversionRate(), unearnedInterestAmount, companyCode, companyShortName);
-                this.addArDrEntry(arInvoice.getArDrNextLine(), "UNINTEREST", EJBCommon.FALSE, UNEARNED_INT_AMOUNT_CONV,
-                        adBranchCustomer.getBcstGlCoaUnEarnedInterestAccount(), null, arInvoice, branchCode, companyCode, companyShortName);
-                this.addArDrIliEntry(arInvoice.getArDrNextLine(), "RECEIVABLE INTEREST", EJBCommon.TRUE, UNEARNED_INT_AMOUNT_CONV,
-                        adBranchCustomer.getBcstGlCoaReceivableAccount(), arInvoice, branchCode, companyCode, companyShortName);
+                this.addArDrEntry(arInvoice.getArDrNextLine(), "UNINTEREST", EJBCommon.FALSE, UNEARNED_INT_AMOUNT_CONV, adBranchCustomer.getBcstGlCoaUnEarnedInterestAccount(), null, arInvoice, branchCode, companyCode, companyShortName);
+                this.addArDrIliEntry(arInvoice.getArDrNextLine(), "RECEIVABLE INTEREST", EJBCommon.TRUE, UNEARNED_INT_AMOUNT_CONV, adBranchCustomer.getBcstGlCoaReceivableAccount(), arInvoice, branchCode, companyCode, companyShortName);
             }
             catch (FinderException ex) {
             }
@@ -1378,65 +1273,46 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
     }
 
     private void inventoryRevenueJournals(Integer companyCode, Integer branchCode, LocalArInvoice arInvoice,
-                                          LocalArInvoiceLineItem arInvoiceLineItem, LocalAdBranchItemLocation adBranchItemLocation,
-                                          String distributionRecordClass, String companyShortName)
-            throws GlobalBranchAccountNumberInvalidException {
+                                          LocalArInvoiceLineItem arInvoiceLineItem, LocalAdBranchItemLocation adBranchItemLocation, String distributionRecordClass, String companyShortName) throws GlobalBranchAccountNumberInvalidException {
 
         double convertedItemAmount = this.convertForeignToFunctionalCurrency(arInvoice.getInvConversionRate(), arInvoiceLineItem.getIliAmount(), companyCode, companyShortName);
 
         if (adBranchItemLocation != null) {
             if (adBranchItemLocation.getInvItemLocation().getInvItem().getIiServices() == EJBCommon.TRUE) {
-                this.addArDrIliEntry(arInvoice.getArDrNextLine(), distributionRecordClass, EJBCommon.TRUE, convertedItemAmount,
-                        adBranchItemLocation.getBilCoaGlSalesAccount(), arInvoice, branchCode, companyCode, companyShortName);
-                this.addArDrIliEntry(arInvoice.getArDrNextLine(), "OTHER", EJBCommon.FALSE, convertedItemAmount,
-                        adBranchItemLocation.getBilCoaGlSalesReturnAccount(), arInvoice, branchCode, companyCode, companyShortName);
+                this.addArDrIliEntry(arInvoice.getArDrNextLine(), distributionRecordClass, EJBCommon.TRUE, convertedItemAmount, adBranchItemLocation.getBilCoaGlSalesAccount(), arInvoice, branchCode, companyCode, companyShortName);
+                this.addArDrIliEntry(arInvoice.getArDrNextLine(), "OTHER", EJBCommon.FALSE, convertedItemAmount, adBranchItemLocation.getBilCoaGlSalesReturnAccount(), arInvoice, branchCode, companyCode, companyShortName);
             } else {
-                this.addArDrIliEntry(arInvoice.getArDrNextLine(), distributionRecordClass, EJBCommon.FALSE, convertedItemAmount,
-                        adBranchItemLocation.getBilCoaGlSalesAccount(), arInvoice, branchCode, companyCode, companyShortName);
+                this.addArDrIliEntry(arInvoice.getArDrNextLine(), distributionRecordClass, EJBCommon.FALSE, convertedItemAmount, adBranchItemLocation.getBilCoaGlSalesAccount(), arInvoice, branchCode, companyCode, companyShortName);
             }
         } else {
             if (arInvoiceLineItem.getInvItemLocation().getInvItem().getIiServices() == EJBCommon.TRUE) {
-                this.addArDrIliEntry(arInvoice.getArDrNextLine(), distributionRecordClass, EJBCommon.TRUE, convertedItemAmount,
-                        arInvoiceLineItem.getInvItemLocation().getIlGlCoaSalesAccount(), arInvoice, branchCode, companyCode, companyShortName);
-                this.addArDrIliEntry(arInvoice.getArDrNextLine(), "OTHER", EJBCommon.FALSE, convertedItemAmount,
-                        arInvoiceLineItem.getInvItemLocation().getIlGlCoaSalesReturnAccount(), arInvoice, branchCode, companyCode, companyShortName);
+                this.addArDrIliEntry(arInvoice.getArDrNextLine(), distributionRecordClass, EJBCommon.TRUE, convertedItemAmount, arInvoiceLineItem.getInvItemLocation().getIlGlCoaSalesAccount(), arInvoice, branchCode, companyCode, companyShortName);
+                this.addArDrIliEntry(arInvoice.getArDrNextLine(), "OTHER", EJBCommon.FALSE, convertedItemAmount, arInvoiceLineItem.getInvItemLocation().getIlGlCoaSalesReturnAccount(), arInvoice, branchCode, companyCode, companyShortName);
             } else {
-                this.addArDrIliEntry(arInvoice.getArDrNextLine(), distributionRecordClass, EJBCommon.FALSE, convertedItemAmount,
-                        arInvoiceLineItem.getInvItemLocation().getIlGlCoaSalesAccount(), arInvoice, branchCode, companyCode, companyShortName);
+                this.addArDrIliEntry(arInvoice.getArDrNextLine(), distributionRecordClass, EJBCommon.FALSE, convertedItemAmount, arInvoiceLineItem.getInvItemLocation().getIlGlCoaSalesAccount(), arInvoice, branchCode, companyCode, companyShortName);
             }
         }
     }
 
-    private void costOfGoodsSoldJournals(Integer companyCode, Integer branchCode, LocalArInvoice arInvoice,
-                                         LocalAdPreference adPreference, LocalInvItemLocation itemLocation,
-                                         LocalArInvoiceLineItem arInvoiceLineItem, double COST, double quantitySold,
-                                         LocalAdBranchItemLocation adBranchItemLocation, String companyShortName)
-            throws GlobalBranchAccountNumberInvalidException {
+    private void costOfGoodsSoldJournals(Integer companyCode, Integer branchCode, LocalArInvoice arInvoice, LocalAdPreference adPreference, LocalInvItemLocation itemLocation, LocalArInvoiceLineItem arInvoiceLineItem, double COST, double quantitySold, LocalAdBranchItemLocation adBranchItemLocation, String companyShortName) throws GlobalBranchAccountNumberInvalidException {
 
         if (adPreference.getPrfArAutoComputeCogs() == EJBCommon.TRUE && arInvoiceLineItem.getInvItemLocation().getInvItem().getIiNonInventoriable() == EJBCommon.FALSE) {
 
             if (adBranchItemLocation != null) {
-                this.addArDrIliEntry(arInvoice.getArDrNextLine(), COGS, EJBCommon.TRUE, COST * quantitySold,
-                        adBranchItemLocation.getBilCoaGlCostOfSalesAccount(), arInvoice, branchCode, companyCode, companyShortName);
-                this.addArDrIliEntry(arInvoice.getArDrNextLine(), INVENTORY, EJBCommon.FALSE, COST * quantitySold,
-                        adBranchItemLocation.getBilCoaGlInventoryAccount(), arInvoice, branchCode, companyCode, companyShortName);
+                this.addArDrIliEntry(arInvoice.getArDrNextLine(), COGS, EJBCommon.TRUE, COST * quantitySold, adBranchItemLocation.getBilCoaGlCostOfSalesAccount(), arInvoice, branchCode, companyCode, companyShortName);
+                this.addArDrIliEntry(arInvoice.getArDrNextLine(), INVENTORY, EJBCommon.FALSE, COST * quantitySold, adBranchItemLocation.getBilCoaGlInventoryAccount(), arInvoice, branchCode, companyCode, companyShortName);
             } else {
-                this.addArDrIliEntry(arInvoice.getArDrNextLine(), COGS, EJBCommon.TRUE, COST * quantitySold,
-                        arInvoiceLineItem.getInvItemLocation().getIlGlCoaCostOfSalesAccount(), arInvoice, branchCode, companyCode, companyShortName);
-                this.addArDrIliEntry(arInvoice.getArDrNextLine(), INVENTORY, EJBCommon.FALSE, COST * quantitySold,
-                        arInvoiceLineItem.getInvItemLocation().getIlGlCoaInventoryAccount(), arInvoice, branchCode, companyCode, companyShortName);
+                this.addArDrIliEntry(arInvoice.getArDrNextLine(), COGS, EJBCommon.TRUE, COST * quantitySold, arInvoiceLineItem.getInvItemLocation().getIlGlCoaCostOfSalesAccount(), arInvoice, branchCode, companyCode, companyShortName);
+                this.addArDrIliEntry(arInvoice.getArDrNextLine(), INVENTORY, EJBCommon.FALSE, COST * quantitySold, arInvoiceLineItem.getInvItemLocation().getIlGlCoaInventoryAccount(), arInvoice, branchCode, companyCode, companyShortName);
             }
 
             // add quantity to item location committed quantity
-            double convertedQuantity = this.convertByUomFromAndItemAndQuantity(arInvoiceLineItem.getInvUnitOfMeasure(),
-                    arInvoiceLineItem.getInvItemLocation().getInvItem(), arInvoiceLineItem.getIliQuantity(), companyCode, companyShortName);
+            double convertedQuantity = this.convertByUomFromAndItemAndQuantity(arInvoiceLineItem.getInvUnitOfMeasure(), arInvoiceLineItem.getInvItemLocation().getInvItem(), arInvoiceLineItem.getIliQuantity(), companyCode, companyShortName);
             itemLocation.setIlCommittedQuantity(itemLocation.getIlCommittedQuantity() + convertedQuantity);
         }
     }
 
-    private double getItemCosting(Integer companyCode, Integer branchCode, LocalArInvoice arInvoice,
-                                  LocalInvItemLocation itemLocation, LocalArInvoiceLineItem arInvoiceLineItem)
-            throws GlobalNoRecordFoundException {
+    private double getItemCosting(Integer companyCode, Integer branchCode, LocalArInvoice arInvoice, LocalInvItemLocation itemLocation, LocalArInvoiceLineItem arInvoiceLineItem) throws GlobalNoRecordFoundException {
 
         double COST = itemLocation.getInvItem().getIiUnitCost();
 
@@ -1480,9 +1356,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
         return COST;
     }
 
-    private void isPriorDateAllowed(Integer companyCode, Integer branchCode, LocalArInvoice arInvoice,
-                                    LocalAdPreference adPreference, LocalInvItemLocation itemLocation)
-            throws FinderException, GlobalInventoryDateException {
+    private void isPriorDateAllowed(Integer companyCode, Integer branchCode, LocalArInvoice arInvoice, LocalAdPreference adPreference, LocalInvItemLocation itemLocation) throws FinderException, GlobalInventoryDateException {
 
         Debug.print("ArInvoiceEntryApiControllerBean isPriorDateAllowed");
 
@@ -1495,8 +1369,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
         }
     }
 
-    private LocalInvItemLocation getItemLocation(Integer companyCode, ArModInvoiceLineItemDetails lineDetails)
-            throws GlobalInvItemLocationNotFoundException {
+    private LocalInvItemLocation getItemLocation(Integer companyCode, ArModInvoiceLineItemDetails lineDetails) throws GlobalInvItemLocationNotFoundException {
 
         LocalInvItemLocation itemLocation;
         try {
@@ -1508,8 +1381,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
         return itemLocation;
     }
 
-    private void generateDocumentNumber(ArInvoiceDetails invoiceDetails, Integer companyCode,
-                                        Integer branchCode, String documentType) {
+    private void generateDocumentNumber(ArInvoiceDetails invoiceDetails, Integer companyCode, Integer branchCode, String documentType) {
 
         LocalAdDocumentSequenceAssignment adDocumentSequenceAssignment = null;
         LocalAdBranchDocumentSequenceAssignment adBranchDocumentSequenceAssignment = null;
@@ -1517,18 +1389,15 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
 
         try {
             adDocumentSequenceAssignment = adDocumentSequenceAssignmentHome.findByDcName(documentType, companyCode, companyShortName);
-            adBranchDocumentSequenceAssignment = adBranchDocumentSequenceAssignmentHome.findBdsByDsaCodeAndBrCode(
-                    adDocumentSequenceAssignment.getDsaCode(), branchCode, companyCode, companyShortName);
+            adBranchDocumentSequenceAssignment = adBranchDocumentSequenceAssignmentHome.findBdsByDsaCodeAndBrCode(adDocumentSequenceAssignment.getDsaCode(), branchCode, companyCode, companyShortName);
         }
         catch (FinderException ex) {
         }
 
-        if (adDocumentSequenceAssignment.getAdDocumentSequence().getDsNumberingType() == 'A' && (invoiceDetails.getInvNumber() == null
-                || invoiceDetails.getInvNumber().trim().length() == 0)) {
+        if (adDocumentSequenceAssignment.getAdDocumentSequence().getDsNumberingType() == 'A' && (invoiceDetails.getInvNumber() == null || invoiceDetails.getInvNumber().trim().length() == 0)) {
             if (adBranchDocumentSequenceAssignment == null || adBranchDocumentSequenceAssignment.getBdsNextSequence() == null) {
                 try {
-                    arInvoiceHome.findByInvNumberAndInvCreditMemoAndBrCode(
-                            adDocumentSequenceAssignment.getDsaNextSequence(), EJBCommon.FALSE, branchCode, companyCode, companyShortName);
+                    arInvoiceHome.findByInvNumberAndInvCreditMemoAndBrCode(adDocumentSequenceAssignment.getDsaNextSequence(), EJBCommon.FALSE, branchCode, companyCode, companyShortName);
                     adDocumentSequenceAssignment.setDsaNextSequence(EJBCommon.incrementStringNumber(adDocumentSequenceAssignment.getDsaNextSequence()));
                 }
                 catch (FinderException ex) {
@@ -1537,8 +1406,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
                 }
             } else {
                 try {
-                    arInvoiceHome.findByInvNumberAndInvCreditMemoAndBrCode(
-                            adBranchDocumentSequenceAssignment.getBdsNextSequence(), EJBCommon.FALSE, branchCode, companyCode, companyShortName);
+                    arInvoiceHome.findByInvNumberAndInvCreditMemoAndBrCode(adBranchDocumentSequenceAssignment.getBdsNextSequence(), EJBCommon.FALSE, branchCode, companyCode, companyShortName);
                     adBranchDocumentSequenceAssignment.setBdsNextSequence(EJBCommon.incrementStringNumber(adBranchDocumentSequenceAssignment.getBdsNextSequence()));
                 }
                 catch (FinderException ex) {
@@ -1549,8 +1417,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
         }
     }
 
-    private Integer getArGlCoaRevenueAccount(LocalArInvoiceLine arInvoiceLine, Integer branchCode,
-                                             Integer companyCode, String companyShortName) {
+    private Integer getArGlCoaRevenueAccount(LocalArInvoiceLine arInvoiceLine, Integer branchCode, Integer companyCode, String companyShortName) {
 
         Debug.print("ArInvoiceLineEntryControllerBean getArGlCoaRevenueAccount");
 
@@ -1564,14 +1431,12 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
             LocalAdBranchStandardMemoLine adBranchStandardMemoLine = null;
 
             try {
-                adBranchStandardMemoLine = adBranchStandardMemoLineHome
-                        .findBSMLBySMLCodeAndBrCode(arInvoiceLine.getArStandardMemoLine().getSmlCode(), branchCode, companyCode, companyShortName);
+                adBranchStandardMemoLine = adBranchStandardMemoLineHome.findBSMLBySMLCodeAndBrCode(arInvoiceLine.getArStandardMemoLine().getSmlCode(), branchCode, companyCode, companyShortName);
             }
             catch (FinderException ex) {
             }
 
-            Collection<LocalArAutoAccountingSegment> arAutoAccountingSegments =
-                    arAutoAccountingSegmentHome.findByAaAccountType(REVENUE, companyCode, companyShortName);
+            Collection<LocalArAutoAccountingSegment> arAutoAccountingSegments = arAutoAccountingSegmentHome.findByAaAccountType(REVENUE, companyCode, companyShortName);
             for (LocalArAutoAccountingSegment autoAccountingSegment : arAutoAccountingSegments) {
                 LocalGlChartOfAccount glChartOfAccount = null;
                 if (autoAccountingSegment.getAasClassType().equals("AR CUSTOMER")) {
@@ -1616,8 +1481,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
         }
     }
 
-    private void coaTokenizer(StringBuilder GL_COA_ACCNT, String FL_SGMNT_SPRTR, LocalArAutoAccountingSegment autoAccountingSegment,
-                              LocalGlChartOfAccount glChartOfAccount) {
+    private void coaTokenizer(StringBuilder GL_COA_ACCNT, String FL_SGMNT_SPRTR, LocalArAutoAccountingSegment autoAccountingSegment, LocalGlChartOfAccount glChartOfAccount) {
 
         StringTokenizer st = new StringTokenizer(glChartOfAccount.getCoaAccountNumber(), FL_SGMNT_SPRTR);
         int ctr = 0;
@@ -1632,8 +1496,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
         }
     }
 
-    private double convertByUomAndQuantity(LocalInvUnitOfMeasure invFromUnitOfMeasure, LocalInvItem invItem,
-                                           double ADJST_QTY, Integer companyCode) {
+    private double convertByUomAndQuantity(LocalInvUnitOfMeasure invFromUnitOfMeasure, LocalInvItem invItem, double ADJST_QTY, Integer companyCode) {
 
         Debug.print("ArInvoiceEntryApiControllerBean convertByUomAndQuantity");
         try {
@@ -1693,8 +1556,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
         return customerBalance;
     }
 
-    private double getInvFifoCost(Date CST_DT, Integer IL_CODE, double CST_QTY, double CST_COST, boolean isAdjustFifo,
-                                  Integer branchCode, Integer companyCode, String companyShortName) {
+    private double getInvFifoCost(Date CST_DT, Integer IL_CODE, double CST_QTY, double CST_COST, boolean isAdjustFifo, Integer branchCode, Integer companyCode, String companyShortName) {
 
         Debug.print("ArInvoiceEntryApiControllerBean getInvFifoCost");
         try {
@@ -1742,14 +1604,11 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
                     // executed during ENTRY transaction
                     LocalInvCosting invFifoCosting = (LocalInvCosting) x.next();
                     if (invFifoCosting.getApPurchaseOrderLine() != null || invFifoCosting.getApVoucherLineItem() != null) {
-                        return EJBCommon.roundIt(invFifoCosting.getCstItemCost() / invFifoCosting.getCstQuantityReceived(),
-                                this.getGlFcPrecisionUnit(companyCode, companyShortName));
+                        return EJBCommon.roundIt(invFifoCosting.getCstItemCost() / invFifoCosting.getCstQuantityReceived(), this.getGlFcPrecisionUnit(companyCode, companyShortName));
                     } else if (invFifoCosting.getArInvoiceLineItem() != null) {
-                        return EJBCommon.roundIt(invFifoCosting.getCstCostOfSales() / invFifoCosting.getCstQuantitySold(),
-                                this.getGlFcPrecisionUnit(companyCode, companyShortName));
+                        return EJBCommon.roundIt(invFifoCosting.getCstCostOfSales() / invFifoCosting.getCstQuantitySold(), this.getGlFcPrecisionUnit(companyCode, companyShortName));
                     } else {
-                        return EJBCommon.roundIt(invFifoCosting.getCstAdjustCost() / invFifoCosting.getCstAdjustQuantity(),
-                                this.getGlFcPrecisionUnit(companyCode, companyShortName));
+                        return EJBCommon.roundIt(invFifoCosting.getCstAdjustCost() / invFifoCosting.getCstAdjustQuantity(), this.getGlFcPrecisionUnit(companyCode, companyShortName));
                     }
                 }
             } else {
@@ -1777,12 +1636,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
         }
     }
 
-    private void executeArInvPost(LocalArInvoice arInvoice, Integer branchCode, Integer companyCode, String companyShortName)
-            throws GlobalRecordAlreadyDeletedException, GlobalTransactionAlreadyPostedException,
-            GlobalTransactionAlreadyVoidException, GlJREffectiveDateNoPeriodExistException,
-            GlJREffectiveDatePeriodClosedException, GlobalJournalNotBalanceException,
-            GlobalBranchAccountNumberInvalidException, AdPRFCoaGlVarianceAccountNotFoundException,
-            GlobalExpiryDateNotFoundException {
+    private void executeArInvPost(LocalArInvoice arInvoice, Integer branchCode, Integer companyCode, String companyShortName) throws GlobalRecordAlreadyDeletedException, GlobalTransactionAlreadyPostedException, GlobalTransactionAlreadyVoidException, GlJREffectiveDateNoPeriodExistException, GlJREffectiveDatePeriodClosedException, GlobalJournalNotBalanceException, GlobalBranchAccountNumberInvalidException, AdPRFCoaGlVarianceAccountNotFoundException, GlobalExpiryDateNotFoundException {
 
         Debug.print("ArInvoiceEntryApiControllerBean executeArInvPost");
         String USR_NM = arInvoice.getInvLastModifiedBy();
@@ -1803,8 +1657,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
                     LocalArInvoiceLineItem arInvoiceLineItem = (LocalArInvoiceLineItem) invoiceLineItem;
                     String II_NM = arInvoiceLineItem.getInvItemLocation().getInvItem().getIiName();
                     String LOC_NM = arInvoiceLineItem.getInvItemLocation().getInvLocation().getLocName();
-                    double quantitySold = this.convertByUomFromAndItemAndQuantity(arInvoiceLineItem.getInvUnitOfMeasure(),
-                            arInvoiceLineItem.getInvItemLocation().getInvItem(), arInvoiceLineItem.getIliQuantity(), companyCode, companyShortName);
+                    double quantitySold = this.convertByUomFromAndItemAndQuantity(arInvoiceLineItem.getInvUnitOfMeasure(), arInvoiceLineItem.getInvItemLocation().getInvItem(), arInvoiceLineItem.getIliQuantity(), companyCode, companyShortName);
                     LocalInvCosting invCosting = invCostingHome.getItemAverageCost(arInvoice.getInvDate(), II_NM, LOC_NM, branchCode, companyCode);
                     double COST = arInvoiceLineItem.getInvItemLocation().getInvItem().getIiUnitCost();
                     if (invCosting == null) {
@@ -1815,10 +1668,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
                             double avgCost = invCosting.getCstRemainingQuantity() <= 0 ? COST : Math.abs(invCosting.getCstRemainingValue() / invCosting.getCstRemainingQuantity());
                             this.postToInv(arInvoiceLineItem, arInvoice.getInvDate(), quantitySold, avgCost * quantitySold, invCosting.getCstRemainingQuantity() - quantitySold, invCosting.getCstRemainingValue() - (quantitySold * avgCost), 0d, null, branchCode, companyCode);
                         } else if (costingMethod.equals("FIFO")) {
-                            double fifoCost = invCosting.getCstRemainingQuantity() == 0 ? COST :
-                                    this.getInvFifoCost(invCosting.getCstDate(), invCosting.getInvItemLocation().getIlCode(),
-                                            quantitySold, arInvoiceLineItem.getIliUnitPrice(),
-                                            true, branchCode, companyCode, companyShortName);
+                            double fifoCost = invCosting.getCstRemainingQuantity() == 0 ? COST : this.getInvFifoCost(invCosting.getCstDate(), invCosting.getInvItemLocation().getIlCode(), quantitySold, arInvoiceLineItem.getIliUnitPrice(), true, branchCode, companyCode, companyShortName);
                             this.postToInv(arInvoiceLineItem, arInvoice.getInvDate(), quantitySold, fifoCost * quantitySold, invCosting.getCstRemainingQuantity() - quantitySold, invCosting.getCstRemainingValue() - (fifoCost * quantitySold), 0d, null, branchCode, companyCode);
                         } else {
                             // Standard Costing
@@ -1833,8 +1683,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
                     LocalArSalesOrderLine arSalesOrderLine = arSalesOrderInvoiceLine.getArSalesOrderLine();
                     String II_NM = arSalesOrderLine.getInvItemLocation().getInvItem().getIiName();
                     String LOC_NM = arSalesOrderLine.getInvItemLocation().getInvLocation().getLocName();
-                    double quantitySold = this.convertByUomFromAndItemAndQuantity(arSalesOrderLine.getInvUnitOfMeasure(),
-                            arSalesOrderLine.getInvItemLocation().getInvItem(), arSalesOrderInvoiceLine.getSilQuantityDelivered(), companyCode, companyShortName);
+                    double quantitySold = this.convertByUomFromAndItemAndQuantity(arSalesOrderLine.getInvUnitOfMeasure(), arSalesOrderLine.getInvItemLocation().getInvItem(), arSalesOrderInvoiceLine.getSilQuantityDelivered(), companyCode, companyShortName);
 
                     LocalInvCosting invCosting = null;
                     try {
@@ -1852,9 +1701,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
                             double avgCost = invCosting.getCstRemainingQuantity() <= 0 ? COST : Math.abs(invCosting.getCstRemainingValue() / invCosting.getCstRemainingQuantity());
                             this.postToInvSo(arSalesOrderInvoiceLine, arInvoice.getInvDate(), quantitySold, avgCost * quantitySold, invCosting.getCstRemainingQuantity() - quantitySold, invCosting.getCstRemainingValue() - (quantitySold * avgCost), 0d, null, branchCode, companyCode);
                         } else if (costingMethod.equals("FIFO")) {
-                            double fifoCost = this.getInvFifoCost(invCosting.getCstDate(), invCosting.getInvItemLocation().getIlCode(),
-                                    quantitySold, arSalesOrderInvoiceLine.getArSalesOrderLine().getSolUnitPrice(),
-                                    true, branchCode, companyCode, companyShortName);
+                            double fifoCost = this.getInvFifoCost(invCosting.getCstDate(), invCosting.getInvItemLocation().getIlCode(), quantitySold, arSalesOrderInvoiceLine.getArSalesOrderLine().getSolUnitPrice(), true, branchCode, companyCode, companyShortName);
                             this.postToInvSo(arSalesOrderInvoiceLine, arInvoice.getInvDate(), quantitySold, fifoCost * quantitySold, invCosting.getCstRemainingQuantity() - quantitySold, invCosting.getCstRemainingValue() - (fifoCost * quantitySold), 0d, null, branchCode, companyCode);
                         } else {
                             // Standard
@@ -1869,8 +1716,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
                     LocalArJobOrderLine arJobOrderLine = arJobOrderInvoiceLine.getArJobOrderLine();
                     String II_NM = arJobOrderLine.getInvItemLocation().getInvItem().getIiName();
                     String LOC_NM = arJobOrderLine.getInvItemLocation().getInvLocation().getLocName();
-                    double quantitySold = this.convertByUomFromAndItemAndQuantity(arJobOrderLine.getInvUnitOfMeasure(),
-                            arJobOrderLine.getInvItemLocation().getInvItem(), arJobOrderInvoiceLine.getJilQuantityDelivered(), companyCode, companyShortName);
+                    double quantitySold = this.convertByUomFromAndItemAndQuantity(arJobOrderLine.getInvUnitOfMeasure(), arJobOrderLine.getInvItemLocation().getInvItem(), arJobOrderInvoiceLine.getJilQuantityDelivered(), companyCode, companyShortName);
 
                     LocalInvCosting invCosting = null;
                     try {
@@ -1889,9 +1735,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
                                 this.postToInvJo(arJobOrderInvoiceLine, arInvoice.getInvDate(), quantitySold, avgCost * quantitySold, invCosting.getCstRemainingQuantity() - quantitySold, invCosting.getCstRemainingValue() - (quantitySold * avgCost), 0d, null, branchCode, companyCode);
                                 break;
                             case "FIFO":
-                                double fifoCost = this.getInvFifoCost(invCosting.getCstDate(), invCosting.getInvItemLocation().getIlCode(),
-                                        quantitySold, arJobOrderInvoiceLine.getArJobOrderLine().getJolUnitPrice(),
-                                        true, branchCode, companyCode, companyShortName);
+                                double fifoCost = this.getInvFifoCost(invCosting.getCstDate(), invCosting.getInvItemLocation().getIlCode(), quantitySold, arJobOrderInvoiceLine.getArJobOrderLine().getJolUnitPrice(), true, branchCode, companyCode, companyShortName);
                                 this.postToInvJo(arJobOrderInvoiceLine, arInvoice.getInvDate(), quantitySold, fifoCost * quantitySold, invCosting.getCstRemainingQuantity() - quantitySold, invCosting.getCstRemainingValue() - (fifoCost * quantitySold), 0d, null, branchCode, companyCode);
                                 break;
                             case "Standard":
@@ -2139,22 +1983,17 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
         }
     }
 
-    private double convertByUomFromAndItemAndQuantity(LocalInvUnitOfMeasure invFromUnitOfMeasure,
-                                                      LocalInvItem invItem, double quantitySold,
-                                                      Integer companyCode, String companyShortName) {
+    private double convertByUomFromAndItemAndQuantity(LocalInvUnitOfMeasure invFromUnitOfMeasure, LocalInvItem invItem, double quantitySold, Integer companyCode, String companyShortName) {
 
         Debug.print("ArInvoiceEntryApiControllerBean convertByUomFromAndItemAndQuantity");
 
         try {
 
             LocalAdPreference adPreference = adPreferenceHome.findByPrfAdCompany(companyCode, companyShortName);
-            LocalInvUnitOfMeasureConversion invUnitOfMeasureConversion = invUnitOfMeasureConversionHome
-                    .findUmcByIiNameAndUomName(invItem.getIiName(), invFromUnitOfMeasure.getUomName(), companyCode, companyShortName);
-            LocalInvUnitOfMeasureConversion invDefaultUomConversion = invUnitOfMeasureConversionHome
-                    .findUmcByIiNameAndUomName(invItem.getIiName(), invItem.getInvUnitOfMeasure().getUomName(), companyCode, companyShortName);
+            LocalInvUnitOfMeasureConversion invUnitOfMeasureConversion = invUnitOfMeasureConversionHome.findUmcByIiNameAndUomName(invItem.getIiName(), invFromUnitOfMeasure.getUomName(), companyCode, companyShortName);
+            LocalInvUnitOfMeasureConversion invDefaultUomConversion = invUnitOfMeasureConversionHome.findUmcByIiNameAndUomName(invItem.getIiName(), invItem.getInvUnitOfMeasure().getUomName(), companyCode, companyShortName);
 
-            return EJBCommon.roundIt(quantitySold * invDefaultUomConversion.getUmcConversionFactor() /
-                    invUnitOfMeasureConversion.getUmcConversionFactor(), adPreference.getPrfInvQuantityPrecisionUnit());
+            return EJBCommon.roundIt(quantitySold * invDefaultUomConversion.getUmcConversionFactor() / invUnitOfMeasureConversion.getUmcConversionFactor(), adPreference.getPrfInvQuantityPrecisionUnit());
 
         }
         catch (Exception ex) {
@@ -2165,16 +2004,14 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
         }
     }
 
-    private void updateCustomerBalance(Date INV_DT, double INV_AMNT, LocalArCustomer arCustomer,
-                                       Integer companyCode, String companyShortName) {
+    private void updateCustomerBalance(Date INV_DT, double INV_AMNT, LocalArCustomer arCustomer, Integer companyCode, String companyShortName) {
 
         Debug.print("ArInvoiceEntryApiControllerBean updateCustomerBalance");
 
         try {
 
             // find customer balance before or equal invoice date
-            Collection arCustomerBalances = arCustomerBalanceHome
-                    .findByBeforeOrEqualInvDateAndCstCustomerCode(INV_DT, arCustomer.getCstCustomerCode(), companyCode, companyShortName);
+            Collection arCustomerBalances = arCustomerBalanceHome.findByBeforeOrEqualInvDateAndCstCustomerCode(INV_DT, arCustomer.getCstCustomerCode(), companyCode, companyShortName);
 
             if (!arCustomerBalances.isEmpty()) {
 
@@ -2185,11 +2022,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
                 if (arCustomerBalance.getCbDate().before(INV_DT)) {
 
                     // create new balance
-                    LocalArCustomerBalance apNewCustomerBalance = arCustomerBalanceHome
-                            .CbDate(INV_DT)
-                            .CbBalance(arCustomerBalance.getCbBalance() + INV_AMNT)
-                            .CbAdCompany(companyCode)
-                            .buildCustomerBalance(companyShortName);
+                    LocalArCustomerBalance apNewCustomerBalance = arCustomerBalanceHome.CbDate(INV_DT).CbBalance(arCustomerBalance.getCbBalance() + INV_AMNT).CbAdCompany(companyCode).buildCustomerBalance(companyShortName);
                     // arCustomer.addArCustomerBalance(apNewCustomerBalance);
                     apNewCustomerBalance.setArCustomer(arCustomer);
 
@@ -2201,11 +2034,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
             } else {
 
                 // create new balance
-                LocalArCustomerBalance apNewCustomerBalance = arCustomerBalanceHome
-                        .CbDate(INV_DT)
-                        .CbBalance(INV_AMNT)
-                        .CbAdCompany(companyCode)
-                        .buildCustomerBalance(companyShortName);
+                LocalArCustomerBalance apNewCustomerBalance = arCustomerBalanceHome.CbDate(INV_DT).CbBalance(INV_AMNT).CbAdCompany(companyCode).buildCustomerBalance(companyShortName);
 
                 // arCustomer.addArCustomerBalance(apNewCustomerBalance);
                 apNewCustomerBalance.setArCustomer(arCustomer);
@@ -2227,10 +2056,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
         }
     }
 
-    private void postToInv(LocalArInvoiceLineItem arInvoiceLineItem, Date CST_DT, double CST_QTY_SLD,
-                           double CST_CST_OF_SLS, double CST_RMNNG_QTY, double CST_RMNNG_VL, double CST_VRNC_VL,
-                           String USR_NM, Integer branchCode, Integer companyCode)
-            throws AdPRFCoaGlVarianceAccountNotFoundException, GlobalExpiryDateNotFoundException {
+    private void postToInv(LocalArInvoiceLineItem arInvoiceLineItem, Date CST_DT, double CST_QTY_SLD, double CST_CST_OF_SLS, double CST_RMNNG_QTY, double CST_RMNNG_VL, double CST_VRNC_VL, String USR_NM, Integer branchCode, Integer companyCode) throws AdPRFCoaGlVarianceAccountNotFoundException, GlobalExpiryDateNotFoundException {
 
         Debug.print("ArInvoiceEntryApiControllerBean postToInv");
 
@@ -2506,10 +2332,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
         }
     }
 
-    private void postToInvSo(LocalArSalesOrderInvoiceLine arSalesOrderInvoiceLine, Date CST_DT,
-                             double CST_QTY_SLD, double CST_CST_OF_SLS, double CST_RMNNG_QTY, double CST_RMNNG_VL,
-                             double CST_VRNC_VL, String USR_NM, Integer branchCode, Integer companyCode)
-            throws AdPRFCoaGlVarianceAccountNotFoundException {
+    private void postToInvSo(LocalArSalesOrderInvoiceLine arSalesOrderInvoiceLine, Date CST_DT, double CST_QTY_SLD, double CST_CST_OF_SLS, double CST_RMNNG_QTY, double CST_RMNNG_VL, double CST_VRNC_VL, String USR_NM, Integer branchCode, Integer companyCode) throws AdPRFCoaGlVarianceAccountNotFoundException {
 
         Debug.print("ArInvoiceEntryApiControllerBean postToInvSo");
 
@@ -2593,10 +2416,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
         }
     }
 
-    private void postToInvJo(LocalArJobOrderInvoiceLine arJobOrderInvoiceLine, Date CST_DT, double CST_QTY_SLD,
-                             double CST_CST_OF_SLS, double CST_RMNNG_QTY, double CST_RMNNG_VL, double CST_VRNC_VL,
-                             String USR_NM, Integer branchCode, Integer companyCode)
-            throws AdPRFCoaGlVarianceAccountNotFoundException {
+    private void postToInvJo(LocalArJobOrderInvoiceLine arJobOrderInvoiceLine, Date CST_DT, double CST_QTY_SLD, double CST_CST_OF_SLS, double CST_RMNNG_QTY, double CST_RMNNG_VL, double CST_VRNC_VL, String USR_NM, Integer branchCode, Integer companyCode) throws AdPRFCoaGlVarianceAccountNotFoundException {
 
         Debug.print("ArInvoiceEntryApiControllerBean postToInvJo");
 
@@ -2702,9 +2522,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
         }
     }
 
-    private void addInvDrEntry(short DR_LN, String DR_CLSS, byte DR_DBT, double DR_AMNT, byte DR_RVRSL,
-                               Integer COA_CODE, LocalInvAdjustment invAdjustment, Integer branchCode, Integer companyCode)
-            throws GlobalBranchAccountNumberInvalidException {
+    private void addInvDrEntry(short DR_LN, String DR_CLSS, byte DR_DBT, double DR_AMNT, byte DR_RVRSL, Integer COA_CODE, LocalInvAdjustment invAdjustment, Integer branchCode, Integer companyCode) throws GlobalBranchAccountNumberInvalidException {
 
         Debug.print("ArInvoiceEntryApiControllerBean addInvDrEntry");
         try {
@@ -2735,8 +2553,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
         }
     }
 
-    private void postToGl(LocalGlAccountingCalendarValue glAccountingCalendarValue, LocalGlChartOfAccount glChartOfAccount,
-                          boolean isCurrentAcv, byte isDebit, double JL_AMNT, Integer companyCode) {
+    private void postToGl(LocalGlAccountingCalendarValue glAccountingCalendarValue, LocalGlChartOfAccount glChartOfAccount, boolean isCurrentAcv, byte isDebit, double JL_AMNT, Integer companyCode) {
 
         Debug.print("ArInvoiceEntryApiControllerBean postToGl");
 
@@ -2776,8 +2593,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
         }
     }
 
-    private LocalInvAdjustmentLine addInvAlEntry(LocalInvItemLocation itemLocation, LocalInvAdjustment invAdjustment,
-                                                 double CST_VRNC_VL, byte AL_VD, Integer companyCode) {
+    private LocalInvAdjustmentLine addInvAlEntry(LocalInvItemLocation itemLocation, LocalInvAdjustment invAdjustment, double CST_VRNC_VL, byte AL_VD, Integer companyCode) {
 
         Debug.print("ArInvoiceEntryApiControllerBean addInvAlEntry");
         try {
@@ -2798,10 +2614,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
         }
     }
 
-    private void executeInvAdjPost(Integer ADJ_CODE, String USR_NM, Integer branchCode, Integer companyCode)
-            throws GlobalRecordAlreadyDeletedException, GlobalTransactionAlreadyPostedException,
-            GlJREffectiveDateNoPeriodExistException, GlJREffectiveDatePeriodClosedException,
-            GlobalJournalNotBalanceException {
+    private void executeInvAdjPost(Integer ADJ_CODE, String USR_NM, Integer branchCode, Integer companyCode) throws GlobalRecordAlreadyDeletedException, GlobalTransactionAlreadyPostedException, GlJREffectiveDateNoPeriodExistException, GlJREffectiveDatePeriodClosedException, GlobalJournalNotBalanceException {
 
         Debug.print("ArInvoiceEntryApiControllerBean executeInvAdjPost");
 
@@ -3024,9 +2837,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
         }
     }
 
-    private void postInvAdjustmentToInventory(LocalInvAdjustmentLine invAdjustmentLine, Date CST_DT,
-                                              double CST_ADJST_QTY, double CST_ADJST_CST, double CST_RMNNG_QTY,
-                                              double CST_RMNNG_VL, Integer branchCode, Integer companyCode) {
+    private void postInvAdjustmentToInventory(LocalInvAdjustmentLine invAdjustmentLine, Date CST_DT, double CST_ADJST_QTY, double CST_ADJST_CST, double CST_RMNNG_QTY, double CST_RMNNG_VL, Integer branchCode, Integer companyCode) {
 
         Debug.print("ArInvoiceEntryApiControllerBean postInvAdjustmentToInventory");
 
@@ -3073,9 +2884,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
         }
     }
 
-    private void addArDrIliEntry(short DR_LN, String DR_CLSS, byte DR_DBT, double DR_AMNT, Integer COA_CODE,
-                                 LocalArInvoice arInvoice, Integer branchCode, Integer companyCode, String companyShortName)
-            throws GlobalBranchAccountNumberInvalidException {
+    private void addArDrIliEntry(short DR_LN, String DR_CLSS, byte DR_DBT, double DR_AMNT, Integer COA_CODE, LocalArInvoice arInvoice, Integer branchCode, Integer companyCode, String companyShortName) throws GlobalBranchAccountNumberInvalidException {
 
         Debug.print("ArInvoiceEntryApiControllerBean addArDrIliEntry");
 
@@ -3086,9 +2895,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
             LocalGlChartOfAccount glChartOfAccount = glChartOfAccountHome.findByCoaCodeAndBranchCode(COA_CODE, branchCode, companyCode, companyShortName);
 
             // create distribution record
-            LocalArDistributionRecord arDistributionRecord = arDistributionRecordHome
-                    .create(DR_LN, DR_CLSS, DR_DBT, EJBCommon.roundIt(DR_AMNT, adCompany.getGlFunctionalCurrency().getFcPrecision()),
-                            EJBCommon.FALSE, EJBCommon.FALSE, companyCode);
+            LocalArDistributionRecord arDistributionRecord = arDistributionRecordHome.create(DR_LN, DR_CLSS, DR_DBT, EJBCommon.roundIt(DR_AMNT, adCompany.getGlFunctionalCurrency().getFcPrecision()), EJBCommon.FALSE, EJBCommon.FALSE, companyCode);
 
             arDistributionRecord.setArInvoice(arInvoice);
             arDistributionRecord.setGlChartOfAccount(glChartOfAccount);
@@ -3226,8 +3033,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
         return (numberExpry);
     }
 
-    private double getFrRateByFrNameAndFrDate(String foreignCurrency, Date conversionDate, Integer companyCode)
-            throws GlobalConversionDateNotExistException {
+    private double getFrRateByFrNameAndFrDate(String foreignCurrency, Date conversionDate, Integer companyCode) throws GlobalConversionDateNotExistException {
 
         Debug.print("ArInvoiceEntryApiControllerBean getFrRateByFrNameAndFrDate");
 
@@ -3268,8 +3074,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
         invItemHome.updateItem(invItem);
     }
 
-    private LocalArInvoiceLine addArIlEntry(ArModInvoiceLineDetails mdetails, LocalArInvoice arInvoice,
-                                            Integer companyCode, String companyShortName) {
+    private LocalArInvoiceLine addArIlEntry(ArModInvoiceLineDetails mdetails, LocalArInvoice arInvoice, Integer companyCode, String companyShortName) {
 
         Debug.print("ArInvoiceEntryApiControllerBean addArIlEntry");
         try {
@@ -3279,21 +3084,11 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
             if (mdetails.getIlTax() == EJBCommon.TRUE) {
                 LocalArTaxCode arTaxCode = arInvoice.getArTaxCode();
                 // calculate net amount
-                IL_AMNT = EJBCommon.calculateNetAmount(mdetails.getIlAmount(), mdetails.getIlTax(),
-                        arTaxCode.getTcRate(), arTaxCode.getTcType(), precisionUnit);
+                IL_AMNT = EJBCommon.calculateNetAmount(mdetails.getIlAmount(), mdetails.getIlTax(), arTaxCode.getTcRate(), arTaxCode.getTcType(), precisionUnit);
                 // calculate tax
-                IL_TAX_AMNT = EJBCommon.calculateTaxAmount(mdetails.getIlAmount(), mdetails.getIlTax(),
-                        arTaxCode.getTcRate(), arTaxCode.getTcType(), IL_AMNT, precisionUnit);
+                IL_TAX_AMNT = EJBCommon.calculateTaxAmount(mdetails.getIlAmount(), mdetails.getIlTax(), arTaxCode.getTcRate(), arTaxCode.getTcType(), IL_AMNT, precisionUnit);
             }
-            LocalArInvoiceLine arInvoiceLine = arInvoiceLineHome
-                    .IlDescription(mdetails.getIlDescription())
-                    .IlQuantity(mdetails.getIlQuantity())
-                    .IlUnitPrice(mdetails.getIlUnitPrice())
-                    .IlAmount(IL_AMNT)
-                    .IlTaxAmount(IL_TAX_AMNT)
-                    .IlTax(mdetails.getIlTax())
-                    .IlAdCompany(companyCode)
-                    .buildInvoiceLine(companyShortName);
+            LocalArInvoiceLine arInvoiceLine = arInvoiceLineHome.IlDescription(mdetails.getIlDescription()).IlQuantity(mdetails.getIlQuantity()).IlUnitPrice(mdetails.getIlUnitPrice()).IlAmount(IL_AMNT).IlTaxAmount(IL_TAX_AMNT).IlTax(mdetails.getIlTax()).IlAdCompany(companyCode).buildInvoiceLine(companyShortName);
             arInvoiceLine.setArInvoice(arInvoice);
             LocalArStandardMemoLine arStandardMemoLine = arStandardMemoLineHome.findBySmlName(mdetails.getIlSmlName(), companyCode, companyShortName);
             arInvoiceLine.setArStandardMemoLine(arStandardMemoLine);
@@ -3306,8 +3101,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
         }
     }
 
-    private LocalArInvoiceLineItem addArIliEntry(ArModInvoiceLineItemDetails mdetails, LocalArInvoice arInvoice,
-                                                 LocalInvItemLocation itemLocation, Integer companyCode, String companyShortName) {
+    private LocalArInvoiceLineItem addArIliEntry(ArModInvoiceLineItemDetails mdetails, LocalArInvoice arInvoice, LocalInvItemLocation itemLocation, Integer companyCode, String companyShortName) {
 
         Debug.print("ArInvoiceEntryApiControllerBean addArIliEntry");
         try {
@@ -3334,8 +3128,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
         }
     }
 
-    private double convertForeignToFunctionalCurrency(double conversionRate, double AMOUNT,
-                                                      Integer companyCode, String companyShortName) {
+    private double convertForeignToFunctionalCurrency(double conversionRate, double AMOUNT, Integer companyCode, String companyShortName) {
 
         Debug.print("ArInvoiceEntryApiControllerBean convertForeignToFunctionalCurrency");
         LocalAdCompany adCompany;
@@ -3353,10 +3146,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
         return EJBCommon.roundIt(AMOUNT, adCompany.getGlFunctionalCurrency().getFcPrecision());
     }
 
-    private void addArDrEntry(short DR_LN, String DR_CLSS, byte DR_DBT, double DR_AMNT, Integer COA_CODE,
-                              Integer SC_COA, LocalArInvoice arInvoice, Integer branchCode, Integer companyCode,
-                              String companyShortName)
-            throws GlobalBranchAccountNumberInvalidException {
+    private void addArDrEntry(short DR_LN, String DR_CLSS, byte DR_DBT, double DR_AMNT, Integer COA_CODE, Integer SC_COA, LocalArInvoice arInvoice, Integer branchCode, Integer companyCode, String companyShortName) throws GlobalBranchAccountNumberInvalidException {
 
         Debug.print("ArInvoiceEntryApiControllerBean addArDrEntry");
         try {
@@ -3372,13 +3162,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
                     DR_DBT = 0;
                 }
             }
-            LocalArDistributionRecord arDistributionRecord = arDistributionRecordHome
-                    .DrLine(DR_LN)
-                    .DrClass(DR_CLSS)
-                    .DrDebit(DR_DBT)
-                    .DrAmount(EJBCommon.roundIt(DR_AMNT, adCompany.getGlFunctionalCurrency().getFcPrecision()))
-                    .DrAdCompany(companyCode)
-                    .buildDistributionRecords(companyShortName);
+            LocalArDistributionRecord arDistributionRecord = arDistributionRecordHome.DrLine(DR_LN).DrClass(DR_CLSS).DrDebit(DR_DBT).DrAmount(EJBCommon.roundIt(DR_AMNT, adCompany.getGlFunctionalCurrency().getFcPrecision())).DrAdCompany(companyCode).buildDistributionRecords(companyShortName);
             arDistributionRecord.setArInvoice(arInvoice);
             arDistributionRecord.setGlChartOfAccount(glChartOfAccount);
             if (DR_CLSS.equals("SC")) {

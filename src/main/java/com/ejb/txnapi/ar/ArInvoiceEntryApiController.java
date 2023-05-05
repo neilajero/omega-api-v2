@@ -1,5 +1,7 @@
 package com.ejb.txnapi.ar;
 
+import com.util.mod.ar.ArModInvoiceLineDetails;
+import com.util.mod.ar.ArModInvoiceLineItemDetails;
 import jakarta.ejb.Local;
 
 import com.ejb.exception.ad.AdPRFCoaGlVarianceAccountNotFoundException;
@@ -18,7 +20,7 @@ import java.util.ArrayList;
 @Local
 public interface ArInvoiceEntryApiController {
 
-    Integer saveInvoiceItems(ArInvoiceDetails invoiceDetails, ArrayList invoiceLines)
+    Integer saveInvoiceItems(ArInvoiceDetails invoiceDetails, ArrayList<ArModInvoiceLineItemDetails> invoiceLines)
             throws GlobalInvItemLocationNotFoundException, GlobalInventoryDateException,
             GlobalMiscInfoIsRequiredException, GlobalBranchAccountNumberInvalidException,
             GlobalRecordInvalidException, ArINVAmountExceedsCreditLimitException, GlobalRecordAlreadyDeletedException,
@@ -28,7 +30,7 @@ public interface ArInvoiceEntryApiController {
             GlobalExpiryDateNotFoundException, GlobalPaymentTermInvalidException, GlobalNoRecordFoundException,
             GlobalInvItemCostingNotFoundException;
 
-    Integer saveInvoiceMemoLines(ArInvoiceDetails invoiceDetails, ArrayList invoiceLines)
+    Integer saveInvoiceMemoLines(ArInvoiceDetails invoiceDetails, ArrayList<ArModInvoiceLineDetails> invoiceLines)
             throws GlobalRecordAlreadyDeletedException, GlobalDocumentNumberNotUniqueException,
             GlobalConversionDateNotExistException, GlobalPaymentTermInvalidException,
             ArINVAmountExceedsCreditLimitException, GlobalTransactionAlreadyApprovedException,
