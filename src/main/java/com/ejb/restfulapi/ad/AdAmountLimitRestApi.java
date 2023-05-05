@@ -4,20 +4,16 @@ import com.ejb.restfulapi.OfsApiResponse;
 import com.ejb.restfulapi.ad.models.AmountLimitRequest;
 import com.ejb.txnapi.ad.AdAmountLimitApiController;
 import com.util.EJBCommonAPIErrCodes;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.SecurityContext;
 
 @RequestScoped
 @Path("/amountlimit")
@@ -26,21 +22,13 @@ import jakarta.ws.rs.core.SecurityContext;
 @Transactional
 public class AdAmountLimitRestApi {
 
-    @Context
-    private SecurityContext securityContext;
-
     @Inject
     private AdAmountLimitApiController adAmountLimitApiController;
 
     @POST
     @Path("/add")
     @RolesAllowed({"Admin"})
-    @Operation(summary = "Add amount limit details", description = "This can only be done by an authorized user.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "OK"),
-            @ApiResponse(responseCode = "400", description = "Not Found")
-    })
-    public Response addAmountLimit(@Parameter(description = "Created amount limit request object", required = true) AmountLimitRequest request) {
+    public Response addAmountLimit(AmountLimitRequest request) {
 
         OfsApiResponse response = new OfsApiResponse();
         try {

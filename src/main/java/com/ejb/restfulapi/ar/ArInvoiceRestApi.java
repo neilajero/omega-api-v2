@@ -8,8 +8,6 @@ import com.ejb.txnapi.ar.ArCreditMemoEntryApiController;
 import com.ejb.txnapi.ar.ArInvoiceEntryApiController;
 import com.util.EJBCommon;
 import com.util.EJBCommonAPIErrCodes;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
@@ -17,10 +15,8 @@ import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.SecurityContext;
 
 @RequestScoped
 @Path("/invoice")
@@ -28,8 +24,6 @@ import jakarta.ws.rs.core.SecurityContext;
 @Consumes(MediaType.APPLICATION_JSON)
 public class ArInvoiceRestApi {
 
-    @Context
-    private SecurityContext securityContext;
     @Inject
     private ArInvoiceEntryApiController arInvoiceEntryApiController;
     @Inject
@@ -38,8 +32,7 @@ public class ArInvoiceRestApi {
     @POST
     @Path("/item")
     @RolesAllowed({"Admin"})
-    @Operation(summary = "Create invoice items", description = "This can only be done by an authorized user.")
-    public Response createInvoiceItem(@Parameter(description = "Created invoice item object", required = true) InvoiceItemRequest request) {
+    public Response createInvoiceItem(InvoiceItemRequest request) {
 
         OfsApiResponse response = new OfsApiResponse();
         String defaultDateFormat = ConfigurationClass.DEFAULT_DATE_FORMAT;
@@ -64,8 +57,7 @@ public class ArInvoiceRestApi {
     @POST
     @Path("/memo")
     @RolesAllowed({"Admin"})
-    @Operation(summary = "Create invoice memo lines", description = "This can only be done by an authorized user.")
-    public Response createInvoiceMemoLines(@Parameter(description = "Created invoice memo lines object", required = true) InvoiceMemoLineRequest request) {
+    public Response createInvoiceMemoLines(InvoiceMemoLineRequest request) {
 
         OfsApiResponse response = new OfsApiResponse();
         String defaultDateFormat = ConfigurationClass.DEFAULT_DATE_FORMAT;
@@ -90,8 +82,7 @@ public class ArInvoiceRestApi {
     @POST
     @Path("/modify")
     @RolesAllowed({"Admin"})
-    @Operation(summary = "Adjust an existing invoice items", description = "This can only be done by an authorized user.")
-    public Response createInvoiceItemAdjustment(@Parameter(description = "Created invoice item object", required = true) InvoiceItemRequest request) {
+    public Response createInvoiceItemAdjustment(InvoiceItemRequest request) {
 
         OfsApiResponse response = new OfsApiResponse();
         try {

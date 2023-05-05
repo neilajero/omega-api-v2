@@ -20,8 +20,6 @@ import com.ejb.entities.gl.*;
 import com.ejb.entities.inv.*;
 import com.ejb.exception.ad.*;
 import com.ejb.exception.global.GlobalRecordAlreadyExistException;
-import com.github.dozermapper.core.DozerBeanMapperBuilder;
-import com.github.dozermapper.core.Mapper;
 import com.util.*;
 import com.util.ad.AdApplicationDetails;
 import com.util.mod.ad.AdModPreferenceDetails;
@@ -81,7 +79,6 @@ public class AdPreferenceControllerBean extends EJBContextClass implements AdPre
         Debug.print("AdPreferenceControllerBean getAdPrf");
 
         LocalAdPreference adPreference;
-        Mapper mapper = DozerBeanMapperBuilder.buildDefault();
 
         LocalGlChartOfAccount glAccruedVatAccount = null;
         LocalGlChartOfAccount glPettyCashAccount = null;

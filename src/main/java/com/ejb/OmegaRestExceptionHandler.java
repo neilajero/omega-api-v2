@@ -6,7 +6,7 @@ import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
 
 @Provider
-public class RestExceptionHandler implements ExceptionMapper<RestApplicationException> {
+public class OmegaRestExceptionHandler implements ExceptionMapper<RestApplicationException> {
 
     @Override
     public Response toResponse(RestApplicationException exception) {

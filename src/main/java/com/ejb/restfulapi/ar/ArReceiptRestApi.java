@@ -7,8 +7,6 @@ import com.ejb.txnapi.ar.ArMiscReceiptEntryApiController;
 import com.ejb.txnapi.ar.ArReceiptEntryApiController;
 import com.util.EJBCommon;
 import com.util.EJBCommonAPIErrCodes;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
@@ -16,10 +14,8 @@ import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.SecurityContext;
 
 @RequestScoped
 @Path("/receipt")
@@ -27,8 +23,6 @@ import jakarta.ws.rs.core.SecurityContext;
 @Consumes(MediaType.APPLICATION_JSON)
 public class ArReceiptRestApi {
 
-    @Context
-    private SecurityContext securityContext;
     @Inject
     private ArReceiptEntryApiController arReceiptEntryApiController;
     @Inject
@@ -37,8 +31,7 @@ public class ArReceiptRestApi {
     @POST
     @Path("/add")
     @RolesAllowed({"Admin"})
-    @Operation(summary = "Create a receipt", description = "This can only be done by an authorized user.")
-    public Response create(@Parameter(description = "Created receipt object", required = true) ReceiptRequest request) {
+    public Response create(ReceiptRequest request) {
 
         ReceiptApiResponse response = new ReceiptApiResponse();
         String defaultDateFormat = ConfigurationClass.DEFAULT_DATE_FORMAT;

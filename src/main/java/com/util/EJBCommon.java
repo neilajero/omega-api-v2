@@ -379,5 +379,4 @@ public final class EJBCommon implements java.io.Serializable {
         }
         return validValue;
     }
-
 }

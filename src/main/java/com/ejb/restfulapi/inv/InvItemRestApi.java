@@ -11,18 +11,13 @@ import com.ejb.txnapi.inv.InvItemEntryApiController;
 import com.ejb.txnapi.inv.InvStockTransferEntryApiController;
 import com.util.EJBCommon;
 import com.util.EJBCommonAPIErrCodes;
-import io.swagger.v3.oas.annotations.Hidden;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ejb.FinderException;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.SecurityContext;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -35,9 +30,6 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class InvItemRestApi {
-
-    @Context
-    private SecurityContext securityContext;
 
     @Inject
     private LocalInvItemHome invItemHome;
@@ -52,7 +44,6 @@ public class InvItemRestApi {
     private InvStockTransferEntryApiController invStockTransferEntryApiController;
 
     @GET
-    @Hidden
     @Path("/getall")
     @RolesAllowed({"Admin"})
     public Response getItemDetails() {
@@ -78,8 +69,7 @@ public class InvItemRestApi {
     @POST
     @Path("/add")
     @RolesAllowed({"Admin"})
-    @Operation(summary = "Create an item", description = "This can only be done by an authorized user.")
-    public Response create(@Parameter(description = "Created item object", required = true) ItemRequest request) {
+    public Response create(ItemRequest request) {
 
         OfsApiResponse response = new OfsApiResponse();
         try {
@@ -97,8 +87,7 @@ public class InvItemRestApi {
     @PUT
     @Path("/update/{itemName}")
     @RolesAllowed({"Admin"})
-    @Operation(summary = "Update item details", description = "This can only be done by an authorized user.")
-    public Response update(@PathParam("itemName") String itemName, @Parameter(description = "Update item object", required = true) AdjustmentRequest request) {
+    public Response update(@PathParam("itemName") String itemName, AdjustmentRequest request) {
 
         OfsApiResponse response = new OfsApiResponse();
         String defaultDateFormat = ConfigurationClass.DEFAULT_DATE_FORMAT;
@@ -180,7 +169,6 @@ public class InvItemRestApi {
     }
 
     @DELETE
-    @Hidden
     @Path("/delete/{itemName}")
     @RolesAllowed({"Admin"})
     public Response delete(@PathParam("itemName") String itemName) {
