@@ -2011,7 +2011,8 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
         try {
 
             // find customer balance before or equal invoice date
-            Collection arCustomerBalances = arCustomerBalanceHome.findByBeforeOrEqualInvDateAndCstCustomerCode(INV_DT, arCustomer.getCstCustomerCode(), companyCode, companyShortName);
+            Collection arCustomerBalances = arCustomerBalanceHome.findByBeforeOrEqualInvDateAndCstCustomerCode(
+                    INV_DT, arCustomer.getCstCustomerCode(), companyCode, companyShortName);
 
             if (!arCustomerBalances.isEmpty()) {
 
@@ -2022,7 +2023,11 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
                 if (arCustomerBalance.getCbDate().before(INV_DT)) {
 
                     // create new balance
-                    LocalArCustomerBalance apNewCustomerBalance = arCustomerBalanceHome.CbDate(INV_DT).CbBalance(arCustomerBalance.getCbBalance() + INV_AMNT).CbAdCompany(companyCode).buildCustomerBalance(companyShortName);
+                    LocalArCustomerBalance apNewCustomerBalance = arCustomerBalanceHome
+                            .CbDate(INV_DT)
+                            .CbBalance(arCustomerBalance.getCbBalance() + INV_AMNT)
+                            .CbAdCompany(companyCode)
+                            .buildCustomerBalance(companyShortName);
                     // arCustomer.addArCustomerBalance(apNewCustomerBalance);
                     apNewCustomerBalance.setArCustomer(arCustomer);
 
@@ -2034,7 +2039,11 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
             } else {
 
                 // create new balance
-                LocalArCustomerBalance apNewCustomerBalance = arCustomerBalanceHome.CbDate(INV_DT).CbBalance(INV_AMNT).CbAdCompany(companyCode).buildCustomerBalance(companyShortName);
+                LocalArCustomerBalance apNewCustomerBalance = arCustomerBalanceHome
+                        .CbDate(INV_DT)
+                        .CbBalance(INV_AMNT)
+                        .CbAdCompany(companyCode)
+                        .buildCustomerBalance(companyShortName);
 
                 // arCustomer.addArCustomerBalance(apNewCustomerBalance);
                 apNewCustomerBalance.setArCustomer(arCustomer);

@@ -177,6 +177,7 @@ public class LocalArAppliedInvoiceHome {
 	public java.util.Collection findByRctCode(java.lang.Integer RCT_CODE,
 											  java.lang.Integer AI_AD_CMPNY,
 											  String companyShortName) throws FinderException {
+		Debug.print("LocalArAppliedInvoiceHome findByRctCode");
 
 		try {
 			Query query = em.createQueryPerCompany(

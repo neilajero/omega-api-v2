@@ -1194,6 +1194,9 @@ public class LocalArReceipt extends NativeQueryHome implements Serializable {
 
         try {
             List lists = getArDistributionRecords();
+            if (lists == null) {
+                return 1;
+            }
             return (short) (lists.size() + 1);
         }
         catch (Exception ex) {

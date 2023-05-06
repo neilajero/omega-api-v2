@@ -15,6 +15,7 @@ import com.ejb.exception.ar.ArREDuplicatePayfileReferenceNumberException;
 import com.ejb.exception.gl.GlJREffectiveDateNoPeriodExistException;
 import com.ejb.exception.gl.GlJREffectiveDatePeriodClosedException;
 import com.ejb.exception.global.*;
+import com.ejb.restfulapi.OfsApiResponse;
 import com.ejb.restfulapi.ar.models.LineItemRequest;
 import com.ejb.restfulapi.ar.models.MemolineDetails;
 import com.ejb.restfulapi.ar.models.ReceiptApiResponse;
@@ -786,11 +787,11 @@ public class ArMiscReceiptEntryApiControllerBean extends EJBContextClass impleme
     }
 
     @Override
-    public ReceiptApiResponse createMiscReceiptMemoLines(ReceiptRequest receiptRequest) {
+    public OfsApiResponse createMiscReceiptMemoLines(ReceiptRequest receiptRequest) {
 
         Debug.print("ArMiscReceiptEntryApiControllerBean createMiscReceiptMemoLines");
 
-        ReceiptApiResponse apiResponse = new ReceiptApiResponse();
+        OfsApiResponse apiResponse = new OfsApiResponse();
         LocalAdCompany adCompany;
         LocalAdBranch adBranch;
         LocalAdUser adUser;
@@ -948,11 +949,11 @@ public class ArMiscReceiptEntryApiControllerBean extends EJBContextClass impleme
     }
 
     @Override
-    public ReceiptApiResponse createMiscReceipt(ReceiptRequest receiptRequest) {
+    public OfsApiResponse createMiscReceipt(ReceiptRequest receiptRequest) {
 
         Debug.print("ArMiscReceiptEntryApiControllerBean createMiscReceipt");
 
-        ReceiptApiResponse apiResponse = new ReceiptApiResponse();
+        OfsApiResponse apiResponse = new OfsApiResponse();
         ArrayList list = new ArrayList();
         LocalAdCompany adCompany = null;
         LocalAdBranch adBranch = null;

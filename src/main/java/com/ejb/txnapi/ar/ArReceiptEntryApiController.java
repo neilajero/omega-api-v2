@@ -23,6 +23,7 @@ import com.ejb.exception.global.GlobalTransactionAlreadyLockedException;
 import com.ejb.exception.global.GlobalTransactionAlreadyPendingException;
 import com.ejb.exception.global.GlobalTransactionAlreadyPostedException;
 import com.ejb.exception.global.GlobalTransactionAlreadyVoidException;
+import com.ejb.restfulapi.OfsApiResponse;
 import com.ejb.restfulapi.ar.models.ReceiptApiResponse;
 import com.ejb.restfulapi.ar.models.ReceiptRequest;
 import com.util.ar.ArReceiptDetails;
@@ -46,5 +47,5 @@ public interface ArReceiptEntryApiController {
             GlobalBranchAccountNumberInvalidException, GlobalRecordAlreadyAssignedException,
             AdPRFCoaGlCustomerDepositAccountNotFoundException, ArREDuplicatePayfileReferenceNumberException;
 
-    ReceiptApiResponse createReceipt(ReceiptRequest request);
+    OfsApiResponse createReceipt(ReceiptRequest request);
 }

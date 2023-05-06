@@ -74,6 +74,7 @@ public class LocalArDistributionRecordHome {
 
 	public LocalArDistributionRecord findByDrClassDebitAndInvCode(java.lang.String DR_CLSS, java.lang.Integer INV_CODE,
 																  java.lang.Integer DR_AD_CMPNY, String companyShortName) throws FinderException {
+		Debug.print("LocalArDistributionRecord findByDrClassDebitAndInvCode");
 
 		try {
 			Query query = em.createQueryPerCompany(
@@ -114,6 +115,7 @@ public class LocalArDistributionRecordHome {
 
 	public LocalArDistributionRecord findByDrClassAndInvCode(java.lang.String DR_CLSS, java.lang.Integer INV_CODE,
 															 java.lang.Integer DR_AD_CMPNY, String companyShortName) throws FinderException {
+		Debug.print("LocalArDistributionRecord findByDrClassAndInvCode");
 
 		try {
 			Query query = em.createQueryPerCompany(

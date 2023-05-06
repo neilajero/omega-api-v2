@@ -62,10 +62,12 @@ public class LocalArAppliedInvoice extends NativeQueryHome implements Serializab
     @ManyToOne
     private LocalArReceipt arReceipt;
 
-    @OneToMany(mappedBy = "arAppliedInvoice", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "arAppliedInvoice", fetch = FetchType.LAZY)
+    //@OneToMany(mappedBy = "arAppliedInvoice", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<LocalArDistributionRecord> arDistributionRecords;
 
-    @OneToMany(mappedBy = "arAppliedInvoice", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "arAppliedInvoice", fetch = FetchType.LAZY)
+    //@OneToMany(mappedBy = "arAppliedInvoice", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<LocalArAppliedCredit> arAppliedCredits;
 
     public Integer getAiCode() {

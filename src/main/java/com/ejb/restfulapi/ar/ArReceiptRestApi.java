@@ -1,6 +1,7 @@
 package com.ejb.restfulapi.ar;
 
 import com.ejb.ConfigurationClass;
+import com.ejb.restfulapi.OfsApiResponse;
 import com.ejb.restfulapi.ar.models.ReceiptApiResponse;
 import com.ejb.restfulapi.ar.models.ReceiptRequest;
 import com.ejb.txnapi.ar.ArMiscReceiptEntryApiController;
@@ -33,6 +34,7 @@ public class ArReceiptRestApi {
     @RolesAllowed({"Admin"})
     public Response create(ReceiptRequest request) {
 
+        OfsApiResponse apiResponse = new OfsApiResponse();
         ReceiptApiResponse response = new ReceiptApiResponse();
         String defaultDateFormat = ConfigurationClass.DEFAULT_DATE_FORMAT;
 
@@ -47,26 +49,32 @@ public class ArReceiptRestApi {
             // Create the Receipt Details
             if (request.getReceiptDetails() != null) {
                 if (!request.getReceiptDetails().isEmpty()) {
-                    response = arReceiptEntryApiController.createReceipt(request);
+                    apiResponse = arReceiptEntryApiController.createReceipt(request);
                 }
             } else {
                 if (request.getReceiptItems() != null) {
                     // Create receipts items
                     if (!request.getReceiptItems().isEmpty()) {
-                        response = arMiscReceiptEntryApiController.createMiscReceipt(request);
+                        apiResponse = arMiscReceiptEntryApiController.createMiscReceipt(request);
                     }
                 } else {
                     // Create misc receipt - memo lines
-                    response = arMiscReceiptEntryApiController.createMiscReceiptMemoLines(request);
+                    apiResponse = arMiscReceiptEntryApiController.createMiscReceiptMemoLines(request);
                 }
             }
+
+            response.setCode(apiResponse.getCode());
+            response.setStatus(apiResponse.getStatus());
+            response.setMessage(apiResponse.getMessage());
+            response.setDocumentNumber(apiResponse.getDocumentNumber());
+
             return Response.status(response.getCode().equals(EJBCommonAPIErrCodes.OAPI_ERR_000) ? Response.Status.OK : Response.Status.BAD_REQUEST)
-                    .entity(response.toString()).build();
+                    .entity(response).build();
         }
         catch (Exception e) {
             response.setCode(EJBCommonAPIErrCodes.OAPI_ERR_007);
             response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_007_MSG);
-            return Response.status(Response.Status.BAD_REQUEST).entity(response.toString()).build();
+            return Response.status(Response.Status.BAD_REQUEST).entity(response).build();
         }
     }
 

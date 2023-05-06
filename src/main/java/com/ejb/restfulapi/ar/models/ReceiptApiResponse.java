@@ -1,16 +1,42 @@
 package com.ejb.restfulapi.ar.models;
 
-import com.ejb.restfulapi.OfsApiResponse;
+public class ReceiptApiResponse {
 
-public class ReceiptApiResponse extends OfsApiResponse {
+    private String code;
+    private String message;
+    private String status;
+    private String documentNumber;
 
-    private boolean isOverApplyAmount = false;
-
-    public boolean isOverApplyAmount() {
-        return isOverApplyAmount;
+    public String getCode() {
+        return code;
     }
 
-    public void setOverApplyAmount(boolean isOverApplyAmount) {
-        this.isOverApplyAmount = isOverApplyAmount;
+    public void setCode(String code) {
+        this.code = code;
     }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getDocumentNumber() {
+        return documentNumber;
+    }
+
+    public void setDocumentNumber(String documentNumber) {
+        this.documentNumber = documentNumber;
+    }
+
 }

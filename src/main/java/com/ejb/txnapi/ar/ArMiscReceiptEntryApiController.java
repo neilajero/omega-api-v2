@@ -4,6 +4,7 @@ import com.ejb.exception.ad.AdPRFCoaGlVarianceAccountNotFoundException;
 import com.ejb.exception.gl.GlJREffectiveDateNoPeriodExistException;
 import com.ejb.exception.gl.GlJREffectiveDatePeriodClosedException;
 import com.ejb.exception.global.*;
+import com.ejb.restfulapi.OfsApiResponse;
 import com.ejb.restfulapi.ar.models.ReceiptApiResponse;
 import com.ejb.restfulapi.ar.models.ReceiptRequest;
 import com.util.ar.ArReceiptDetails;
@@ -19,7 +20,7 @@ public interface ArMiscReceiptEntryApiController {
                                         Integer branchCode, Integer companyCode)
             throws GlobalRecordAlreadyDeletedException, GlobalDocumentNumberNotUniqueException, GlobalConversionDateNotExistException, GlobalTransactionAlreadyApprovedException, GlobalTransactionAlreadyPendingException, GlobalTransactionAlreadyPostedException, GlobalTransactionAlreadyVoidException, GlobalNoApprovalRequesterFoundException, GlobalNoApprovalApproverFoundException, GlobalInvItemLocationNotFoundException, GlJREffectiveDateNoPeriodExistException, GlJREffectiveDatePeriodClosedException, GlobalJournalNotBalanceException, GlobalInventoryDateException, GlobalBranchAccountNumberInvalidException, GlobalRecordAlreadyAssignedException, AdPRFCoaGlVarianceAccountNotFoundException, GlobalExpiryDateNotFoundException, GlobalMiscInfoIsRequiredException, GlobalRecordInvalidException;
 
-    ReceiptApiResponse createMiscReceipt(ReceiptRequest request);
+    OfsApiResponse createMiscReceipt(ReceiptRequest request);
 
-    ReceiptApiResponse createMiscReceiptMemoLines(ReceiptRequest request);
+    OfsApiResponse createMiscReceiptMemoLines(ReceiptRequest request);
 }

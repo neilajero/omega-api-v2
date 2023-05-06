@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+
+import com.ejb.restfulapi.OfsApiResponse;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.ejb.FinderException;
@@ -445,7 +447,9 @@ public class ArReceiptEntryApiControllerBean extends EJBContextClass implements 
                     arAppliedInvoice, branchCode, companyCode, companyShortName);
 
         } catch (Exception ex) {
-
+            Debug.printStackTrace(ex);
+            getSessionContext().setRollbackOnly();
+            throw new EJBException(ex.getMessage());
         }
     }
 
@@ -703,27 +707,20 @@ public class ArReceiptEntryApiControllerBean extends EJBContextClass implements 
              *
              * throw new GlobalRecordAlreadyDeletedException(); }
              */
+
             // validate if receipt is already posted
-
             if (arReceipt.getRctVoid() == EJBCommon.FALSE && arReceipt.getRctPosted() == EJBCommon.TRUE) {
-
                 throw new GlobalTransactionAlreadyPostedException();
-
-                // validate if receipt void is already posted
-
             } else if (arReceipt.getRctVoid() == EJBCommon.TRUE && arReceipt.getRctVoidPosted() == EJBCommon.TRUE) {
-
                 throw new GlobalTransactionAlreadyVoidPostedException();
             }
 
             // post receipt
-
             Collection arDepositReceipts = null;
             LocalArReceipt arDepositReceipt = null;
             LocalArCustomer arCustomer = arReceipt.getArCustomer();
 
             if (arReceipt.getRctVoid() == EJBCommon.FALSE && arReceipt.getRctPosted() == EJBCommon.FALSE) {
-
                 if (arReceipt.getRctType().equals("COLLECTION")) {
 
                     double RCT_CRDTS = 0d;
@@ -731,10 +728,11 @@ public class ArReceiptEntryApiControllerBean extends EJBContextClass implements 
                     double RCT_EXCSS_AMNT = arReceipt.getRctExcessAmount();
 
                     // create adjustment for advance payment
-                    if (arReceipt.getRctEnableAdvancePayment() != 0) {
-                    }
+                    if (arReceipt.getRctEnableAdvancePayment() != 0) { }
 
                     // increase amount paid in invoice payment schedules and invoice
+                    System.out.println("Receipt Code: " + arReceipt.getRctCode());
+
                     Collection arAppliedInvoices = arAppliedInvoiceHome.findByRctCode(arReceipt.getRctCode(), companyCode, companyShortName);
                     for (Object appliedInvoice : arAppliedInvoices) {
                         LocalArAppliedInvoice arAppliedInvoice = (LocalArAppliedInvoice) appliedInvoice;
@@ -767,15 +765,20 @@ public class ArReceiptEntryApiControllerBean extends EJBContextClass implements 
                                 arAppliedInvoice.getAiAppliedDeposit(), companyCode, companyShortName);
 
                         arInvoicePaymentSchedule.setIpsAmountPaid(
-                                EJBCommon.roundIt(arInvoicePaymentSchedule.getIpsAmountPaid() + AMOUNT_PAID, this.getGlFcPrecisionUnit(companyCode, companyShortName)));
+                                EJBCommon.roundIt(arInvoicePaymentSchedule.getIpsAmountPaid() + AMOUNT_PAID,
+                                        this.getGlFcPrecisionUnit(companyCode, companyShortName)));
+
                         arInvoicePaymentSchedule.setIpsPenaltyPaid(
-                                EJBCommon.roundIt(arInvoicePaymentSchedule.getIpsPenaltyPaid() + PENALTY_PAID, this.getGlFcPrecisionUnit(companyCode, companyShortName)));
+                                EJBCommon.roundIt(arInvoicePaymentSchedule.getIpsPenaltyPaid() + PENALTY_PAID,
+                                        this.getGlFcPrecisionUnit(companyCode, companyShortName)));
 
                         arInvoicePaymentSchedule.getArInvoice().setInvAmountPaid(EJBCommon.roundIt(
-                                arInvoicePaymentSchedule.getArInvoice().getInvAmountPaid() + AMOUNT_PAID, this.getGlFcPrecisionUnit(companyCode, companyShortName)));
+                                arInvoicePaymentSchedule.getArInvoice().getInvAmountPaid() + AMOUNT_PAID,
+                                this.getGlFcPrecisionUnit(companyCode, companyShortName)));
 
                         arInvoicePaymentSchedule.getArInvoice().setInvPenaltyPaid(EJBCommon.roundIt(
-                                arInvoicePaymentSchedule.getArInvoice().getInvPenaltyPaid() + PENALTY_PAID, this.getGlFcPrecisionUnit(companyCode, companyShortName)));
+                                arInvoicePaymentSchedule.getArInvoice().getInvPenaltyPaid() + PENALTY_PAID,
+                                this.getGlFcPrecisionUnit(companyCode, companyShortName)));
 
                         // release invoice lock
                         arInvoicePaymentSchedule.setIpsLock(EJBCommon.FALSE);
@@ -1885,59 +1888,47 @@ public class ArReceiptEntryApiControllerBean extends EJBContextClass implements 
         try {
 
             // find customer balance before or equal invoice date
-
-            Collection arCustomerBalances = arCustomerBalanceHome.findByBeforeOrEqualInvDateAndCstCustomerCode(RCT_DT,
-                    arCustomer.getCstCustomerCode(), companyCode, companyShortName);
+            Collection arCustomerBalances = arCustomerBalanceHome.findByBeforeOrEqualInvDateAndCstCustomerCode(
+                    RCT_DT, arCustomer.getCstCustomerCode(), companyCode, companyShortName);
 
             if (!arCustomerBalances.isEmpty()) {
 
                 // get last invoice
-
                 ArrayList arCustomerBalanceList = new ArrayList(arCustomerBalances);
 
-                LocalArCustomerBalance arCustomerBalance = (LocalArCustomerBalance) arCustomerBalanceList
-                        .get(arCustomerBalanceList.size() - 1);
+                LocalArCustomerBalance arCustomerBalance =
+                        (LocalArCustomerBalance) arCustomerBalanceList.get(arCustomerBalanceList.size() - 1);
 
                 if (arCustomerBalance.getCbDate().before(RCT_DT)) {
-
                     // create new balance
-
                     LocalArCustomerBalance arNewCustomerBalance = arCustomerBalanceHome
                             .CbDate(RCT_DT)
                             .CbBalance(arCustomerBalance.getCbBalance() + RCT_AMNT)
                             .CbAdCompany(companyCode)
                             .buildCustomerBalance(companyShortName);
-
                     arCustomer.addArCustomerBalance(arNewCustomerBalance);
-
-                } else { // equals to invoice date
-
+                } else {
                     arCustomerBalance.setCbBalance(arCustomerBalance.getCbBalance() + RCT_AMNT);
                 }
-
             } else {
-
                 // create new balance
                 LocalArCustomerBalance arNewCustomerBalance = arCustomerBalanceHome
                         .CbDate(RCT_DT)
                         .CbBalance(RCT_AMNT)
                         .CbAdCompany(companyCode)
                         .buildCustomerBalance(companyShortName);
-
                 arCustomer.addArCustomerBalance(arNewCustomerBalance);
             }
 
             // propagate to subsequent balances if necessary
-            arCustomerBalances = arCustomerBalanceHome.findByAfterInvDateAndCstCustomerCode(RCT_DT,
-                    arCustomer.getCstCustomerCode(), companyCode, companyShortName);
-
+            arCustomerBalances = arCustomerBalanceHome.findByAfterInvDateAndCstCustomerCode(
+                    RCT_DT, arCustomer.getCstCustomerCode(), companyCode, companyShortName);
             for (Object customerBalance : arCustomerBalances) {
                 LocalArCustomerBalance arCustomerBalance = (LocalArCustomerBalance) customerBalance;
                 arCustomerBalance.setCbBalance(arCustomerBalance.getCbBalance() + RCT_AMNT);
             }
 
         } catch (Exception ex) {
-
             Debug.printStackTrace(ex);
             getSessionContext().setRollbackOnly();
             throw new EJBException(ex.getMessage());
@@ -2088,10 +2079,10 @@ public class ArReceiptEntryApiControllerBean extends EJBContextClass implements 
     }
 
     @Override
-    public ReceiptApiResponse createReceipt(ReceiptRequest receiptRequest) {
+    public OfsApiResponse createReceipt(ReceiptRequest receiptRequest) {
         Debug.print("ArReceiptEntryApiControllerBean createReceipt");
 
-        ReceiptApiResponse apiResponse = new ReceiptApiResponse();
+        OfsApiResponse apiResponse = new OfsApiResponse();
         LocalAdCompany adCompany = null;
         LocalAdBranch adBranch = null;
         LocalAdUser adUser = null;
