@@ -241,4 +241,7 @@ public final class EJBCommonAPIErrCodes implements java.io.Serializable {
 
 	public static final String OAPI_ERR_079 = "OAPI-ERR-079";
 	public static final String OAPI_ERR_079_MSG = "Please assign a requester(s).";
+
+	public static final String OAPI_ERR_080 = "OAPI-ERR-080";
+	public static final String OAPI_ERR_080_MSG = "Standard Memo Line doesn't exists. SML: %s";
 }

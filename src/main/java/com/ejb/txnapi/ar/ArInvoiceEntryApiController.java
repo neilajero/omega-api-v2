@@ -1,5 +1,6 @@
 package com.ejb.txnapi.ar;
 
+import com.ejb.exception.ar.ArInvoiceStandardMemolineDoesNotExist;
 import com.util.mod.ar.ArModInvoiceLineDetails;
 import com.util.mod.ar.ArModInvoiceLineItemDetails;
 import jakarta.ejb.Local;
@@ -38,7 +39,8 @@ public interface ArInvoiceEntryApiController {
             GlobalTransactionAlreadyVoidException, GlobalNoApprovalRequesterFoundException,
             GlobalNoApprovalApproverFoundException, GlJREffectiveDateNoPeriodExistException,
             GlJREffectiveDatePeriodClosedException, GlobalJournalNotBalanceException,
-            GlobalBranchAccountNumberInvalidException, ArInvDuplicateUploadNumberException;
+            GlobalBranchAccountNumberInvalidException, ArInvDuplicateUploadNumberException,
+            ArInvoiceStandardMemolineDoesNotExist;
 
     OfsApiResponse createInvoiceItems(InvoiceItemRequest invoiceItemRequest);
 

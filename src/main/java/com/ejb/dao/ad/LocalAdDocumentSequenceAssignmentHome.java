@@ -11,6 +11,8 @@ import jakarta.ejb.Stateless;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.Query;
 
+import java.util.Collection;
+
 @Stateless
 public class LocalAdDocumentSequenceAssignmentHome {
 
@@ -18,12 +20,15 @@ public class LocalAdDocumentSequenceAssignmentHome {
 
     @EJB
     public PersistenceBeanClass em;
+    private Integer DSA_SOB_CODE = 0;
+    private String DSA_NXT_SQNC = null;
+    private Integer DSA_AD_CMPNY = null;
 
     public LocalAdDocumentSequenceAssignmentHome() {
 
     }
 
-    public LocalAdDocumentSequenceAssignment findByPrimaryKey(java.lang.Integer pk) throws FinderException {
+    public LocalAdDocumentSequenceAssignment findByPrimaryKey(Integer pk) throws FinderException {
 
         try {
 
@@ -42,7 +47,7 @@ public class LocalAdDocumentSequenceAssignmentHome {
         }
     }
 
-    public java.util.Collection findDsaAll(java.lang.Integer DSA_AD_CMPNY) throws FinderException {
+    public Collection findDsaAll(Integer DSA_AD_CMPNY) throws FinderException {
 
         try {
             Query query = em.createQuery(
@@ -52,12 +57,12 @@ public class LocalAdDocumentSequenceAssignmentHome {
         }
         catch (Exception ex) {
             Debug.print(
-                    "EXCEPTION: Exception com.ejb.gl.LocalAdDocumentSequenceAssignmentHome.findDsaAll(java.lang.Integer DSA_AD_CMPNY)");
+                    "EXCEPTION: Exception com.ejb.gl.LocalAdDocumentSequenceAssignmentHome.findDsaAll(Integer DSA_AD_CMPNY)");
             throw ex;
         }
     }
 
-    public LocalAdDocumentSequenceAssignment findDsaByCode(java.lang.Integer DSA_CODE, java.lang.Integer DSA_AD_CMPNY)
+    public LocalAdDocumentSequenceAssignment findDsaByCode(Integer DSA_CODE, Integer DSA_AD_CMPNY)
             throws FinderException {
 
         try {
@@ -69,17 +74,17 @@ public class LocalAdDocumentSequenceAssignmentHome {
         }
         catch (NoResultException ex) {
             Debug.print(
-                    "EXCEPTION: NoResultException com.ejb.gl.LocalAdDocumentSequenceAssignmentHome.findDsaByCode(java.lang.Integer DSA_CODE, java.lang.Integer DSA_AD_CMPNY)");
+                    "EXCEPTION: NoResultException com.ejb.gl.LocalAdDocumentSequenceAssignmentHome.findDsaByCode(Integer DSA_CODE, Integer DSA_AD_CMPNY)");
             throw new FinderException(ex.getMessage());
         }
         catch (Exception ex) {
             Debug.print(
-                    "EXCEPTION: Exception com.ejb.gl.LocalAdDocumentSequenceAssignmentHome.findDsaByCode(java.lang.Integer DSA_CODE, java.lang.Integer DSA_AD_CMPNY)");
+                    "EXCEPTION: Exception com.ejb.gl.LocalAdDocumentSequenceAssignmentHome.findDsaByCode(Integer DSA_CODE, Integer DSA_AD_CMPNY)");
             throw ex;
         }
     }
 
-    public LocalAdDocumentSequenceAssignment findByDcName(java.lang.String DC_NM,  java.lang.Integer DSA_AD_CMPNY, String companyShortName)
+    public LocalAdDocumentSequenceAssignment findByDcName(String DC_NM,  Integer DSA_AD_CMPNY, String companyShortName)
             throws FinderException {
         try {
             Query query = em.createQueryPerCompany(
@@ -97,7 +102,7 @@ public class LocalAdDocumentSequenceAssignmentHome {
         }
     }
 
-    public LocalAdDocumentSequenceAssignment findByDcName(java.lang.String DC_NM, java.lang.Integer DSA_AD_CMPNY)
+    public LocalAdDocumentSequenceAssignment findByDcName(String DC_NM, Integer DSA_AD_CMPNY)
             throws FinderException {
 
         try {
@@ -115,7 +120,7 @@ public class LocalAdDocumentSequenceAssignmentHome {
         }
     }
 
-    public LocalAdDocumentSequenceAssignment findByDsName(java.lang.String DS_NM, java.lang.Integer DSA_AD_CMPNY)
+    public LocalAdDocumentSequenceAssignment findByDsName(String DS_NM, Integer DSA_AD_CMPNY)
             throws FinderException {
 
         try {
@@ -133,7 +138,7 @@ public class LocalAdDocumentSequenceAssignmentHome {
         }
     }
 
-    public LocalAdDocumentSequenceAssignment findByDsName(java.lang.String DS_NM, java.lang.Integer DSA_AD_CMPNY, String companyShortName)
+    public LocalAdDocumentSequenceAssignment findByDsName(String DS_NM, Integer DSA_AD_CMPNY, String companyShortName)
             throws FinderException {
 
         try {
@@ -153,8 +158,44 @@ public class LocalAdDocumentSequenceAssignmentHome {
         }
     }
 
-    public LocalAdDocumentSequenceAssignment create(java.lang.Integer DSA_CODE,
-                                                    java.lang.Integer DSA_SOB_CODE, String DSA_NXT_SQNC, Integer DSA_AD_CMPNY) throws CreateException {
+    public LocalAdDocumentSequenceAssignmentHome DsaSobCode(Integer DSA_SOB_CODE) {
+        this.DSA_SOB_CODE = DSA_SOB_CODE;
+        return this;
+    }
+
+    public LocalAdDocumentSequenceAssignmentHome DsaNextSequence(String DSA_NXT_SQNC) {
+        this.DSA_NXT_SQNC = DSA_NXT_SQNC;
+        return this;
+    }
+
+    public LocalAdDocumentSequenceAssignmentHome DsaAdCompany(Integer DSA_AD_CMPNY) {
+        this.DSA_AD_CMPNY = DSA_AD_CMPNY;
+        return this;
+    }
+
+
+    public LocalAdDocumentSequenceAssignment buildDSA(String companyShortName) throws CreateException {
+
+        try {
+
+            LocalAdDocumentSequenceAssignment entity = new LocalAdDocumentSequenceAssignment();
+
+            Debug.print("AdDocumentSequenceAssignment buildDSA");
+            entity.setDsaSobCode(DSA_SOB_CODE);
+            entity.setDsaNextSequence(DSA_NXT_SQNC);
+            entity.setDsaAdCompany(DSA_AD_CMPNY);
+
+            em.persist(entity, companyShortName);
+            return entity;
+
+        }
+        catch (Exception ex) {
+            throw new CreateException(ex.getMessage());
+        }
+    }
+
+    public LocalAdDocumentSequenceAssignment create(Integer DSA_CODE,
+                                                    Integer DSA_SOB_CODE, String DSA_NXT_SQNC, Integer DSA_AD_CMPNY) throws CreateException {
 
         try {
 
@@ -175,7 +216,7 @@ public class LocalAdDocumentSequenceAssignmentHome {
         }
     }
 
-    public LocalAdDocumentSequenceAssignment create(java.lang.Integer DSA_SOB_CODE, String DSA_NXT_SQNC,
+    public LocalAdDocumentSequenceAssignment create(Integer DSA_SOB_CODE, String DSA_NXT_SQNC,
                                                     Integer DSA_AD_CMPNY) throws CreateException {
 
         try {

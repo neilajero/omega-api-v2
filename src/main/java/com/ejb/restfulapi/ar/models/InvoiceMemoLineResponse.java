@@ -45,5 +45,4 @@ public class InvoiceMemoLineResponse {
 
         this.invoiceNumber = invoiceNumber;
     }
-
 }
