@@ -222,8 +222,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
                 return apiResponse;
             }
 
-            // Customer Code from TT
-            // WARNING: Do not adopt this code because Tecnotree has issues at their end
+            // Customer Code
             try {
                 if (invoiceItemRequest.getCustomerCode() == null || invoiceItemRequest.getCustomerCode().equals("")) {
                     apiResponse.setCode(EJBCommonAPIErrCodes.OAPI_ERR_047);
@@ -262,7 +261,6 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
             }
 
             ArrayList invoiceLineItems = new ArrayList();
-
             if (invoiceItemRequest.getInvoiceItems() == null || invoiceItemRequest.getInvoiceItems().size() == 0) {
                 apiResponse.setCode(EJBCommonAPIErrCodes.OAPI_ERR_061);
                 apiResponse.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_061_MSG);
@@ -542,6 +540,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
                 }
                 arCustomer = arCustomerHome.findByCstCustomerCode(invoiceMemoLineRequest.getCustomerCode(),
                         invoiceDetails.getInvAdCompany(), invoiceDetails.getCompanyShortName());
+                invoiceDetails.setCustomerCode(arCustomer.getCstCustomerCode());
             }
             catch (FinderException ex) {
                 apiResponse.setCode(EJBCommonAPIErrCodes.OAPI_ERR_009);
@@ -1455,6 +1454,7 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
     }
 
     private void generateDocumentNumber(ArInvoiceDetails invoiceDetails, Integer companyCode, Integer branchCode, String documentType) {
+        Debug.print("ArInvoiceEntryApiControllerBean generateDocumentNumber");
 
         LocalAdDocumentSequenceAssignment adDocumentSequenceAssignment = null;
         LocalAdBranchDocumentSequenceAssignment adBranchDocumentSequenceAssignment = null;
@@ -1472,8 +1472,6 @@ public class ArInvoiceEntryApiControllerBean extends EJBContextClass implements 
                 (invoiceDetails.getInvNumber() == null || invoiceDetails.getInvNumber().trim().length() == 0)) {
 
             if (adBranchDocumentSequenceAssignment == null || adBranchDocumentSequenceAssignment.getBdsNextSequence() == null) {
-
-                System.out.println("Next Document Sequence : " + adDocumentSequenceAssignment.getDsaNextSequence());
 
                 try {
                     // Validate if the next invoice number sequence is already been used?
