@@ -89,6 +89,35 @@
             <artifactId>javax.mail-api</artifactId>
             <version>1.6.2</version>
         </dependency>
+        <dependency>
+            <groupId>net.sf.jasperreports</groupId>
+            <artifactId>jasperreports</artifactId>
+            <version>6.20.0</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.jasperreports</groupId>
+            <artifactId>jasperreports-fonts</artifactId>
+            <version>6.20.0</version>
+        </dependency>
+        <dependency>
+            <groupId>iReport</groupId>
+            <artifactId>iReport</artifactId>
+            <scope>system</scope>
+            <version>1.0</version>
+            <systemPath>${project.basedir}/src/main/webapp/WEB-INF/lib/iReport-utils-2.0.1.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>itext</groupId>
+            <artifactId>itext</artifactId>
+            <scope>system</scope>
+            <version>1.0</version>
+            <systemPath>${project.basedir}/src/main/webapp/WEB-INF/lib/itext-2.1.7.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>itextpdf</artifactId>
+            <version>5.5.0</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

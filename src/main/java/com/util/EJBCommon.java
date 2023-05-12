@@ -1,5 +1,7 @@
 package com.util;
 
+import java.io.*;
+import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -101,6 +103,11 @@ public final class EJBCommon implements java.io.Serializable {
     public static final String Standard = "Standard";
     public static final String FIFO = "FIFO";
 
+    public static final String REPORT_VIEW_TYPE_PDF = "PDF";
+    public static final String SOA_REPORT_FILENAME = "SOA";
+
+    public static String DATE_FORMAT_INPUT = null;
+
     public static double roundIt(double amount, short precision) {
 
         return Math.round(amount * Math.pow(10, precision)) / Math.pow(10, precision);
@@ -177,28 +184,25 @@ public final class EJBCommon implements java.io.Serializable {
     }
 
     public static Date convertStringToSQLDate(String strDateInput) {
-
         String dateFormatInput = Pattern.compile("MM/dd/yy").pattern();
-
         if (strDateInput != null && strDateInput.length() >= 1) {
-
             SimpleDateFormat sdf = new SimpleDateFormat(dateFormatInput);
             sdf.setLenient(false);
-
             try {
-
                 return (sdf.parse(strDateInput));
-
             }
             catch (ParseException e) {
-
                 return (null);
             }
-
         } else {
-
             return (null);
         }
+    }
+
+    public static Date convertStringToSQLDateV2(String strDateInput) throws ParseException {
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd"); // Date format of the string
+        java.util.Date utilDate = df.parse(strDateInput); // Parse the string to java.util.Date
+        return new java.sql.Date(utilDate.getTime()); // Convert java.util.Date to java.sql.Date
     }
 
     public static boolean validateApiDate(String strDateInput, String dateFormatInput) {

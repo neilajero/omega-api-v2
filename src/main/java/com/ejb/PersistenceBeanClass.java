@@ -108,6 +108,16 @@ public class PersistenceBeanClass {
         }
     }
 
+    public StoredProcedureQuery createStoredProcedureQuery(String spName, String companyShortName) {
+        try {
+            EntityManager em = this.getEntityManager(companyShortName);
+            return em.createStoredProcedureQuery(spName);
+        }
+        catch (Exception ex) {
+            throw ex;
+        }
+    }
+
     public void remove(Object obj) throws RemoveException {
         try {
             emgr.remove(emgr.contains(obj) ? obj : emgr.merge(obj));
