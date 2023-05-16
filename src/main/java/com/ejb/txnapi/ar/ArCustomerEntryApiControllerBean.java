@@ -11,6 +11,7 @@ import com.ejb.entities.ar.LocalArCustomerType;
 import com.ejb.entities.gl.LocalGlChartOfAccount;
 import com.ejb.exception.ar.ArCCCoaGlReceivableAccountNotFoundException;
 import com.ejb.restfulapi.OfsApiResponse;
+import com.ejb.restfulapi.ar.models.CustomerListResponse;
 import com.ejb.restfulapi.ar.models.CustomerRequest;
 import com.ejb.txn.OmegaDataListController;
 import com.util.Debug;
@@ -25,6 +26,7 @@ import jakarta.ejb.EJBException;
 import jakarta.ejb.FinderException;
 import jakarta.ejb.Stateless;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Stateless(name = "ArCustomerEntryApiControllerEJB")
@@ -298,6 +300,48 @@ public class ArCustomerEntryApiControllerBean extends EJBContextClass implements
         }
         catch (Exception ex) {
             apiResponse.setCode(EJBCommonAPIErrCodes.OAPI_ERR_007);
+            apiResponse.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_007_MSG);
+            return apiResponse;
+        }
+        return apiResponse;
+    }
+
+    @Override
+    public CustomerListResponse getAllCustomersPerCompany(String companyshortname) {
+
+        Debug.print("ArCustomerEntryApiControllerBean getAllCustomersPerCompany");
+
+        CustomerListResponse apiResponse = new CustomerListResponse();
+        LocalAdCompany adCompany;
+
+        try {
+            // Company Code
+            try {
+                if (companyshortname == null || companyshortname.equals("")) {
+                    apiResponse.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_041);
+                    apiResponse.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_041_MSG);
+                    return apiResponse;
+                }
+                adCompany = adCompanyHome.findByCmpShortName(companyshortname);
+            }
+            catch (FinderException ex) {
+                apiResponse.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_001);
+                apiResponse.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_001_MSG);
+                return apiResponse;
+            }
+            List<String> list = new ArrayList<>();
+            Collection arCustomers = arCustomerHome.findByCstAdCompany(adCompany.getCmpCode(), adCompany.getCmpShortName());
+            for (Object customer : arCustomers) {
+                LocalArCustomer arCustomer = (LocalArCustomer) customer;
+                list.add(arCustomer.getCstCustomerCode());
+            }
+            apiResponse.setCustomerCodes(list);
+            apiResponse.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_000);
+            apiResponse.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_000_MSG);
+            apiResponse.setStatus("Retrieve customer list.");
+        }
+        catch (Exception ex) {
+            apiResponse.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_007);
             apiResponse.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_007_MSG);
             return apiResponse;
         }

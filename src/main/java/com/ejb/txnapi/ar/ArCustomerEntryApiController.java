@@ -2,6 +2,7 @@ package com.ejb.txnapi.ar;
 
 import com.ejb.exception.ar.ArCCCoaGlReceivableAccountNotFoundException;
 import com.ejb.restfulapi.OfsApiResponse;
+import com.ejb.restfulapi.ar.models.CustomerListResponse;
 import com.ejb.restfulapi.ar.models.CustomerRequest;
 import com.util.mod.ar.ArModCustomerDetails;
 
@@ -21,5 +22,7 @@ public interface ArCustomerEntryApiController {
 	 * This method creates a customer object.
 	 */
     OfsApiResponse createCustomer(CustomerRequest customerRequest);
+
+	CustomerListResponse getAllCustomersPerCompany(String companyshortname);
 
 }
