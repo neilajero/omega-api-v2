@@ -7,9 +7,14 @@ import com.util.EJBCommon;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.*;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+
+import java.io.ByteArrayInputStream;
 
 @RequestScoped
 @Path("/soa")
@@ -25,11 +30,12 @@ public class ArRepStatementRestApi {
     @RolesAllowed({"Admin"})
     public Response generateSoa(StatementRequest request) {
 
-        StatementResponse response = arRepStatementApiController.generateSoa(request);
+        StatementResponse data = arRepStatementApiController.generateSoa(request);
         String outputFilename = String.format("attachment; filename=%s.pdf", EJBCommon.SOA_REPORT_FILENAME);
-        return Response.ok(response.getPdfReport(), "application/pdf")
-                .header("Content-Disposition", outputFilename)
-                .build();
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(data.getPdfReport());
+        Response.ResponseBuilder response = Response.ok(inputStream);
+        response.header("Content-Disposition", outputFilename);
+        return response.build();
     }
 
 }
