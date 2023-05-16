@@ -1,0 +1,5 @@
+Sales Order=ArRepSalesOrderPrint.jasper
+Quotation=ArRepSalesOrderQuotationPrint.jasper
+Proforma Invoice=ArRepSalesOrderProformaPrint.jasper
+Training Order=ArRepSalesOrderTrainingOrderPrint.jasper
+Service Order=ArRepSalesOrderServiceOrderPrint.jasper

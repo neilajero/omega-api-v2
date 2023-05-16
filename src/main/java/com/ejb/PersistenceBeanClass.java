@@ -88,6 +88,18 @@ public class PersistenceBeanClass {
         }
     }
 
+    public Query createQueryPerCompanyIntegerClass(String sql, String companyShortName) {
+        try {
+            EntityManager em = this.getEntityManager(companyShortName);
+            Query q = em.createQuery(sql, Integer.class);
+            q.setHint("org.hibernate.cacheable", true);
+            return q;
+        }
+        catch (Exception ex) {
+            throw ex;
+        }
+    }
+
     public Query createNativeQuery(String sql) {
         try {
             Query q = emgr.createNativeQuery(sql);

@@ -184,7 +184,7 @@ public final class EJBCommon implements java.io.Serializable {
     }
 
     public static Date convertStringToSQLDate(String strDateInput) {
-        String dateFormatInput = Pattern.compile("MM/dd/yy").pattern();
+        String dateFormatInput = Pattern.compile("dd-MM-yyyy").pattern();
         if (strDateInput != null && strDateInput.length() >= 1) {
             SimpleDateFormat sdf = new SimpleDateFormat(dateFormatInput);
             sdf.setLenient(false);
@@ -199,8 +199,23 @@ public final class EJBCommon implements java.io.Serializable {
         }
     }
 
+    public static Date convertStringToSQLDateV3(String strDateInput) {
+        SimpleDateFormat inputFormat = new SimpleDateFormat("dd-MM-yyyy");
+        SimpleDateFormat outputFormat = new SimpleDateFormat("MM/dd/yyyy");
+
+        try {
+            java.util.Date utilDate = inputFormat.parse(strDateInput);
+            String formattedDate = outputFormat.format(utilDate);
+            java.util.Date parsedDate = outputFormat.parse(formattedDate);
+            return new java.sql.Date(parsedDate.getTime());
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public static Date convertStringToSQLDateV2(String strDateInput) throws ParseException {
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd"); // Date format of the string
+        DateFormat df = new SimpleDateFormat("dd-MM-yyyy"); // Date format of the string
         java.util.Date utilDate = df.parse(strDateInput); // Parse the string to java.util.Date
         return new java.sql.Date(utilDate.getTime()); // Convert java.util.Date to java.sql.Date
     }

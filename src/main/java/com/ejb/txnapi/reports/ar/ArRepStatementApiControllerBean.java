@@ -16,16 +16,19 @@ import com.ejb.restfulapi.reports.ar.models.StatementDetails;
 import com.ejb.restfulapi.reports.ar.models.StatementRequest;
 import com.ejb.restfulapi.reports.ar.models.StatementResponse;
 import com.ejb.txnapi.reports.Report;
+import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonStringFormatVisitor;
 import com.util.Debug;
 import com.util.EJBCommon;
 import com.util.EJBCommonAPIErrCodes;
 import com.util.EJBContextClass;
-import jakarta.ejb.EJB;
-import jakarta.ejb.EJBException;
-import jakarta.ejb.FinderException;
-import jakarta.ejb.Stateless;
+import jakarta.annotation.Resource;
+import jakarta.ejb.*;
+import jakarta.inject.Inject;
 import jakarta.persistence.ParameterMode;
 import jakarta.persistence.StoredProcedureQuery;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletResponse;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.util.JRLoader;
 
@@ -33,6 +36,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 import java.io.*;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -53,6 +57,9 @@ public class ArRepStatementApiControllerBean extends EJBContextClass implements 
     @EJB
     private LocalAdUserHome adUserHome;
 
+    @Inject
+    private ServletContext servletContext;
+
     @Override
     public void executeSpArRepStatementOfAccount(StatementDetails details)
             throws GlobalNoRecordFoundException {
@@ -60,6 +67,9 @@ public class ArRepStatementApiControllerBean extends EJBContextClass implements 
         Debug.print("ArRepStatementApiControllerBean executeSpArRepStatementOfAccount");
 
         try {
+
+            String branchCodes = String.join(",", details.getBranchCodes());
+
             StoredProcedureQuery spQuery = em.createStoredProcedureQuery(details.getStoredProcedure(), details.getCompanyShortName())
                     .registerStoredProcedureParameter("cutoffDate", Date.class, ParameterMode.IN)
                     .registerStoredProcedureParameter("customerBatch", String.class, ParameterMode.IN)
@@ -77,7 +87,7 @@ public class ArRepStatementApiControllerBean extends EJBContextClass implements 
             spQuery.setParameter("includeUnposted", details.isIncludePosted());
             spQuery.setParameter("includeAdvance", details.isIncludeAdvance());
             spQuery.setParameter("includeAdvanceOnly", details.isIncludeAdvanceOnly());
-            spQuery.setParameter("branchCode", "27,28,29,30,31,32"); //TODO: Verify if this is required
+            spQuery.setParameter("branchCode", branchCodes);
             spQuery.setParameter("adCompany", details.getCompanyCode());
 
             spQuery.execute();
@@ -132,6 +142,7 @@ public class ArRepStatementApiControllerBean extends EJBContextClass implements 
                     details.setCompanyFax(adCompany.getCmpFax());
                     details.setCompanyEmail(adCompany.getCmpEmail());
                     details.setCompanyTinNumber(adCompany.getCmpTin());
+                    details.setBranchCodes(adBranchHome.findBrCodeByBrAdCompany(adCompany.getCmpCode(), adCompany.getCmpShortName()));
                 }
             }
             catch (FinderException ex) {
@@ -201,17 +212,15 @@ public class ArRepStatementApiControllerBean extends EJBContextClass implements 
             details.setDateTo(request.getDateTo());
 
             this.executeSpArRepStatementOfAccount(details);
-            Report report = this.generateReport(this.setReportParameters(details));
+            Report report = this.generateReport(
+                    this.setReportParameters(details), details.getCompanyShortName().toLowerCase());
             if (report.getBytes() != null) {
                 response.setPdfReport(report.getBytes());
             }
 
-            //this.generateReportV2(this.setReportParameters(details));
-
             response.setCode(EJBCommonAPIErrCodes.OAPI_ERR_000);
             response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_000_MSG);
             response.setStatus("Generated SOA successfully.");
-
         }
         catch (Exception ex) {
             ex.printStackTrace();
@@ -222,14 +231,20 @@ public class ArRepStatementApiControllerBean extends EJBContextClass implements 
         return response;
     }
 
-    private Report generateReport(Map<String, Object> parameters)
+    private Report generateReport(Map<String, Object> parameters, String companyShortName)
             throws JRException, SQLException {
+        Debug.print("ArRepStatementApiControllerBean generateReport");
         Report report = new Report();
-        String filename = "/Users/neoajero/neosolutions/obci-solutions/ofs-source/omega-api-v2/src/main/java/com/ejb/txnapi/reports/jasper/ArRepStatementOfAccount.jasper";
-        Connection conn = this.getConnection();
-        report.setViewType(EJBCommon.REPORT_VIEW_TYPE_PDF);
-        report.setBytes(JasperRunManager.runReportToPdf(filename, parameters, conn));
-        conn.close();
+        String filename = servletContext.getRealPath(
+                String.format("/WEB-INF/jasper/%s/ArRepStatementOfAccount.jasper", companyShortName));
+        if (filename != null) {
+            Connection conn = this.getConnection();
+            report.setViewType(EJBCommon.REPORT_VIEW_TYPE_PDF);
+            report.setBytes(JasperRunManager.runReportToPdf(filename, parameters, conn));
+            conn.close();
+        } else {
+            Debug.print("ERROR : RESOURCE URL PATH NOT FOUND!");
+        }
         return report;
     }
 
@@ -245,65 +260,14 @@ public class ArRepStatementApiControllerBean extends EJBContextClass implements 
 
     }
 
-    private Map<String, Object> setReportParameters(StatementDetails details) throws ParseException {
+    private Map<String, Object> setReportParameters(StatementDetails details) {
 
         Debug.print("ArRepStatementApiControllerBean setReportParameters");
 
-        int agingBucket = 0;
-
         Map<String, Object> parameters = new HashMap<String, Object>();
-
-        parameters.put("branchName", details.getBranchName());
         parameters.put("preparedBy", details.getPreparedBy());
-        parameters.put("date", EJBCommon.convertStringToSQLDate(details.getDateTo()));
-        parameters.put("date2", EJBCommon.convertStringToSQLDate(details.getDateTo()));
-
-        Calendar calendar = new GregorianCalendar();
-        calendar.setTime(EJBCommon.convertStringToSQLDateV2(details.getDateTo()));
-        calendar.add(Calendar.DAY_OF_MONTH, 10);
-
-        parameters.put("dueDate", EJBCommon.convertSQLDateToString(calendar.getTime()));
-        parameters.put("customerMessage", ""); //TODO: Review where to pull this data
-        parameters.put("collectionHead", ""); //TODO: Review where to pull this data
-        parameters.put("invoiceBatchName", ""); //TODO: Review where to pull this data
-        parameters.put("waterOnly", false);
-        parameters.put("viewType", "PDF");
-
-        parameters.put("company", details.getCompanyName());
         parameters.put("dateFrom", EJBCommon.convertStringToSQLDate(details.getDateFrom()));
         parameters.put("dateTo", EJBCommon.convertStringToSQLDate(details.getDateTo()));
-
-        parameters.put("telephoneNumber", details.getCompanyPhone());
-        parameters.put("faxNumber", details.getCompanyFax());
-        parameters.put("email", details.getCompanyEmail());
-        parameters.put("tinNumber", details.getCompanyTinNumber());
-        parameters.put("companyAddress", details.getCompanyAddress());
-
-        if (agingBucket > 1) {
-            parameters.put("agingBucket1", "1-" + agingBucket + " days");
-            parameters.put("agingBucket2", (agingBucket + 1) + "-" + (agingBucket * 2) + " days");
-            parameters.put("agingBucket3", ((agingBucket * 2) + 1) + "-" + (agingBucket * 3) + " days");
-            parameters.put("agingBucket4", ((agingBucket * 3) + 1) + "-" + (agingBucket * 4) + " days");
-            parameters.put("agingBucket5", "Over " + (agingBucket * 4) + " days");
-        } else {
-            parameters.put("agingBucket1", "1 day");
-            parameters.put("agingBucket2", "2 days");
-            parameters.put("agingBucket3", "3 days");
-            parameters.put("agingBucket4", "4 days");
-            parameters.put("agingBucket5", "Over 4 days");
-        }
-
-        if (details.isIncludePosted()) {
-            parameters.put("includeUnpostedTransaction", "YES");
-        } else {
-            parameters.put("includeUnpostedTransaction", "NO");
-        }
-
-        if (details.isIncludeAdvance()) {
-            parameters.put("includeAdvance", "YES");
-        } else {
-            parameters.put("includeAdvance", "NO");
-        }
 
         return parameters;
     }
