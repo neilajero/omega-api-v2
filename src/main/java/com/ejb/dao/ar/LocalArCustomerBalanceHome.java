@@ -125,6 +125,22 @@ public class LocalArCustomerBalanceHome {
         }
     }
 
+    public Collection findByBeforeOrEqualCbDateAndCstCode(
+            Date CB_DT, Integer AR_CST_CODE, Integer CB_AD_CMPNY, String companyShortName) throws FinderException {
+
+        try {
+            Query query = em.createQueryPerCompany("SELECT OBJECT(cb) FROM ArCustomerBalance cb "
+                    + "WHERE cb.cbDate <= ?1 AND cb.arCustomer.cstCode = ?2 AND cb.cbAdCompany = ?3", companyShortName);
+            query.setParameter(1, CB_DT);
+            query.setParameter(2, AR_CST_CODE);
+            query.setParameter(3, CB_AD_CMPNY);
+            return query.getResultList();
+        }
+        catch (Exception ex) {
+            throw ex;
+        }
+    }
+
     public Collection<LocalArCustomerBalance> findByCstCustomerCode(
             String CST_CSTMR_CODE, Integer CB_AD_CMPNY) throws FinderException {
 

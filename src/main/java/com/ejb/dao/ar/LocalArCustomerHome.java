@@ -385,8 +385,18 @@ public class LocalArCustomerHome {
             return query.getResultList();
         }
         catch (Exception ex) {
-            Debug.print(
-                    "EXCEPTION: Exception com.ejb.ar.LocalArCustomerHome.findCstArea(Integer CST_AD_CMPNY)");
+            throw ex;
+        }
+    }
+
+    public Collection findCstArea(Integer CST_AD_CMPNY, String companyShortName) throws FinderException {
+
+        try {
+            Query query = em.createQueryPerCompany("SELECT OBJECT(cst) FROM ArCustomer cst WHERE cst.cstAdCompany = ?1", companyShortName.toLowerCase());
+            query.setParameter(1, CST_AD_CMPNY);
+            return query.getResultList();
+        }
+        catch (Exception ex) {
             throw ex;
         }
     }
@@ -753,8 +763,9 @@ public class LocalArCustomerHome {
 			Integer BR_CODE, Integer AD_CMPNY, char NEW, char UPDATED, char DOWNLOADED_UPDATED) throws FinderException {
 
         try {
-            Query query = em.createQuery(
-                    "SELECT DISTINCT OBJECT(cst) FROM ArCustomer cst, IN(cst.adBranchCustomers) bcst WHERE (bcst.bcstCustomerDownloadStatus = ?3 OR bcst.bcstCustomerDownloadStatus = ?4 OR bcst.bcstCustomerDownloadStatus = ?5) AND cst.cstEnableRetailCashier = 1 AND bcst.adBranch.brCode = ?1 AND bcst.bcstAdCompany = ?2");
+            Query query = em.createQuery("SELECT DISTINCT OBJECT(cst) FROM ArCustomer cst, IN(cst.adBranchCustomers) bcst "
+                    + "WHERE (bcst.bcstCustomerDownloadStatus = ?3 OR bcst.bcstCustomerDownloadStatus = ?4 OR bcst.bcstCustomerDownloadStatus = ?5) "
+                    + "AND cst.cstEnableRetailCashier = 1 AND bcst.adBranch.brCode = ?1 AND bcst.bcstAdCompany = ?2");
             query.setParameter(1, BR_CODE);
             query.setParameter(2, AD_CMPNY);
             query.setParameter(3, NEW);
@@ -763,8 +774,25 @@ public class LocalArCustomerHome {
             return query.getResultList();
         }
         catch (Exception ex) {
-            Debug.print(
-                    "EXCEPTION: Exception com.ejb.ar.LocalArCustomerHome.findCstByCstNewAndUpdated(Integer BR_CODE, Integer AD_CMPNY, char NEW, char UPDATED, char DOWNLOADED_UPDATED)");
+            throw ex;
+        }
+    }
+
+    public Collection findCstByCstNewAndUpdated(
+            Integer BR_CODE, Integer AD_CMPNY, char NEW, char UPDATED, char DOWNLOADED_UPDATED, String companyShortName) throws FinderException {
+
+        try {
+            Query query = em.createQueryPerCompany("SELECT DISTINCT OBJECT(cst) FROM ArCustomer cst, IN(cst.adBranchCustomers) bcst "
+                    + "WHERE (bcst.bcstCustomerDownloadStatus = ?3 OR bcst.bcstCustomerDownloadStatus = ?4 OR bcst.bcstCustomerDownloadStatus = ?5) "
+                    + "AND cst.cstEnableRetailCashier = 1 AND bcst.adBranch.brCode = ?1 AND bcst.bcstAdCompany = ?2", companyShortName.toLowerCase());
+            query.setParameter(1, BR_CODE);
+            query.setParameter(2, AD_CMPNY);
+            query.setParameter(3, NEW);
+            query.setParameter(4, UPDATED);
+            query.setParameter(5, DOWNLOADED_UPDATED);
+            return query.getResultList();
+        }
+        catch (Exception ex) {
             throw ex;
         }
     }

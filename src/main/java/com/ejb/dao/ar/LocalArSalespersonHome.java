@@ -80,14 +80,25 @@ public class LocalArSalespersonHome {
 			throws FinderException {
 
 		try {
-			Query query = em.createQuery(
-					"SELECT OBJECT(slp) FROM ArSalesperson slp, IN(slp.adBranchSalespersons) bslp WHERE bslp.adBranch.brCode = ?1 AND slp.slpAdCompany = ?2");
+			Query query = em.createQuery("SELECT OBJECT(slp) FROM ArSalesperson slp, IN(slp.adBranchSalespersons) bslp "
+					+ "WHERE bslp.adBranch.brCode = ?1 AND slp.slpAdCompany = ?2");
 			query.setParameter(1, SLP_AD_BRNCH);
 			query.setParameter(2, SLP_AD_CMPNY);
             return query.getResultList();
 		} catch (Exception ex) {
-			Debug.print(
-					"EXCEPTION: Exception com.ejb.ar.LocalArSalespersonHome.findSlpByBrCode(java.lang.Integer SLP_AD_BRNCH, java.lang.Integer SLP_AD_CMPNY)");
+			throw ex;
+		}
+	}
+
+	public java.util.Collection findSlpByBrCode(java.lang.Integer SLP_AD_BRNCH, java.lang.Integer SLP_AD_CMPNY, String companyShortName) {
+
+		try {
+			Query query = em.createQueryPerCompany("SELECT OBJECT(slp) FROM ArSalesperson slp, IN(slp.adBranchSalespersons) bslp "
+					+ "WHERE bslp.adBranch.brCode = ?1 AND slp.slpAdCompany = ?2", companyShortName.toLowerCase());
+			query.setParameter(1, SLP_AD_BRNCH);
+			query.setParameter(2, SLP_AD_CMPNY);
+			return query.getResultList();
+		} catch (Exception ex) {
 			throw ex;
 		}
 	}

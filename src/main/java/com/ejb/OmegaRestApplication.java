@@ -12,6 +12,7 @@ import com.ejb.restfulapi.inv.InvItemRestApi;
 import com.ejb.restfulapi.reports.ar.ArRepStatementRestApi;
 import com.ejb.restfulapi.sync.ad.AdBankAccountSyncApi;
 import com.ejb.restfulapi.sync.ad.AdBranchSyncApi;
+import com.ejb.restfulapi.sync.ar.ArCustomerSyncApi;
 import jakarta.ws.rs.ApplicationPath;
 import jakarta.ws.rs.core.Application;
 
@@ -58,6 +59,7 @@ public class OmegaRestApplication extends Application {
         // Synchronizer
         classes.add(AdBankAccountSyncApi.class);
         classes.add(AdBranchSyncApi.class);
+        classes.add(ArCustomerSyncApi.class);
 
         return classes;
     }

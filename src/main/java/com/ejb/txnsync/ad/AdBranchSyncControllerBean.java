@@ -26,7 +26,6 @@ public class AdBranchSyncControllerBean extends EJBContextClass implements AdBra
     public PersistenceBeanClass em;
     @EJB
     private LocalAdBranchHome adBranchHome;
-
     @EJB
     private ILocalAdCompanyHome adCompanyHome;
 

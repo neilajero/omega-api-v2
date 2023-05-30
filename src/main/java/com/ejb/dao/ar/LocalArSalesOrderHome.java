@@ -120,15 +120,32 @@ public class LocalArSalesOrderHome {
 			java.util.Date SO_DT_TO, java.lang.Integer SO_AD_CMPNY) throws FinderException {
 
 		try {
-			Query query = em.createQuery(
-					"SELECT OBJECT(so) FROM ArSalesOrder so  WHERE so.soPosted = 1 AND so.soApprovalStatus = 'APPROVED' AND so.soDateApprovedRejected >= ?1 AND so.soDateApprovedRejected <= ?2 AND so.soAdCompany = ?3");
+			Query query = em.createQuery("SELECT OBJECT(so) FROM ArSalesOrder so "
+					+ "WHERE so.soPosted = 1 AND so.soApprovalStatus = 'APPROVED' "
+					+ "AND so.soDateApprovedRejected >= ?1 AND so.soDateApprovedRejected <= ?2 "
+					+ "AND so.soAdCompany = ?3");
 			query.setParameter(1, SO_DT_FRM);
 			query.setParameter(2, SO_DT_TO);
 			query.setParameter(3, SO_AD_CMPNY);
             return query.getResultList();
 		} catch (Exception ex) {
-			Debug.print(
-					"EXCEPTION: Exception com.ejb.ar.LocalArSalesOrderHome.findSoPostedAndApprovedByDateRangeAndAdCompany(java.com.util.Date SO_DT_FRM, java.com.util.Date SO_DT_TO, java.lang.Integer SO_AD_CMPNY)");
+			throw ex;
+		}
+	}
+
+	public java.util.Collection findSoPostedAndApprovedByDateRangeAndAdCompany(
+			java.util.Date SO_DT_FRM, java.util.Date SO_DT_TO, java.lang.Integer SO_AD_CMPNY, String companyShortName) {
+
+		try {
+			Query query = em.createQueryPerCompany("SELECT OBJECT(so) FROM ArSalesOrder so "
+					+ "WHERE so.soPosted = 1 AND so.soApprovalStatus = 'APPROVED' "
+					+ "AND so.soDateApprovedRejected >= ?1 AND so.soDateApprovedRejected <= ?2 "
+					+ "AND so.soAdCompany = ?3", companyShortName.toLowerCase());
+			query.setParameter(1, SO_DT_FRM);
+			query.setParameter(2, SO_DT_TO);
+			query.setParameter(3, SO_AD_CMPNY);
+			return query.getResultList();
+		} catch (Exception ex) {
 			throw ex;
 		}
 	}

@@ -45,4 +45,24 @@
         </properties>
     </persistence-unit>
 
+    <persistence-unit name="CourtsDS" transaction-type="JTA">
+        <jta-data-source>java:jboss/datasources/CourtsDS</jta-data-source>
+        <mapping-file>META-INF/mapping.xml</mapping-file>
+        <validation-mode>AUTO</validation-mode>
+        <properties>
+            <property name="hibernate.use_sql_comments" value="true"/>
+            <property name="hibernate.cache.use_query_cache" value="true"/>
+            <property name="hibernate.cache.use_second_level_cache" value="true"/>
+            <property name="hibernate.batch_fetch_style" value="dynamic"/>
+            <property name="hibernate.generate_statistics" value="no"/>
+            <property name="jakarta.persistence.sharedCache.mode" value="DISABLE_SELECTIVE"/>
+            <!--
+            <property name="hibernate.dialect" value="org.hibernate.engine.jdbc.env.spi.JdbcEnvironment" />
+            <property name="hibernate.dialect" value="org.hibernate.dialect.Oracle12cDialect" />
+            <property name="hibernate.show_sql" value="true" />
+            <property name="hibernate.format_sql" value="true" />
+            -->
+        </properties>
+    </persistence-unit>
+
 </persistence>

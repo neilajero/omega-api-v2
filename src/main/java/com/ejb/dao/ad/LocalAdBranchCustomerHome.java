@@ -127,8 +127,9 @@ public class LocalAdBranchCustomerHome {
 			char NEW, char UPDATED, char DOWNLOADED_UPDATED) throws FinderException {
 
 		try {
-			Query query = em.createQuery(
-					"SELECT OBJECT(bcst) FROM AdBranchCustomer bcst WHERE (bcst.bcstCustomerDownloadStatus = ?3 OR bcst.bcstCustomerDownloadStatus = ?4 OR bcst.bcstCustomerDownloadStatus = ?5) AND bcst.adBranch.brCode = ?1 AND bcst.bcstAdCompany = ?2");
+			Query query = em.createQuery("SELECT OBJECT(bcst) FROM AdBranchCustomer bcst "
+					+ "WHERE (bcst.bcstCustomerDownloadStatus = ?3 OR bcst.bcstCustomerDownloadStatus = ?4 OR bcst.bcstCustomerDownloadStatus = ?5) "
+					+ "AND bcst.adBranch.brCode = ?1 AND bcst.bcstAdCompany = ?2");
 			query.setParameter(1, BR_CODE);
 			query.setParameter(2, AD_CMPNY);
 			query.setParameter(3, NEW);
@@ -136,8 +137,24 @@ public class LocalAdBranchCustomerHome {
 			query.setParameter(5, DOWNLOADED_UPDATED);
             return query.getResultList();
 		} catch (Exception ex) {
-			Debug.print(
-					"EXCEPTION: Exception com.ejb.ad.LocalAdBranchCustomerHome.findCstByCstNewAndUpdated(java.lang.Integer BR_CODE, java.lang.Integer AD_CMPNY, char NEW, char UPDATED, char DOWNLOADED_UPDATED)");
+			throw ex;
+		}
+	}
+
+	public java.util.Collection findCstByCstNewAndUpdated(
+			java.lang.Integer BR_CODE, java.lang.Integer AD_CMPNY, char NEW, char UPDATED, char DOWNLOADED_UPDATED, String companyShortName) throws FinderException {
+
+		try {
+			Query query = em.createQueryPerCompany("SELECT OBJECT(bcst) FROM AdBranchCustomer bcst "
+					+ "WHERE (bcst.bcstCustomerDownloadStatus = ?3 OR bcst.bcstCustomerDownloadStatus = ?4 OR bcst.bcstCustomerDownloadStatus = ?5) "
+					+ "AND bcst.adBranch.brCode = ?1 AND bcst.bcstAdCompany = ?2", companyShortName);
+			query.setParameter(1, BR_CODE);
+			query.setParameter(2, AD_CMPNY);
+			query.setParameter(3, NEW);
+			query.setParameter(4, UPDATED);
+			query.setParameter(5, DOWNLOADED_UPDATED);
+			return query.getResultList();
+		} catch (Exception ex) {
 			throw ex;
 		}
 	}

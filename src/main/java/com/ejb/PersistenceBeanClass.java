@@ -15,8 +15,9 @@ import java.util.Arrays;
 @Stateless
 public class PersistenceBeanClass {
 
-    private static final String TaguigLGUDS = "TaguigLGUDS";
     private static final String TwentyFourHDS = "24hDS";
+    private static final String TaguigLGUDS = "TaguigLGUDS";
+    private static final String CourtsDS = "CourtsDS";
 
     public EntityManager emgr = null;
 
@@ -25,6 +26,9 @@ public class PersistenceBeanClass {
 
     @PersistenceContext(unitName = TaguigLGUDS)
     private EntityManager emTaguigLGU;
+
+    @PersistenceContext(unitName = CourtsDS)
+    private EntityManager emCourts;
 
     public Object find(Object entityClass, int code) {
         try {
@@ -147,13 +151,15 @@ public class PersistenceBeanClass {
         EntityManager entityManager = null;
         String[] twentyFourHCompanies = {"gnj","mrc","fvj","afm","ogj","mjg","hoa"}; // This is for 24H only.
         if (EJBCommon.validateInputData(companyShortName)) {
-            // Filter for Taguig LGU company
-            if (companyShortName.equalsIgnoreCase("tglgu")) {
+            if (companyShortName.equalsIgnoreCase("courts")) {
+                entityManager = emCourts;
+            } else if (companyShortName.equalsIgnoreCase("tglgu")) {
+                // Filter for Taguig LGU company
                 entityManager = emTaguigLGU;
             } else {
-                // Filter 24H company code
                 int index = Arrays.asList(twentyFourHCompanies).indexOf(companyShortName.toLowerCase());
                 if (index >= 0) {
+                    // Filter 24H company code
                     entityManager = em24H;
                 }
             }

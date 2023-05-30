@@ -603,18 +603,34 @@ public class LocalArInvoiceHome {
         }
     }
 
-    public java.util.Collection findUnpostedInvByCstCustomerCode(java.lang.String CST_CSTMR_CODE,
-                                                                 java.lang.Integer INV_AD_CMPNY) throws FinderException {
+    public java.util.Collection findUnpostedInvByCstCustomerCode(
+            java.lang.String CST_CSTMR_CODE, java.lang.Integer INV_AD_CMPNY) throws FinderException {
 
         try {
             Query query = em.createQuery(
-                    "SELECT OBJECT(inv) FROM ArInvoice inv WHERE inv.arCustomer.cstCustomerCode = ?1 AND inv.invPosted = 0 AND inv.invAdCompany = ?2");
+                    "SELECT OBJECT(inv) FROM ArInvoice inv "
+                            + "WHERE inv.arCustomer.cstCustomerCode = ?1 "
+                            + "AND inv.invPosted = 0 AND inv.invAdCompany = ?2");
             query.setParameter(1, CST_CSTMR_CODE);
             query.setParameter(2, INV_AD_CMPNY);
             return query.getResultList();
         } catch (Exception ex) {
-            Debug.print(
-                    "EXCEPTION: Exception com.ejb.ar.LocalArInvoiceHome.findUnpostedInvByCstCustomerCode(java.lang.String CST_CSTMR_CODE, java.lang.Integer INV_AD_CMPNY)");
+            throw ex;
+        }
+    }
+
+    public java.util.Collection findUnpostedInvByCstCustomerCode(
+            java.lang.String CST_CSTMR_CODE, java.lang.Integer INV_AD_CMPNY, String companyShortName) throws FinderException {
+
+        try {
+            Query query = em.createQueryPerCompany(
+                    "SELECT OBJECT(inv) FROM ArInvoice inv "
+                            + "WHERE inv.arCustomer.cstCustomerCode = ?1 "
+                            + "AND inv.invPosted = 0 AND inv.invAdCompany = ?2", companyShortName.toLowerCase());
+            query.setParameter(1, CST_CSTMR_CODE);
+            query.setParameter(2, INV_AD_CMPNY);
+            return query.getResultList();
+        } catch (Exception ex) {
             throw ex;
         }
     }
