@@ -10,6 +10,7 @@ import com.ejb.restfulapi.filters.CORSFilter;
 import com.ejb.restfulapi.filters.OmegaJWTTokenFilter;
 import com.ejb.restfulapi.inv.InvItemRestApi;
 import com.ejb.restfulapi.reports.ar.ArRepStatementRestApi;
+import com.ejb.restfulapi.sync.ad.AdBankAccountSyncApi;
 import jakarta.ws.rs.ApplicationPath;
 import jakarta.ws.rs.core.Application;
 
@@ -52,6 +53,9 @@ public class OmegaRestApplication extends Application {
 
         // Reports
         classes.add(ArRepStatementRestApi.class);
+
+        // Synchronizer
+        classes.add(AdBankAccountSyncApi.class);
 
         return classes;
     }

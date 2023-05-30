@@ -34,6 +34,7 @@ public interface ILocalGlChartOfAccountHome {
     LocalGlChartOfAccount findByCoaCodeAndBranchCode(java.lang.Integer COA_CODE, java.lang.Integer COA_AD_BRNCH, java.lang.Integer COA_AD_CMPNY) throws FinderException;
     LocalGlChartOfAccount findByCoaCodeAndBranchCode(java.lang.Integer COA_CODE, java.lang.Integer COA_AD_BRNCH, java.lang.Integer COA_AD_CMPNY, String companyShortName) throws FinderException;
     LocalGlChartOfAccount findByCoaCode(java.lang.Integer COA_CODE, java.lang.Integer COA_AD_CMPNY) throws FinderException;
+    LocalGlChartOfAccount findByCoaCode(java.lang.Integer COA_CODE, java.lang.Integer COA_AD_CMPNY, String companyShortName) throws FinderException;
     Collection getCoaByCriteria(java.lang.String jbossQl, java.lang.Object[] args, java.lang.Integer LIMIT, java.lang.Integer OFFSET) throws FinderException;
 
     // CREATE METHODS

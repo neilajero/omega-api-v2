@@ -1,5 +1,6 @@
 package com.ejb.dao.ad;
 
+import java.util.Collection;
 import java.util.Date;
 
 import com.ejb.PersistenceBeanClass;
@@ -22,354 +23,331 @@ public class LocalAdBankAccountHome {
 	public PersistenceBeanClass em;
 
 	public LocalAdBankAccountHome() {
+
 	}
 
-	// FINDER METHODS
-
-	public LocalAdBankAccount findByPrimaryKey(java.lang.Integer pk) throws FinderException {
+	public LocalAdBankAccount findByPrimaryKey(Integer pk) throws FinderException {
 
 		try {
-
-			LocalAdBankAccount entity = (LocalAdBankAccount) em
-					.find(new LocalAdBankAccount(), pk);
+			LocalAdBankAccount entity = (LocalAdBankAccount) em.find(new LocalAdBankAccount(), pk);
 			if (entity == null) {
 				throw new FinderException();
 			}
 			return entity;
-		} catch (FinderException ex) {
+		}
+		catch (FinderException ex) {
 			throw new FinderException(ex.getMessage());
-		} catch (Exception ex) {
+		}
+		catch (Exception ex) {
 			throw ex;
 		}
 	}
 
-	public LocalAdBankAccount findByPrimaryKey(java.lang.Integer pk, String companyShortName) throws FinderException {
+	public LocalAdBankAccount findByPrimaryKey(Integer pk, String companyShortName) throws FinderException {
 
 		try {
-
-			LocalAdBankAccount entity = (LocalAdBankAccount) em
-					.findPerCompany(new LocalAdBankAccount(), pk, companyShortName);
+			LocalAdBankAccount entity = (LocalAdBankAccount) em.findPerCompany(new LocalAdBankAccount(), pk, companyShortName);
 			if (entity == null) {
 				throw new FinderException();
 			}
 			return entity;
-		} catch (FinderException ex) {
+		}
+		catch (FinderException ex) {
 			throw new FinderException(ex.getMessage());
-		} catch (Exception ex) {
+		}
+		catch (Exception ex) {
 			throw ex;
 		}
 	}
 
-	public java.util.Collection findEnabledBaAll(java.lang.Integer BA_AD_BRNCH, java.lang.Integer BA_AD_CMPNY)
-			throws FinderException {
+	public Collection findEnabledBaAll(Integer BA_AD_BRNCH, Integer BA_AD_CMPNY) throws FinderException {
 
 		try {
 			Query query = em.createQuery(
-					"SELECT OBJECT(ba) FROM AdBankAccount ba, IN(ba.adBranchBankAccounts)bba WHERE ba.baEnable = 1 AND bba.adBranch.brCode = ?1 AND ba.baAdCompany = ?2");
+					"SELECT OBJECT(ba) FROM AdBankAccount ba, IN(ba.adBranchBankAccounts)bba "
+							+ "WHERE ba.baEnable = 1 AND bba.adBranch.brCode = ?1 AND ba.baAdCompany = ?2");
 			query.setParameter(1, BA_AD_BRNCH);
 			query.setParameter(2, BA_AD_CMPNY);
-            return query.getResultList();
-		} catch (Exception ex) {
-			Debug.print(
-					"EXCEPTION: Exception com.ejb.ad.LocalAdBankAccountHome.findEnabledBaAll(java.lang.Integer BA_AD_BRNCH, java.lang.Integer BA_AD_CMPNY)");
+			return query.getResultList();
+		}
+		catch (Exception ex) {
 			throw ex;
 		}
 	}
 
-	public java.util.Collection findEnabledBaAll(java.lang.Integer BA_AD_CMPNY) throws FinderException {
+	public Collection findEnabledBaAll(Integer BA_AD_CMPNY) throws FinderException {
 
 		try {
 			Query query = em.createQuery("SELECT OBJECT(ba) FROM AdBankAccount ba WHERE ba.baAdCompany = ?1");
 			query.setParameter(1, BA_AD_CMPNY);
-            return query.getResultList();
-		} catch (Exception ex) {
-			Debug.print(
-					"EXCEPTION: Exception com.ejb.ad.LocalAdBankAccountHome.findEnabledBaAll(java.lang.Integer BA_AD_CMPNY)");
+			return query.getResultList();
+		}
+		catch (Exception ex) {
 			throw ex;
 		}
 	}
 
-	public java.util.Collection findBaAll(java.lang.Integer BA_AD_CMPNY) throws FinderException {
+	public Collection findBaAll(Integer BA_AD_CMPNY) throws FinderException {
 
 		try {
 			Query query = em.createQuery("SELECT OBJECT(ba) FROM AdBankAccount ba WHERE ba.baAdCompany = ?1");
 			query.setParameter(1, BA_AD_CMPNY);
-            return query.getResultList();
-		} catch (Exception ex) {
-			Debug.print(
-					"EXCEPTION: Exception com.ejb.ad.LocalAdBankAccountHome.findBaAll(java.lang.Integer BA_AD_CMPNY)");
+			return query.getResultList();
+		}
+		catch (Exception ex) {
 			throw ex;
 		}
 	}
 
-	public LocalAdBankAccount findByBaName(java.lang.String BA_NM, java.lang.Integer BA_AD_CMPNY)
-			throws FinderException {
+	public LocalAdBankAccount findByBaName(String BA_NM, Integer BA_AD_CMPNY) throws FinderException {
 
 		try {
-			Query query = em.createQuery(
-					"SELECT OBJECT(ba) FROM AdBankAccount ba WHERE ba.baName = ?1 AND ba.baAdCompany = ?2");
-			query.setParameter(1, BA_NM);
-			query.setParameter(2, BA_AD_CMPNY);
-            return (LocalAdBankAccount) query.getSingleResult();
-		} catch (NoResultException ex) {
-			Debug.print(
-					"EXCEPTION: NoResultException com.ejb.ad.LocalAdBankAccountHome.findByBaName(java.lang.String BA_NM, java.lang.Integer BA_AD_CMPNY)");
-			throw new FinderException(ex.getMessage());
-		} catch (Exception ex) {
-			Debug.print(
-					"EXCEPTION: Exception com.ejb.ad.LocalAdBankAccountHome.findByBaName(java.lang.String BA_NM, java.lang.Integer BA_AD_CMPNY)");
-			throw ex;
-		}
-	}
-
-	public LocalAdBankAccount findByBaName(java.lang.String BA_NM, java.lang.Integer BA_AD_CMPNY, String companyShortName)
-			throws FinderException {
-
-		try {
-			Query query = em.createQueryPerCompany(
-					"SELECT OBJECT(ba) FROM AdBankAccount ba WHERE ba.baName = ?1 AND ba.baAdCompany = ?2", companyShortName);
+			Query query = em.createQuery("SELECT OBJECT(ba) FROM AdBankAccount ba WHERE ba.baName = ?1 AND ba.baAdCompany = ?2");
 			query.setParameter(1, BA_NM);
 			query.setParameter(2, BA_AD_CMPNY);
 			return (LocalAdBankAccount) query.getSingleResult();
-		} catch (NoResultException ex) {
+		}
+		catch (NoResultException ex) {
 			throw new FinderException(ex.getMessage());
-		} catch (Exception ex) {
+		}
+		catch (Exception ex) {
 			throw ex;
 		}
 	}
 
-	public java.util.Collection findByBaGlCoaCashAccount(java.lang.Integer COA_CODE, java.lang.Integer BA_AD_CMPNY)
-			throws FinderException {
+	public LocalAdBankAccount findByBaName(String BA_NM, Integer BA_AD_CMPNY, String companyShortName) throws FinderException {
 
 		try {
-			Query query = em.createQuery(
-					"SELECT OBJECT(ba) FROM AdBankAccount ba WHERE ba.baCoaGlCashAccount=?1 AND ba.baAdCompany = ?2");
+			Query query = em.createQueryPerCompany("SELECT OBJECT(ba) FROM AdBankAccount ba WHERE ba.baName = ?1 AND ba.baAdCompany = ?2", companyShortName);
+			query.setParameter(1, BA_NM);
+			query.setParameter(2, BA_AD_CMPNY);
+			return (LocalAdBankAccount) query.getSingleResult();
+		}
+		catch (NoResultException ex) {
+			throw new FinderException(ex.getMessage());
+		}
+		catch (Exception ex) {
+			throw ex;
+		}
+	}
+
+	public Collection findByBaGlCoaCashAccount(Integer COA_CODE, Integer BA_AD_CMPNY) {
+
+		try {
+			Query query = em.createQuery("SELECT OBJECT(ba) FROM AdBankAccount ba WHERE ba.baCoaGlCashAccount=?1 AND ba.baAdCompany = ?2");
 			query.setParameter(1, COA_CODE);
 			query.setParameter(2, BA_AD_CMPNY);
-            return query.getResultList();
-		} catch (Exception ex) {
-			Debug.print(
-					"EXCEPTION: Exception com.ejb.ad.LocalAdBankAccountHome.findByBaGlCoaCashAccount(java.lang.Integer COA_CODE, java.lang.Integer BA_AD_CMPNY)");
+			return query.getResultList();
+		}
+		catch (Exception ex) {
 			throw ex;
 		}
 	}
 
-	public java.util.Collection findByBaGlCoaOnAccountReceipt(java.lang.Integer COA_CODE, java.lang.Integer BA_AD_CMPNY)
-			throws FinderException {
+	public Collection findByBaGlCoaOnAccountReceipt(Integer COA_CODE, Integer BA_AD_CMPNY) {
 
 		try {
-			Query query = em.createQuery(
-					"SELECT OBJECT(ba) FROM AdBankAccount ba WHERE ba.baCoaGlOnAccountReceipt=?1 AND ba.baAdCompany = ?2");
+			Query query = em.createQuery("SELECT OBJECT(ba) FROM AdBankAccount ba WHERE ba.baCoaGlOnAccountReceipt=?1 AND ba.baAdCompany = ?2");
 			query.setParameter(1, COA_CODE);
 			query.setParameter(2, BA_AD_CMPNY);
-            return query.getResultList();
-		} catch (Exception ex) {
-			Debug.print(
-					"EXCEPTION: Exception com.ejb.ad.LocalAdBankAccountHome.findByBaGlCoaOnAccountReceipt(java.lang.Integer COA_CODE, java.lang.Integer BA_AD_CMPNY)");
+			return query.getResultList();
+		}
+		catch (Exception ex) {
 			throw ex;
 		}
 	}
 
-	public java.util.Collection findByBaGlCoaUnappliedReceipt(java.lang.Integer COA_CODE, java.lang.Integer BA_AD_CMPNY)
-			throws FinderException {
+	public Collection findByBaGlCoaUnappliedReceipt(Integer COA_CODE, Integer BA_AD_CMPNY) {
 
 		try {
-			Query query = em.createQuery(
-					"SELECT OBJECT(ba) FROM AdBankAccount ba WHERE ba.baCoaGlUnappliedReceipt=?1 AND ba.baAdCompany = ?2");
+			Query query = em.createQuery("SELECT OBJECT(ba) FROM AdBankAccount ba WHERE ba.baCoaGlUnappliedReceipt=?1 AND ba.baAdCompany = ?2");
 			query.setParameter(1, COA_CODE);
 			query.setParameter(2, BA_AD_CMPNY);
-            return query.getResultList();
-		} catch (Exception ex) {
-			Debug.print(
-					"EXCEPTION: Exception com.ejb.ad.LocalAdBankAccountHome.findByBaGlCoaUnappliedReceipt(java.lang.Integer COA_CODE, java.lang.Integer BA_AD_CMPNY)");
+			return query.getResultList();
+		}
+		catch (Exception ex) {
 			throw ex;
 		}
 	}
 
-	public java.util.Collection findByBaGlCoaBankChargeAccount(java.lang.Integer COA_CODE,
-			java.lang.Integer BA_AD_CMPNY) throws FinderException {
+	public Collection findByBaGlCoaBankChargeAccount(Integer COA_CODE, Integer BA_AD_CMPNY) {
 
 		try {
-			Query query = em.createQuery(
-					"SELECT OBJECT(ba) FROM AdBankAccount ba WHERE ba.baCoaGlBankChargeAccount=?1 AND ba.baAdCompany = ?2");
+			Query query = em.createQuery("SELECT OBJECT(ba) FROM AdBankAccount ba WHERE ba.baCoaGlBankChargeAccount=?1 AND ba.baAdCompany = ?2");
 			query.setParameter(1, COA_CODE);
 			query.setParameter(2, BA_AD_CMPNY);
-            return query.getResultList();
-		} catch (Exception ex) {
-			Debug.print(
-					"EXCEPTION: Exception com.ejb.ad.LocalAdBankAccountHome.findByBaGlCoaBankChargeAccount(java.lang.Integer COA_CODE, java.lang.Integer BA_AD_CMPNY)");
+			return query.getResultList();
+		}
+		catch (Exception ex) {
 			throw ex;
 		}
 	}
 
-	public java.util.Collection findByBaGlCoaClearingAccount(java.lang.Integer COA_CODE, java.lang.Integer BA_AD_CMPNY)
-			throws FinderException {
+	public Collection findByBaGlCoaClearingAccount(Integer COA_CODE, Integer BA_AD_CMPNY) {
 
 		try {
-			Query query = em.createQuery(
-					"SELECT OBJECT(ba) FROM AdBankAccount ba WHERE ba.baCoaGlClearingAccount=?1 AND ba.baAdCompany = ?2");
+			Query query = em.createQuery("SELECT OBJECT(ba) FROM AdBankAccount ba WHERE ba.baCoaGlClearingAccount=?1 AND ba.baAdCompany = ?2");
 			query.setParameter(1, COA_CODE);
 			query.setParameter(2, BA_AD_CMPNY);
-            return query.getResultList();
-		} catch (Exception ex) {
-			Debug.print(
-					"EXCEPTION: Exception com.ejb.ad.LocalAdBankAccountHome.findByBaGlCoaClearingAccount(java.lang.Integer COA_CODE, java.lang.Integer BA_AD_CMPNY)");
+			return query.getResultList();
+		}
+		catch (Exception ex) {
 			throw ex;
 		}
 	}
 
-	public java.util.Collection findByBaGlCoaInterestAccount(java.lang.Integer COA_CODE, java.lang.Integer BA_AD_CMPNY)
-			throws FinderException {
+	public Collection findByBaGlCoaInterestAccount(Integer COA_CODE, Integer BA_AD_CMPNY) {
 
 		try {
-			Query query = em.createQuery(
-					"SELECT OBJECT(ba) FROM AdBankAccount ba WHERE ba.baCoaGlInterestAccount=?1 AND ba.baAdCompany = ?2");
+			Query query = em.createQuery("SELECT OBJECT(ba) FROM AdBankAccount ba WHERE ba.baCoaGlInterestAccount=?1 AND ba.baAdCompany = ?2");
 			query.setParameter(1, COA_CODE);
 			query.setParameter(2, BA_AD_CMPNY);
-            return query.getResultList();
-		} catch (Exception ex) {
-			Debug.print(
-					"EXCEPTION: Exception com.ejb.ad.LocalAdBankAccountHome.findByBaGlCoaInterestAccount(java.lang.Integer COA_CODE, java.lang.Integer BA_AD_CMPNY)");
+			return query.getResultList();
+		}
+		catch (Exception ex) {
 			throw ex;
 		}
 	}
 
-	public java.util.Collection findByBaGlCoaAdjustmentAccount(java.lang.Integer COA_CODE,
-			java.lang.Integer BA_AD_CMPNY) throws FinderException {
+	public Collection findByBaGlCoaAdjustmentAccount(Integer COA_CODE, Integer BA_AD_CMPNY) {
 
 		try {
-			Query query = em.createQuery(
-					"SELECT OBJECT(ba) FROM AdBankAccount ba WHERE ba.baCoaGlAdjustmentAccount=?1 AND ba.baAdCompany = ?2");
+			Query query = em.createQuery("SELECT OBJECT(ba) FROM AdBankAccount ba WHERE ba.baCoaGlAdjustmentAccount=?1 AND ba.baAdCompany = ?2");
 			query.setParameter(1, COA_CODE);
 			query.setParameter(2, BA_AD_CMPNY);
-            return query.getResultList();
-		} catch (Exception ex) {
-			Debug.print(
-					"EXCEPTION: Exception com.ejb.ad.LocalAdBankAccountHome.findByBaGlCoaAdjustmentAccount(java.lang.Integer COA_CODE, java.lang.Integer BA_AD_CMPNY)");
+			return query.getResultList();
+		}
+		catch (Exception ex) {
 			throw ex;
 		}
 	}
 
-	public java.util.Collection findByBaGlCoaCashDiscount(java.lang.Integer COA_CODE, java.lang.Integer BA_AD_CMPNY)
-			throws FinderException {
+	public Collection findByBaGlCoaCashDiscount(Integer COA_CODE, Integer BA_AD_CMPNY) {
 
 		try {
-			Query query = em.createQuery(
-					"SELECT OBJECT(ba) FROM AdBankAccount ba WHERE ba.baCoaGlCashDiscount=?1 AND ba.baAdCompany = ?2");
+			Query query = em.createQuery("SELECT OBJECT(ba) FROM AdBankAccount ba WHERE ba.baCoaGlCashDiscount=?1 AND ba.baAdCompany = ?2");
 			query.setParameter(1, COA_CODE);
 			query.setParameter(2, BA_AD_CMPNY);
-            return query.getResultList();
-		} catch (Exception ex) {
-			Debug.print(
-					"EXCEPTION: Exception com.ejb.ad.LocalAdBankAccountHome.findByBaGlCoaCashDiscount(java.lang.Integer COA_CODE, java.lang.Integer BA_AD_CMPNY)");
+			return query.getResultList();
+		}
+		catch (Exception ex) {
 			throw ex;
 		}
 	}
 
-	public java.util.Collection findByBaGlCoaSalesDiscount(java.lang.Integer COA_CODE, java.lang.Integer BA_AD_CMPNY)
-			throws FinderException {
+	public Collection findByBaGlCoaSalesDiscount(Integer COA_CODE, Integer BA_AD_CMPNY) {
 
 		try {
-			Query query = em.createQuery(
-					"SELECT OBJECT(ba) FROM AdBankAccount ba WHERE ba.baCoaGlSalesDiscount=?1 AND ba.baAdCompany = ?2");
+			Query query = em.createQuery("SELECT OBJECT(ba) FROM AdBankAccount ba WHERE ba.baCoaGlSalesDiscount=?1 AND ba.baAdCompany = ?2");
 			query.setParameter(1, COA_CODE);
 			query.setParameter(2, BA_AD_CMPNY);
-            return query.getResultList();
-		} catch (Exception ex) {
-			Debug.print(
-					"EXCEPTION: Exception com.ejb.ad.LocalAdBankAccountHome.findByBaGlCoaSalesDiscount(java.lang.Integer COA_CODE, java.lang.Integer BA_AD_CMPNY)");
+			return query.getResultList();
+		}
+		catch (Exception ex) {
 			throw ex;
 		}
 	}
 
-	public java.util.Collection findByBaGlCoaUnappliedCheck(java.lang.Integer COA_CODE, java.lang.Integer BA_AD_CMPNY)
-			throws FinderException {
+	public Collection findByBaGlCoaUnappliedCheck(Integer COA_CODE, Integer BA_AD_CMPNY) {
 
 		try {
-			Query query = em.createQuery(
-					"SELECT OBJECT(ba) FROM AdBankAccount ba WHERE ba.baCoaGlUnappliedCheck=?1 AND ba.baAdCompany = ?2");
+			Query query = em.createQuery("SELECT OBJECT(ba) FROM AdBankAccount ba WHERE ba.baCoaGlUnappliedCheck=?1 AND ba.baAdCompany = ?2");
 			query.setParameter(1, COA_CODE);
 			query.setParameter(2, BA_AD_CMPNY);
-            return query.getResultList();
-		} catch (Exception ex) {
-			Debug.print(
-					"EXCEPTION: Exception com.ejb.ad.LocalAdBankAccountHome.findByBaGlCoaUnappliedCheck(java.lang.Integer COA_CODE, java.lang.Integer BA_AD_CMPNY)");
+			return query.getResultList();
+		}
+		catch (Exception ex) {
 			throw ex;
 		}
 	}
 
-	public java.util.Collection findEnabledAndNotCashAccountBaAll(java.lang.Integer BA_AD_BRNCH,
-			java.lang.Integer BA_AD_CMPNY) throws FinderException {
+	public Collection findEnabledAndNotCashAccountBaAll(Integer BA_AD_BRNCH, Integer BA_AD_CMPNY) throws FinderException {
 
 		try {
-			Query query = em.createQuery(
-					"SELECT OBJECT(ba) FROM AdBankAccount ba, IN(ba.adBranchBankAccounts)bba WHERE ba.baEnable = 1 AND ba.baIsCashAccount = 0 AND bba.adBranch.brCode = ?1 AND ba.baAdCompany = ?2");
+			Query query = em.createQuery("SELECT OBJECT(ba) FROM AdBankAccount ba, IN(ba.adBranchBankAccounts)bba "
+					+ "WHERE ba.baEnable = 1 AND ba.baIsCashAccount = 0 AND bba.adBranch.brCode = ?1 AND ba.baAdCompany = ?2");
 			query.setParameter(1, BA_AD_BRNCH);
 			query.setParameter(2, BA_AD_CMPNY);
-            return query.getResultList();
-		} catch (Exception ex) {
-			Debug.print(
-					"EXCEPTION: Exception com.ejb.ad.LocalAdBankAccountHome.findEnabledAndNotCashAccountBaAll(java.lang.Integer BA_AD_BRNCH, java.lang.Integer BA_AD_CMPNY)");
+			return query.getResultList();
+		}
+		catch (Exception ex) {
 			throw ex;
 		}
 	}
 
-	public LocalAdBankAccount findByBaNameAndBrCode(java.lang.String BA_NM, java.lang.Integer BR_CODE,
-			java.lang.Integer BA_AD_CMPNY) throws FinderException {
+	public LocalAdBankAccount findByBaNameAndBrCode(String BA_NM, Integer BR_CODE, Integer BA_AD_CMPNY) throws FinderException {
 
 		try {
-			Query query = em.createQuery(
-					"SELECT OBJECT(ba) FROM AdBankAccount ba, IN(ba.adBranchBankAccounts)bba WHERE ba.baName = ?1 AND bba.adBranch.brCode = ?2 AND ba.baAdCompany = ?3");
+			Query query = em.createQuery("SELECT OBJECT(ba) FROM AdBankAccount ba, IN(ba.adBranchBankAccounts)bba "
+					+ "WHERE ba.baName = ?1 AND bba.adBranch.brCode = ?2 AND ba.baAdCompany = ?3");
 			query.setParameter(1, BA_NM);
 			query.setParameter(2, BR_CODE);
 			query.setParameter(3, BA_AD_CMPNY);
-            return (LocalAdBankAccount) query.getSingleResult();
-		} catch (NoResultException ex) {
-			Debug.print(
-					"EXCEPTION: NoResultException com.ejb.ad.LocalAdBankAccountHome.findByBaNameAndBrCode(java.lang.String BA_NM, java.lang.Integer BR_CODE, java.lang.Integer BA_AD_CMPNY)");
+			return (LocalAdBankAccount) query.getSingleResult();
+		}
+		catch (NoResultException ex) {
 			throw new FinderException(ex.getMessage());
-		} catch (Exception ex) {
-			Debug.print(
-					"EXCEPTION: Exception com.ejb.ad.LocalAdBankAccountHome.findByBaNameAndBrCode(java.lang.String BA_NM, java.lang.Integer BR_CODE, java.lang.Integer BA_AD_CMPNY)");
+		}
+		catch (Exception ex) {
 			throw ex;
 		}
 	}
 
-	public java.util.Collection findBaByBaNewAndUpdated(java.lang.Integer BR_CODE, java.lang.Integer AD_CMPNY, char NEW,
-			char UPDATED, char DOWNLOADED_UPDATED) throws FinderException {
+	public Collection findBaByBaNewAndUpdated(Integer BR_CODE, Integer AD_CMPNY, char NEW, char UPDATED, char DOWNLOADED_UPDATED) {
 
 		try {
 			Query query = em.createQuery(
-					"SELECT DISTINCT OBJECT(ba) FROM AdBankAccount ba, IN(ba.adBranchBankAccounts) bba WHERE (bba.bbaDownloadStatus = ?3 OR bba.bbaDownloadStatus = ?4 OR bba.bbaDownloadStatus = ?5) AND bba.adBranch.brCode = ?1 AND bba.bbaAdCompany = ?2");
+					"SELECT DISTINCT OBJECT(ba) FROM AdBankAccount ba, IN(ba.adBranchBankAccounts) bba "
+							+ "WHERE (bba.bbaDownloadStatus = ?3 OR bba.bbaDownloadStatus = ?4 OR bba.bbaDownloadStatus = ?5) "
+							+ "AND bba.adBranch.brCode = ?1 AND bba.bbaAdCompany = ?2");
 			query.setParameter(1, BR_CODE);
 			query.setParameter(2, AD_CMPNY);
 			query.setParameter(3, NEW);
 			query.setParameter(4, UPDATED);
 			query.setParameter(5, DOWNLOADED_UPDATED);
-            return query.getResultList();
-		} catch (Exception ex) {
-			Debug.print(
-					"EXCEPTION: Exception com.ejb.ad.LocalAdBankAccountHome.findBaByBaNewAndUpdated(java.lang.Integer BR_CODE, java.lang.Integer AD_CMPNY, char NEW, char UPDATED, char DOWNLOADED_UPDATED)");
+			return query.getResultList();
+		}
+		catch (Exception ex) {
 			throw ex;
 		}
 	}
 
-	public java.util.Collection findEnabledAndNotCashAccountBaAll(java.lang.Integer BA_AD_CMPNY)
+	public Collection findBaByBaNewAndUpdated(Integer BR_CODE, Integer AD_CMPNY, char NEW, char UPDATED, char DOWNLOADED_UPDATED, String companyShortName) {
+
+		try {
+			Query query = em.createQueryPerCompany(
+					"SELECT DISTINCT OBJECT(ba) FROM AdBankAccount ba, IN(ba.adBranchBankAccounts) bba "
+							+ "WHERE (bba.bbaDownloadStatus = ?3 OR bba.bbaDownloadStatus = ?4 OR bba.bbaDownloadStatus = ?5) "
+							+ "AND bba.adBranch.brCode = ?1 AND bba.bbaAdCompany = ?2", companyShortName.toLowerCase());
+			query.setParameter(1, BR_CODE);
+			query.setParameter(2, AD_CMPNY);
+			query.setParameter(3, NEW);
+			query.setParameter(4, UPDATED);
+			query.setParameter(5, DOWNLOADED_UPDATED);
+			return query.getResultList();
+		}
+		catch (Exception ex) {
+			throw ex;
+		}
+	}
+
+	public Collection findEnabledAndNotCashAccountBaAll(Integer BA_AD_CMPNY)
 			throws FinderException {
 
 		try {
 			Query query = em.createQuery(
 					"SELECT OBJECT(ba) FROM AdBankAccount ba WHERE ba.baEnable = 1 AND ba.baIsCashAccount = 0 AND ba.baAdCompany = ?1");
 			query.setParameter(1, BA_AD_CMPNY);
-            return query.getResultList();
-		} catch (Exception ex) {
+			return query.getResultList();
+		}
+		catch (Exception ex) {
 			Debug.print(
-					"EXCEPTION: Exception com.ejb.ad.LocalAdBankAccountHome.findEnabledAndNotCashAccountBaAll(java.lang.Integer BA_AD_CMPNY)");
+					"EXCEPTION: Exception com.ejb.ad.LocalAdBankAccountHome.findEnabledAndNotCashAccountBaAll(Integer BA_AD_CMPNY)");
 			throw ex;
 		}
 	}
 
-	public java.util.Collection getBaByCriteria(java.lang.String jbossQl, java.lang.Object[] args)
+	public Collection getBaByCriteria(String jbossQl, Object[] args)
 			throws FinderException {
 
 		try {
@@ -379,29 +357,27 @@ public class LocalAdBankAccountHome {
 				query.setParameter(cnt, data);
 				cnt++;
 			}
-            return query.getResultList();
-		} catch (Exception ex) {
+			return query.getResultList();
+		}
+		catch (Exception ex) {
 			throw ex;
 		}
 	}
 
-	// OTHER METHODS
-
-	// CREATE METHODS
-
 	public LocalAdBankAccount create(Integer BA_CODE, String BA_NM, String BA_DESC, String BA_ACCNT_TYP,
-                                     String BA_ACCNT_NMBR, String BA_ACCNT_USE, Integer BA_COA_GL_CSH_ACCNT, Integer BA_COA_GL_ON_ACCNT_RCPT,
-                                     Integer BA_COA_GL_UNPPLD_RCPT, Integer BA_COA_GL_BNK_CHRG_ACCNT, Integer BA_COA_GL_CLRNG_ACCNT,
-                                     Integer BA_COA_GL_INTRST_ACCNT, Integer BA_COA_GL_ADJSTMNT_ACCNT, Integer BA_COA_GL_CSH_DSCNT,
-                                     Integer BA_COA_GL_SLS_DSCNT, Integer BA_COA_GL_ADVNC_ACCNT, Integer BA_COA_GL_UNPPLD_CHK,
-                                     double BA_FLT_BLNC, Date BA_LST_RCNCLD_DT, double BA_LST_RCNCLD_BLNC, String BA_NXT_CHK_NMBR, byte BA_ENBL,
-                                     byte BA_ACCNT_NMBR_SHW, int BA_ACCNT_NMBR_TP, int BA_ACCNT_NMBR_LFT, byte BA_ACCNT_NM_SHW,
-                                     int BA_ACCNT_NM_TP, int BA_ACCNT_NM_LFT, byte BA_NMBR_SHW, int BA_NMBR_TP, int BA_NMBR_LFT, byte BA_DT_SHW,
-                                     int BA_DT_TP, int BA_DT_LFT, byte BA_PY_SHW, int BA_PY_TP, int BA_PY_LFT, byte BA_AMNT_SHW, int BA_AMNT_TP,
-                                     int BA_AMNT_LFT, byte BA_WRD_AMNT_SHW, int BA_WRD_AMNT_TP, int BA_WRD_AMNT_LFT, byte BA_CRRNCY_SHW,
-                                     int BA_CRRNCY_TP, int BA_CRRNCY_LFT, byte BA_ADDRSS_SHW, int BA_ADDRSS_TP, int BA_ADDRSS_LFT,
-                                     byte BA_MM_SHW, int BA_MM_TP, int BA_MM_LFT, byte BA_DC_NMBR_SHW, int BA_DC_NMBR_TP, int BA_DC_NMBR_LFT,
-                                     int BA_FNT_SZ, String BA_FNT_STYL, byte BA_IS_CSH_ACCNT, Integer BA_AD_CMPNY) throws CreateException {
+									 String BA_ACCNT_NMBR, String BA_ACCNT_USE, Integer BA_COA_GL_CSH_ACCNT, Integer BA_COA_GL_ON_ACCNT_RCPT,
+									 Integer BA_COA_GL_UNPPLD_RCPT, Integer BA_COA_GL_BNK_CHRG_ACCNT, Integer BA_COA_GL_CLRNG_ACCNT,
+									 Integer BA_COA_GL_INTRST_ACCNT, Integer BA_COA_GL_ADJSTMNT_ACCNT, Integer BA_COA_GL_CSH_DSCNT,
+									 Integer BA_COA_GL_SLS_DSCNT, Integer BA_COA_GL_ADVNC_ACCNT, Integer BA_COA_GL_UNPPLD_CHK,
+									 double BA_FLT_BLNC, Date BA_LST_RCNCLD_DT, double BA_LST_RCNCLD_BLNC, String BA_NXT_CHK_NMBR, byte BA_ENBL,
+									 byte BA_ACCNT_NMBR_SHW, int BA_ACCNT_NMBR_TP, int BA_ACCNT_NMBR_LFT, byte BA_ACCNT_NM_SHW,
+									 int BA_ACCNT_NM_TP, int BA_ACCNT_NM_LFT, byte BA_NMBR_SHW, int BA_NMBR_TP, int BA_NMBR_LFT, byte BA_DT_SHW,
+									 int BA_DT_TP, int BA_DT_LFT, byte BA_PY_SHW, int BA_PY_TP, int BA_PY_LFT, byte BA_AMNT_SHW, int BA_AMNT_TP,
+									 int BA_AMNT_LFT, byte BA_WRD_AMNT_SHW, int BA_WRD_AMNT_TP, int BA_WRD_AMNT_LFT, byte BA_CRRNCY_SHW,
+									 int BA_CRRNCY_TP, int BA_CRRNCY_LFT, byte BA_ADDRSS_SHW, int BA_ADDRSS_TP, int BA_ADDRSS_LFT,
+									 byte BA_MM_SHW, int BA_MM_TP, int BA_MM_LFT, byte BA_DC_NMBR_SHW, int BA_DC_NMBR_TP, int BA_DC_NMBR_LFT,
+									 int BA_FNT_SZ, String BA_FNT_STYL, byte BA_IS_CSH_ACCNT, Integer BA_AD_CMPNY) throws CreateException {
+
 		try {
 
 			LocalAdBankAccount entity = new LocalAdBankAccount();
@@ -471,25 +447,27 @@ public class LocalAdBankAccountHome {
 			em.persist(entity);
 			return entity;
 
-		} catch (Exception ex) {
+		}
+		catch (Exception ex) {
 			throw new CreateException(ex.getMessage());
 		}
 
 	}
 
 	public LocalAdBankAccount create(String BA_NM, String BA_DESC, String BA_ACCNT_TYP, String BA_ACCNT_NMBR,
-                                     String BA_ACCNT_USE, Integer BA_COA_GL_CSH_ACCNT, Integer BA_COA_GL_ON_ACCNT_RCPT,
-                                     Integer BA_COA_GL_UNPPLD_RCPT, Integer BA_COA_GL_BNK_CHRG_ACCNT, Integer BA_COA_GL_CLRNG_ACCNT,
-                                     Integer BA_COA_GL_INTRST_ACCNT, Integer BA_COA_GL_ADJSTMNT_ACCNT, Integer BA_COA_GL_CSH_DSCNT,
-                                     Integer BA_COA_GL_SLS_DSCNT, Integer BA_COA_GL_ADVNC_ACCNT, Integer BA_COA_GL_UNPPLD_CHK,
-                                     double BA_FLT_BLNC, Date BA_LST_RCNCLD_DT, double BA_LST_RCNCLD_BLNC, String BA_NXT_CHK_NMBR, byte BA_ENBL,
-                                     byte BA_ACCNT_NMBR_SHW, int BA_ACCNT_NMBR_TP, int BA_ACCNT_NMBR_LFT, byte BA_ACCNT_NM_SHW,
-                                     int BA_ACCNT_NM_TP, int BA_ACCNT_NM_LFT, byte BA_NMBR_SHW, int BA_NMBR_TP, int BA_NMBR_LFT, byte BA_DT_SHW,
-                                     int BA_DT_TP, int BA_DT_LFT, byte BA_PY_SHW, int BA_PY_TP, int BA_PY_LFT, byte BA_AMNT_SHW, int BA_AMNT_TP,
-                                     int BA_AMNT_LFT, byte BA_WRD_AMNT_SHW, int BA_WRD_AMNT_TP, int BA_WRD_AMNT_LFT, byte BA_CRRNCY_SHW,
-                                     int BA_CRRNCY_TP, int BA_CRRNCY_LFT, byte BA_ADDRSS_SHW, int BA_ADDRSS_TP, int BA_ADDRSS_LFT,
-                                     byte BA_MM_SHW, int BA_MM_TP, int BA_MM_LFT, byte BA_DC_NMBR_SHW, int BA_DC_NMBR_TP, int BA_DC_NMBR_LFT,
-                                     int BA_FNT_SZ, String BA_FNT_STYL, byte BA_IS_CSH_ACCNT, Integer BA_AD_CMPNY) throws CreateException {
+									 String BA_ACCNT_USE, Integer BA_COA_GL_CSH_ACCNT, Integer BA_COA_GL_ON_ACCNT_RCPT,
+									 Integer BA_COA_GL_UNPPLD_RCPT, Integer BA_COA_GL_BNK_CHRG_ACCNT, Integer BA_COA_GL_CLRNG_ACCNT,
+									 Integer BA_COA_GL_INTRST_ACCNT, Integer BA_COA_GL_ADJSTMNT_ACCNT, Integer BA_COA_GL_CSH_DSCNT,
+									 Integer BA_COA_GL_SLS_DSCNT, Integer BA_COA_GL_ADVNC_ACCNT, Integer BA_COA_GL_UNPPLD_CHK,
+									 double BA_FLT_BLNC, Date BA_LST_RCNCLD_DT, double BA_LST_RCNCLD_BLNC, String BA_NXT_CHK_NMBR, byte BA_ENBL,
+									 byte BA_ACCNT_NMBR_SHW, int BA_ACCNT_NMBR_TP, int BA_ACCNT_NMBR_LFT, byte BA_ACCNT_NM_SHW,
+									 int BA_ACCNT_NM_TP, int BA_ACCNT_NM_LFT, byte BA_NMBR_SHW, int BA_NMBR_TP, int BA_NMBR_LFT, byte BA_DT_SHW,
+									 int BA_DT_TP, int BA_DT_LFT, byte BA_PY_SHW, int BA_PY_TP, int BA_PY_LFT, byte BA_AMNT_SHW, int BA_AMNT_TP,
+									 int BA_AMNT_LFT, byte BA_WRD_AMNT_SHW, int BA_WRD_AMNT_TP, int BA_WRD_AMNT_LFT, byte BA_CRRNCY_SHW,
+									 int BA_CRRNCY_TP, int BA_CRRNCY_LFT, byte BA_ADDRSS_SHW, int BA_ADDRSS_TP, int BA_ADDRSS_LFT,
+									 byte BA_MM_SHW, int BA_MM_TP, int BA_MM_LFT, byte BA_DC_NMBR_SHW, int BA_DC_NMBR_TP, int BA_DC_NMBR_LFT,
+									 int BA_FNT_SZ, String BA_FNT_STYL, byte BA_IS_CSH_ACCNT, Integer BA_AD_CMPNY) throws CreateException {
+
 		try {
 
 			LocalAdBankAccount entity = new LocalAdBankAccount();
@@ -557,7 +535,8 @@ public class LocalAdBankAccountHome {
 			em.persist(entity);
 			return entity;
 
-		} catch (Exception ex) {
+		}
+		catch (Exception ex) {
 			throw new CreateException(ex.getMessage());
 		}
 

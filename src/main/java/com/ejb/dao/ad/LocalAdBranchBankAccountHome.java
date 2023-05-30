@@ -133,6 +133,25 @@ public class LocalAdBranchBankAccountHome {
 		}
 	}
 
+	public java.util.Collection findBBaByBaNewAndUpdated(java.lang.Integer BR_CODE, java.lang.Integer AD_CMPNY,
+														 char NEW, char UPDATED, char DOWNLOADED_UPDATED, String companyShortName) throws FinderException {
+
+		try {
+			Query query = em.createQueryPerCompany(
+					"SELECT OBJECT(bba) FROM AdBranchBankAccount bba "
+							+ "WHERE (bba.bbaDownloadStatus = ?3 OR bba.bbaDownloadStatus = ?4 OR bba.bbaDownloadStatus = ?5) "
+							+ "AND bba.adBranch.brCode = ?1 AND bba.bbaAdCompany = ?2", companyShortName);
+			query.setParameter(1, BR_CODE);
+			query.setParameter(2, AD_CMPNY);
+			query.setParameter(3, NEW);
+			query.setParameter(4, UPDATED);
+			query.setParameter(5, DOWNLOADED_UPDATED);
+			return query.getResultList();
+		} catch (Exception ex) {
+			throw ex;
+		}
+	}
+
 	public LocalAdBranchBankAccount findBbaByBaNameAndBrCode(java.lang.String BA_NM, java.lang.Integer BR_CODE,
 			java.lang.Integer AD_CMPNY) throws FinderException {
 

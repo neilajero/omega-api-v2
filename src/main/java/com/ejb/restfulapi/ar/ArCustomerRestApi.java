@@ -3,7 +3,6 @@ package com.ejb.restfulapi.ar;
 import com.ejb.restfulapi.OfsApiResponse;
 import com.ejb.restfulapi.ar.models.CustomerListResponse;
 import com.ejb.restfulapi.ar.models.CustomerRequest;
-import com.ejb.txn.OmegaDataListController;
 import com.ejb.txnapi.ar.ArCustomerEntryApiController;
 import com.util.EJBCommonAPIErrCodes;
 import jakarta.annotation.security.RolesAllowed;

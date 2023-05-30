@@ -299,6 +299,22 @@ public class LocalGlChartOfAccountHome implements ILocalGlChartOfAccountHome {
 		}
 	}
 
+	public LocalGlChartOfAccount findByCoaCode(java.lang.Integer COA_CODE, java.lang.Integer COA_AD_CMPNY, String companyShortName)
+			throws FinderException {
+
+		try {
+			Query query = em.createQueryPerCompany(
+					"SELECT OBJECT(coa) FROM GlChartOfAccount coa WHERE coa.coaCode=?1 AND coa.coaAdCompany = ?2", companyShortName.toLowerCase());
+			query.setParameter(1, COA_CODE);
+			query.setParameter(2, COA_AD_CMPNY);
+			return (LocalGlChartOfAccount) query.getSingleResult();
+		} catch (NoResultException ex) {
+			throw new FinderException(ex.getMessage());
+		} catch (Exception ex) {
+			throw ex;
+		}
+	}
+
 	public java.util.Collection getCoaByCriteria(java.lang.String jbossQl, java.lang.Object[] args,
 			java.lang.Integer LIMIT, java.lang.Integer OFFSET) throws FinderException {
 
