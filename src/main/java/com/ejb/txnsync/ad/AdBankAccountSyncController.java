@@ -13,7 +13,7 @@ public interface AdBankAccountSyncController {
 
     String[] getAdBankAccountAllNewAndUpdated(Integer branchCode, Integer companyCode, String companyShortName);
 
-    int setAdBankAccountsAllNewAndUpdatedSuccessConfirmation(Integer branchCode, Integer companyCode, String companyShortName);
+    void setAdBankAccountsAllNewAndUpdatedSuccessConfirmation(Integer branchCode, Integer companyCode, String companyShortName);
 
     BankAccountSyncResponse getAllNewLength(BankAccountSyncRequest request);
 

@@ -43,7 +43,6 @@ public class AdBankAccountSyncControllerBean extends EJBContextClass implements 
 
     @Override
     public int getAdBankAccountAllNewLength(Integer branchCode, Integer companyCode, String companyShortName) {
-
         Debug.print("AdBankAccountSyncControllerBean getAdBankAccountAllNewLength");
 
         try {
@@ -59,7 +58,6 @@ public class AdBankAccountSyncControllerBean extends EJBContextClass implements 
 
     @Override
     public int getAdBankAccountAllUpdatedLength(Integer branchCode, Integer companyCode, String companyShortName) {
-
         Debug.print("AdBankAccountSyncControllerBean getAdBankAccountAllUpdatedLength");
 
         try {
@@ -75,7 +73,6 @@ public class AdBankAccountSyncControllerBean extends EJBContextClass implements 
 
     @Override
     public String[] getAdBankAccountAllNewAndUpdated(Integer branchCode, Integer companyCode, String companyShortName) {
-
         Debug.print("AdBankAccountSyncControllerBean getAdBankAccountAllNewAndUpdated");
 
         try {
@@ -110,11 +107,10 @@ public class AdBankAccountSyncControllerBean extends EJBContextClass implements 
     }
 
     @Override
-    public int setAdBankAccountsAllNewAndUpdatedSuccessConfirmation(Integer branchCode, Integer companyCode, String companyShortName) {
-
+    public void setAdBankAccountsAllNewAndUpdatedSuccessConfirmation(Integer branchCode, Integer companyCode, String companyShortName) {
         Debug.print("AdBankAccountSyncControllerBean setAdBankAccountAllNewAndUpdatedSuccessConfirmation");
 
-        LocalAdBranchBankAccount adBranchBankAccount = null;
+        LocalAdBranchBankAccount adBranchBankAccount;
 
         try {
             Collection adBranchBankAccounts = adBranchBankAccountHome
@@ -130,12 +126,10 @@ public class AdBankAccountSyncControllerBean extends EJBContextClass implements 
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
         }
-        return 0;
     }
 
     @Override
     public BankAccountSyncResponse getAllNewLength(BankAccountSyncRequest request) {
-
         Debug.print("AdBankAccountSyncControllerBean getAllNewLength");
 
         BankAccountSyncResponse response = new BankAccountSyncResponse();
@@ -203,7 +197,6 @@ public class AdBankAccountSyncControllerBean extends EJBContextClass implements 
 
     @Override
     public BankAccountSyncResponse getAllUpdatedLength(BankAccountSyncRequest request) {
-
         Debug.print("AdBankAccountSyncControllerBean getAllUpdatedLength");
 
         BankAccountSyncResponse response = new BankAccountSyncResponse();
@@ -271,7 +264,6 @@ public class AdBankAccountSyncControllerBean extends EJBContextClass implements 
 
     @Override
     public BankAccountSyncResponse getAllNewAndUpdated(BankAccountSyncRequest request) {
-
         Debug.print("AdBankAccountSyncControllerBean getAllNewAndUpdated");
 
         BankAccountSyncResponse response = new BankAccountSyncResponse();
@@ -339,7 +331,6 @@ public class AdBankAccountSyncControllerBean extends EJBContextClass implements 
 
     @Override
     public BankAccountSyncResponse setAllNewAndUpdatedSuccessConfirmation(BankAccountSyncRequest request) {
-
         Debug.print("AdBankAccountSyncControllerBean setAllNewAndUpdatedSuccessConfirmation");
 
         BankAccountSyncResponse response = new BankAccountSyncResponse();
@@ -389,11 +380,10 @@ public class AdBankAccountSyncControllerBean extends EJBContextClass implements 
                 return response;
             }
 
-            int count = this.setAdBankAccountsAllNewAndUpdatedSuccessConfirmation(branchCode, companyCode, companyShortName);
+            this.setAdBankAccountsAllNewAndUpdatedSuccessConfirmation(branchCode, companyCode, companyShortName);
 
             response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_000);
             response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_000_MSG);
-            response.setCount(count);
             response.setStatus("Updated bank account download status successfully.");
 
         }
@@ -408,8 +398,8 @@ public class AdBankAccountSyncControllerBean extends EJBContextClass implements 
     private String bankAccountRowEncode(LocalAdBankAccount adBankAccount, String companyShortName) {
 
         char separator = EJBCommon.SEPARATOR;
-        StringBuffer tempResult = new StringBuffer();
-        String encodedResult = new String();
+        StringBuilder tempResult = new StringBuilder();
+        String encodedResult;
 
         // Start separator
         tempResult.append(separator);

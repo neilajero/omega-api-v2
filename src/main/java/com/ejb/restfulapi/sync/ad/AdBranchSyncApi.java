@@ -1,8 +1,8 @@
 package com.ejb.restfulapi.sync.ad;
 
-import com.ejb.restfulapi.sync.ad.models.BankAccountSyncRequest;
-import com.ejb.restfulapi.sync.ad.models.BankAccountSyncResponse;
-import com.ejb.txnsync.ad.AdBankAccountSyncController;
+import com.ejb.restfulapi.sync.ad.models.BranchSyncRequest;
+import com.ejb.restfulapi.sync.ad.models.BranchSyncResponse;
+import com.ejb.txnsync.ad.AdBranchSyncController;
 import com.util.EJBCommonAPIErrCodes;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.RequestScoped;
@@ -12,24 +12,24 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-
 @RequestScoped
-@Path("/bankaccountsync")
+@Path("/branchsync")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Transactional
-public class AdBankAccountSyncApi {
+public class AdBranchSyncApi {
 
     @Inject
-    private AdBankAccountSyncController adBankAccountSyncController;
+    private AdBranchSyncController adBranchSyncController;
 
     @GET
-    @Path("/new")
+    @Path("/all")
     @RolesAllowed({"Admin"})
-    public Response getAllNewLength(BankAccountSyncRequest request) {
-        BankAccountSyncResponse response = new BankAccountSyncResponse();
+    public Response getAdBranchAll(BranchSyncRequest request) {
+
+        BranchSyncResponse response = new BranchSyncResponse();
         try {
-            response = adBankAccountSyncController.getAllNewLength(request);
+            response = adBranchSyncController.getAdBranchAll(request);
             return Response.status(response.getStatusCode().equals(EJBCommonAPIErrCodes.OAPI_ERR_000) ?
                             Response.Status.OK : Response.Status.BAD_REQUEST)
                     .entity(response).build();
@@ -40,28 +40,13 @@ public class AdBankAccountSyncApi {
     }
 
     @GET
-    @Path("/updated")
+    @Path("/name")
     @RolesAllowed({"Admin"})
-    public Response getAllUpdatedLength(BankAccountSyncRequest request) {
-        BankAccountSyncResponse response = new BankAccountSyncResponse();
-        try {
-            response = adBankAccountSyncController.getAllUpdatedLength(request);
-            return Response.status(response.getStatusCode().equals(EJBCommonAPIErrCodes.OAPI_ERR_000) ?
-                            Response.Status.OK : Response.Status.BAD_REQUEST)
-                    .entity(response).build();
-        }
-        catch (Exception e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity(response).build();
-        }
-    }
+    public Response getAdBranchAllWithBranchName(BranchSyncRequest request) {
 
-    @GET
-    @Path("/both")
-    @RolesAllowed({"Admin"})
-    public Response getAllNewAndUpdated(BankAccountSyncRequest request) {
-        BankAccountSyncResponse response = new BankAccountSyncResponse();
+        BranchSyncResponse response = new BranchSyncResponse();
         try {
-            response = adBankAccountSyncController.getAllNewAndUpdated(request);
+            response = adBranchSyncController.getAdBranchAllWithBranchName(request);
             return Response.status(response.getStatusCode().equals(EJBCommonAPIErrCodes.OAPI_ERR_000) ?
                             Response.Status.OK : Response.Status.BAD_REQUEST)
                     .entity(response).build();
@@ -74,10 +59,11 @@ public class AdBankAccountSyncApi {
     @POST
     @Path("/status")
     @RolesAllowed({"Admin"})
-    public Response setAllNewAndUpdatedSuccessConfirmation(BankAccountSyncRequest request) {
-        BankAccountSyncResponse response = new BankAccountSyncResponse();
+    public Response setAdBranchAllSuccessConfirmation(BranchSyncRequest request) {
+
+        BranchSyncResponse response = new BranchSyncResponse();
         try {
-            response = adBankAccountSyncController.setAllNewAndUpdatedSuccessConfirmation(request);
+            response = adBranchSyncController.setAdBranchAllSuccessConfirmation(request);
             return Response.status(response.getStatusCode().equals(EJBCommonAPIErrCodes.OAPI_ERR_000) ?
                             Response.Status.OK : Response.Status.BAD_REQUEST)
                     .entity(response).build();
