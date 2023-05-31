@@ -62,215 +62,159 @@ public class LocalInvItem extends NativeQueryHome implements Serializable {
 
     @Column(name = "II_ENBL", columnDefinition = "TINYINT")
     private byte iiEnable;
-
-    @Column(name = "II_DNNSS", columnDefinition = "DOUBLE")
-    private String iiDoneness;
-
-    @Column(name = "II_SDNGS", columnDefinition = "DOUBLE")
-    private String iiSidings;
-
-    @Column(name = "II_RMRKS", columnDefinition = "DOUBLE")
-    private String iiRemarks;
-
-    @Column(name = "II_SRVC_CHRG", columnDefinition = "TINYINT")
-    private byte iiServiceCharge;
-
     @Column(name = "II_VS_ITM", columnDefinition = "TINYINT")
     private byte iiVirtualStore;
-
+    @Column(name = "II_ENBLE_AT_BLD", columnDefinition = "TINYINT")
+    private byte iiEnableAutoBuild;
+    @Column(name = "II_DNNSS", columnDefinition = "DOUBLE")
+    private String iiDoneness;
+    @Column(name = "II_SDNGS", columnDefinition = "DOUBLE")
+    private String iiSidings;
+    @Column(name = "II_RMRKS", columnDefinition = "DOUBLE")
+    private String iiRemarks;
+    @Column(name = "II_SRVC_CHRG", columnDefinition = "TINYINT")
+    private byte iiServiceCharge;
     @Column(name = "II_DN_IN_CHRG", columnDefinition = "TINYINT")
     private byte iiNonInventoriable;
-
     @Column(name = "II_SRVCS", columnDefinition = "TINYINT")
     private byte iiServices;
-
     @Column(name = "II_INTRST_EXCPTN", columnDefinition = "TINYINT")
     private byte iiInterestException;
-
     @Column(name = "II_PYMNT_TRM_EXCPTN", columnDefinition = "TINYINT")
     private byte iiPaymentTermException;
-
     @Column(name = "II_JB_SRVCS", columnDefinition = "TINYINT")
     private byte iiJobServices;
-
     @Column(name = "II_IS_VAT_RLF", columnDefinition = "TINYINT")
     private byte iiIsVatRelief;
-
     @Column(name = "II_IS_TX", columnDefinition = "TINYINT")
     private byte iiIsTax;
-
     @Column(name = "II_IS_PRJCT", columnDefinition = "TINYINT")
     private byte iiIsProject;
-
     @Column(name = "II_PRCNT_MRKP", columnDefinition = "DOUBLE")
     private double iiPercentMarkup = 0;
-
     @Column(name = "II_SHPPNG_CST", columnDefinition = "DOUBLE")
     private double iiShippingCost = 0;
-
     @Column(name = "II_SPCFC_GRVTY", columnDefinition = "DOUBLE")
     private double iiSpecificGravity = 0;
-
     @Column(name = "II_STNDRD_FLL_SZ", columnDefinition = "DOUBLE")
     private double iiStandardFillSize = 0;
-
     @Column(name = "II_YLD", columnDefinition = "DOUBLE")
     private double iiYield = 0;
-
     @Column(name = "II_LBR_CST", columnDefinition = "DOUBLE")
     private double iiLaborCost = 0;
-
     @Column(name = "II_PWR_CST", columnDefinition = "DOUBLE")
     private double iiPowerCost = 0;
-
     @Column(name = "II_OHD_CST", columnDefinition = "DOUBLE")
     private double iiOverHeadCost = 0;
-
     @Column(name = "II_FRGHT_CST", columnDefinition = "DOUBLE")
     private double iiFreightCost = 0;
-
     @Column(name = "II_FXD_CST", columnDefinition = "DOUBLE")
     private double iiFixedCost = 0;
-
     @Column(name = "II_STD_LST_PRCNTG", columnDefinition = "DOUBLE")
     private double iiLossPercentage = 0;
-
     @Column(name = "II_MRKP_VL", columnDefinition = "DOUBLE")
     private double iiMarkupValue = 0;
-
     @Column(name = "II_MRKT", columnDefinition = "VARCHAR")
     private String iiMarket;
-
     @Column(name = "II_ENBL_PO", columnDefinition = "TINYINT")
     private byte iiEnablePo;
-
     @Column(name = "II_PO_CYCL", columnDefinition = "SMALLINT")
     private short iiPoCycle;
-
     @Column(name = "II_RETAIL_UOM", columnDefinition = "INT")
     private Integer iiRetailUom;
-
     @Column(name = "II_UMC_PCKGNG", columnDefinition = "VARCHAR")
     private String iiUmcPackaging;
-
     @Column(name = "II_OPN_PRDCT", columnDefinition = "TINYINT")
     private byte iiOpenProduct;
-
     @Column(name = "II_FXD_ASST", columnDefinition = "TINYINT")
     private byte iiFixedAsset;
-
     @Column(name = "II_DT_ACQRD", columnDefinition = "DATETIME")
     private Date iiDateAcquired;
-
     @Column(name = "II_DFLT_LCTN", columnDefinition = "INT")
     private Integer iiDefaultLocation;
-
     @Column(name = "II_TRC_MSC", columnDefinition = "TINYINT")
     private byte iiTraceMisc;
-
     @Column(name = "II_SC_SNDY", columnDefinition = "TINYINT")
     private byte iiScSunday;
-
     @Column(name = "II_SC_MNDY", columnDefinition = "TINYINT")
     private byte iiScMonday;
-
     @Column(name = "II_SC_TSDY", columnDefinition = "TINYINT")
     private byte iiScTuesday;
-
     @Column(name = "II_SC_WDNSDY", columnDefinition = "TINYINT")
     private byte iiScWednesday;
-
     @Column(name = "II_SC_THRSDY", columnDefinition = "TINYINT")
     private byte iiScThursday;
-
     @Column(name = "II_SC_FRDY", columnDefinition = "TINYINT")
     private byte iiScFriday;
-
     @Column(name = "II_SC_STRDY", columnDefinition = "TINYINT")
     private byte iiScSaturday;
-
     @Column(name = "II_ACQSTN_CST", columnDefinition = "DOUBLE")
     private double iiAcquisitionCost = 0;
-
     @Column(name = "II_LF_SPN", columnDefinition = "DOUBLE")
     private double iiLifeSpan = 0;
-
     @Column(name = "II_RSDL_VL", columnDefinition = "DOUBLE")
     private double iiResidualValue = 0;
-
     @Column(name = "II_GL_COA_FXD_ASST_ACCNT", columnDefinition = "VARCHAR")
     private String glCoaFixedAssetAccount;
-
     @Column(name = "II_GL_COA_DPRCTN_ACCNT", columnDefinition = "VARCHAR")
     private String glCoaDepreciationAccount;
-
     @Column(name = "II_GL_ACCMLTD_DPRCTN_ACCNT", columnDefinition = "VARCHAR")
     private String glCoaAccumulatedDepreciationAccount;
-
     @Column(name = "II_GL_LBR_CST_ACCNT", columnDefinition = "VARCHAR")
     private String glCoaLaborCostAccount;
-
     @Column(name = "II_GL_PWR_CST_ACCNT", columnDefinition = "VARCHAR")
     private String glCoaPowerCostAccount;
-
     @Column(name = "II_GL_OHD_CST_ACCNT", columnDefinition = "VARCHAR")
     private String glCoaOverHeadCostAccount;
-
     @Column(name = "II_GL_FRGHT_CST_ACCNT", columnDefinition = "VARCHAR")
     private String glCoaFreightCostAccount;
-
     @Column(name = "II_GL_FXD_CST_ACCNT", columnDefinition = "VARCHAR")
     private String glCoaFixedCostAccount;
-
     @Column(name = "II_CNDTN", columnDefinition = "VARCHAR")
     private String iiCondition;
-
     @Column(name = "II_TX_CD", columnDefinition = "VARCHAR")
     private String iiTaxCode;
-
     @Column(name = "II_AD_CMPNY", columnDefinition = "INT")
     private Integer iiAdCompany;
-
     @Column(name = "II_CRTD_BY", columnDefinition = "VARCHAR")
     private String iiCreatedBy;
-
     @Column(name = "II_DT_CRTD", columnDefinition = "DATETIME")
     private Date iiDateCreated;
-
     @Column(name = "II_LST_MDFD_BY", columnDefinition = "VARCHAR")
     private String iiLastModifiedBy;
-
     @Column(name = "II_DT_LST_MDFD", columnDefinition = "DATETIME")
     private Date iiDateLastModified;
-
     @JoinColumn(name = "AP_SUPPLIER", referencedColumnName = "SPL_CODE")
     @ManyToOne
     private LocalApSupplier apSupplier;
-
     @JoinColumn(name = "AR_CUSTOMER", referencedColumnName = "AR_CST_CODE")
     @ManyToOne
     private LocalArCustomer arCustomer;
-
     @JoinColumn(name = "INV_UNIT_OF_MEASURE", referencedColumnName = "UOM_CODE")
     @ManyToOne
     private LocalInvUnitOfMeasure invUnitOfMeasure;
-
     @OneToMany(mappedBy = "invItem", fetch = FetchType.LAZY)
     private List<LocalInvItemLocation> invItemLocations;
-
     @OneToMany(mappedBy = "invItem", fetch = FetchType.LAZY)
     private List<LocalInvTransactionalBudget> invTransactionalBudget;
-
     @OneToMany(mappedBy = "invItem", fetch = FetchType.LAZY)
     private List<LocalInvStockTransferLine> invStockTransferLines;
-
     @OneToMany(mappedBy = "invItem", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<LocalInvPriceLevel> invPriceLevels;
-
     @OneToMany(mappedBy = "invItem", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<LocalInvUnitOfMeasureConversion> invUnitOfMeasureConversions;
     @OneToMany(mappedBy = "invItem", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<LocalInvBillOfMaterial> invBillOfMaterials;
+
+    public byte getIiEnableAutoBuild() {
+
+        return iiEnableAutoBuild;
+    }
+
+    public void setIiEnableAutoBuild(byte iiEnableAutoBuild) {
+
+        this.iiEnableAutoBuild = iiEnableAutoBuild;
+    }
 
     public List<LocalInvBillOfMaterial> getInvBillOfMaterials() {
 

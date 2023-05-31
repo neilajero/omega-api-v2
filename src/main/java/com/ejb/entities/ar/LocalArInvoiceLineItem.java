@@ -5,9 +5,9 @@ import com.ejb.entities.inv.LocalInvCosting;
 import com.ejb.entities.inv.LocalInvItemLocation;
 import com.ejb.entities.inv.LocalInvTag;
 import com.ejb.entities.inv.LocalInvUnitOfMeasure;
-
 import jakarta.persistence.*;
 import jakarta.xml.bind.annotation.XmlTransient;
+
 import java.io.Serializable;
 import java.util.List;
 
@@ -36,59 +36,55 @@ public class LocalArInvoiceLineItem extends NativeQueryHome implements Serializa
 
     @Column(name = "ILI_TX_AMNT", columnDefinition = "DOUBLE")
     private double iliTaxAmount = 0;
-
+    @Column(name = "ILI_ENBL_AT_BLD", columnDefinition = "TINYINT")
+    private byte iliEnableAutoBuild = 0;
     @Column(name = "ILI_DSCNT_1", columnDefinition = "DOUBLE")
     private double iliDiscount1 = 0;
-
     @Column(name = "ILI_DSCNT_2", columnDefinition = "DOUBLE")
     private double iliDiscount2 = 0;
-
     @Column(name = "ILI_DSCNT_3", columnDefinition = "DOUBLE")
     private double iliDiscount3 = 0;
-
     @Column(name = "ILI_DSCNT_4", columnDefinition = "DOUBLE")
     private double iliDiscount4 = 0;
-
     @Column(name = "ILI_TTL_DSCNT", columnDefinition = "DOUBLE")
     private double iliTotalDiscount = 0;
-
     @Column(name = "ILI_EXPRY_DT", columnDefinition = "LONGTEXT") //TODO: Review this field as it make some confusion
     private String iliMisc;
-
     @Column(name = "ILI_IMEI", columnDefinition = "VARCHAR")
     private String iliImei;
-
     @Column(name = "ILI_TX", columnDefinition = "TINYINT")
     private byte iliTax;
-
     @Column(name = "ILI_AD_CMPNY", columnDefinition = "INT")
     private Integer iliAdCompany;
-
     @JoinColumn(name = "AR_INVOICE", referencedColumnName = "INV_CODE")
     @ManyToOne
     private LocalArInvoice arInvoice;
-
     @JoinColumn(name = "AR_PDC", referencedColumnName = "PDC_CODE")
     @ManyToOne
     private LocalArPdc arPdc;
-
     @JoinColumn(name = "AR_RECEIPT", referencedColumnName = "RCT_CODE")
     @ManyToOne
     private LocalArReceipt arReceipt;
-
     @JoinColumn(name = "INV_ITEM_LOCATION", referencedColumnName = "INV_IL_CODE")
     @ManyToOne
     private LocalInvItemLocation invItemLocation;
-
     @JoinColumn(name = "INV_UNIT_OF_MEASURE", referencedColumnName = "UOM_CODE")
     @ManyToOne
     private LocalInvUnitOfMeasure invUnitOfMeasure;
-
     @OneToMany(mappedBy = "arInvoiceLineItem", fetch = FetchType.LAZY)
     private List<LocalInvTag> invTags;
-
     @OneToMany(mappedBy = "arInvoiceLineItem", fetch = FetchType.LAZY)
     private List<LocalInvCosting> invCostings;
+
+    public byte getIliEnableAutoBuild() {
+
+        return iliEnableAutoBuild;
+    }
+
+    public void setIliEnableAutoBuild(byte iliEnableAutoBuild) {
+
+        this.iliEnableAutoBuild = iliEnableAutoBuild;
+    }
 
     public Integer getIliCode() {
 

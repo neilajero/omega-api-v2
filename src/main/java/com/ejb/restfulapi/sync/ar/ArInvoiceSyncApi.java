@@ -1,17 +1,17 @@
 package com.ejb.restfulapi.sync.ar;
 
-import com.ejb.restfulapi.sync.ar.models.ArCustomerSyncRequest;
-import com.ejb.restfulapi.sync.ar.models.ArCustomerSyncResponse;
 import com.ejb.restfulapi.sync.ar.models.ArInvoiceSyncRequest;
 import com.ejb.restfulapi.sync.ar.models.ArInvoiceSyncResponse;
-import com.ejb.txnsync.ar.ArCustomerSyncController;
 import com.ejb.txnsync.ar.ArInvoiceSyncController;
 import com.util.EJBCommonAPIErrCodes;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.*;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -58,4 +58,5 @@ public class ArInvoiceSyncApi {
             return Response.status(Response.Status.BAD_REQUEST).entity(response).build();
         }
     }
+
 }
