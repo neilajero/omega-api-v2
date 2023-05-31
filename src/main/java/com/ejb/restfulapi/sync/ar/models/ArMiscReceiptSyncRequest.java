@@ -5,6 +5,17 @@ public class ArMiscReceiptSyncRequest {
     private String branchCode;
     private String[] receipts;
     private String[] voidReceipts;
+    private String cashier;
+
+    public String getCashier() {
+
+        return cashier;
+    }
+
+    public void setCashier(String cashier) {
+
+        this.cashier = cashier;
+    }
 
     public String[] getVoidReceipts() {
 

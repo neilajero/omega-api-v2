@@ -1061,6 +1061,20 @@ public class LocalArReceiptHome {
 		}
 	}
 
+	public java.util.Collection findByRctRfrncNmbrAndBrCode(java.lang.String RCT_RFRNC_NMBR, java.lang.Integer BR_CODE, java.lang.Integer RCT_AD_CMPNY) throws FinderException {
+
+		try {
+			Query query = em.createQuery("SELECT OBJECT(rct) FROM ArReceipt rct "
+					+ "WHERE rct.rctReferenceNumber = ?1  AND rct.rctAdBranch = ?2 AND rct.rctAdCompany = ?3");
+			query.setParameter(1, RCT_RFRNC_NMBR);
+			query.setParameter(2, BR_CODE);
+			query.setParameter(3, RCT_AD_CMPNY);
+			return query.getResultList();
+		} catch (Exception ex) {
+			throw ex;
+		}
+	}
+
 	public java.util.Collection findReconciledPostedRctByBaNameAndRctDateRangeAndBrCode(java.lang.String BA_NM,
 			java.util.Date RCT_DT_FRM, java.util.Date RCT_DT_TO, java.lang.Integer RCT_AD_BRNCH,
 			java.lang.Integer RCT_AD_CMPNY) throws FinderException {
