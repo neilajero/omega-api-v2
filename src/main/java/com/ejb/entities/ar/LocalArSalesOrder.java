@@ -4,13 +4,12 @@ import com.ejb.NativeQueryHome;
 import com.ejb.entities.ad.LocalAdPaymentTerm;
 import com.ejb.entities.cm.LocalCmAdjustment;
 import com.ejb.entities.gl.LocalGlFunctionalCurrency;
-
 import jakarta.persistence.*;
 import jakarta.xml.bind.annotation.XmlTransient;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.Date;
+import java.util.List;
 
 @Entity(name = "ArSalesOrder")
 @Table(name = "AR_SLS_ORDR")
@@ -43,113 +42,115 @@ public class LocalArSalesOrder extends NativeQueryHome implements Serializable {
 
     @Column(name = "SO_DESC", columnDefinition = "VARCHAR")
     private String soDescription;
-
+    @Column(name = "SO_AMNT_DUE", columnDefinition = "DOUBLE")
+    private double soAmountDue;
+    @Column(name = "SO_AMNT_UNEARND_INT", columnDefinition = "DOUBLE")
+    private double soAmountUnearnedInterest;
+    @Column(name = "SO_DWN_PYMNT", columnDefinition = "DOUBLE")
+    private double soDownPayment;
     @Column(name = "SO_BLL_TO", columnDefinition = "VARCHAR")
     private String soBillTo;
-
     @Column(name = "SO_SHP_TO", columnDefinition = "VARCHAR")
     private String soShipTo;
-
     @Column(name = "SO_CNVRSN_DT", columnDefinition = "DATETIME")
     private Date soConversionDate;
-
     @Column(name = "SO_CNVRSN_RT", columnDefinition = "DOUBLE")
     private double soConversionRate = 0;
-
     @Column(name = "SO_VD", columnDefinition = "TINYINT")
     private byte soVoid;
-
     @Column(name = "SO_MBL", columnDefinition = "TINYINT")
     private byte soMobile;
-
     @Column(name = "SO_SHPPNG_LN", columnDefinition = "VARCHAR")
     private String soShippingLine;
-
     @Column(name = "SO_PRT", columnDefinition = "VARCHAR")
     private String soPort;
-
     @Column(name = "SO_APPRVL_STATUS", columnDefinition = "VARCHAR")
     private String soApprovalStatus;
-
     @Column(name = "SO_PSTD", columnDefinition = "TINYINT")
     private byte soPosted;
-
     @Column(name = "SO_RSN_FR_RJCTN", columnDefinition = "VARCHAR")
     private String soReasonForRejection;
-
     @Column(name = "SO_CRTD_BY", columnDefinition = "VARCHAR")
     private String soCreatedBy;
-
     @Column(name = "SO_DT_CRTD", columnDefinition = "DATETIME")
     private Date soDateCreated;
-
     @Column(name = "SO_LST_MDFD_BY", columnDefinition = "VARCHAR")
     private String soLastModifiedBy;
-
     @Column(name = "SO_DT_LST_MDFD", columnDefinition = "DATETIME")
     private Date soDateLastModified;
-
     @Column(name = "SO_APPRVD_RJCTD_BY", columnDefinition = "VARCHAR")
     private String soApprovedRejectedBy;
-
     @Column(name = "SO_DT_APPRVD_RJCTD", columnDefinition = "DATETIME")
     private Date soDateApprovedRejected;
-
     @Column(name = "SO_PSTD_BY", columnDefinition = "VARCHAR")
     private String soPostedBy;
-
     @Column(name = "SO_DT_PSTD", columnDefinition = "DATETIME")
     private Date soDatePosted;
-
     @Column(name = "SO_LCK", columnDefinition = "TINYINT")
     private byte soLock;
-
     @Column(name = "SO_BO_LCK", columnDefinition = "TINYINT")
     private byte soBoLock;
-
     @Column(name = "SO_MMO", columnDefinition = "VARCHAR")
     private String soMemo;
-
     @Column(name = "SO_ORDR_STTS", columnDefinition = "VARCHAR")
     private String soOrderStatus;
-
     @Column(name = "REPORT_PARAMETER", columnDefinition = "VARCHAR")
     private String reportParameter;
-
     @Column(name = "SO_AD_BRNCH", columnDefinition = "INT")
     private Integer soAdBranch;
-
     @Column(name = "SO_AD_CMPNY", columnDefinition = "INT")
     private Integer soAdCompany;
-
     @JoinColumn(name = "AD_PAYMENT_TERM", referencedColumnName = "PYT_CODE")
     @ManyToOne
     private LocalAdPaymentTerm adPaymentTerm;
-
     @JoinColumn(name = "AR_CUSTOMER", referencedColumnName = "AR_CST_CODE")
     @ManyToOne
     private LocalArCustomer arCustomer;
-
     @JoinColumn(name = "AR_SALESPERSON", referencedColumnName = "SLP_CODE")
     @ManyToOne
     private LocalArSalesperson arSalesperson;
-
     @JoinColumn(name = "AR_TAX_CODE", referencedColumnName = "AR_TC_CODE")
     @ManyToOne
     private LocalArTaxCode arTaxCode;
-
     @JoinColumn(name = "GL_FUNCTIONAL_CURRENCY", referencedColumnName = "FC_CODE")
     @ManyToOne
     private LocalGlFunctionalCurrency glFunctionalCurrency;
-
     @OneToMany(mappedBy = "arSalesOrder", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<LocalArSalesOrderLine> arSalesOrderLines;
-
     @OneToMany(mappedBy = "arSalesOrder", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<LocalCmAdjustment> cmAdjustments;
-
     @OneToMany(mappedBy = "arSalesOrder", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<LocalArDelivery> arDeliveries;
+
+    public double getSoAmountDue() {
+
+        return soAmountDue;
+    }
+
+    public void setSoAmountDue(double soAmountDue) {
+
+        this.soAmountDue = soAmountDue;
+    }
+
+    public double getSoAmountUnearnedInterest() {
+
+        return soAmountUnearnedInterest;
+    }
+
+    public void setSoAmountUnearnedInterest(double soAmountUnearnedInterest) {
+
+        this.soAmountUnearnedInterest = soAmountUnearnedInterest;
+    }
+
+    public double getSoDownPayment() {
+
+        return soDownPayment;
+    }
+
+    public void setSoDownPayment(double soDownPayment) {
+
+        this.soDownPayment = soDownPayment;
+    }
 
     public Integer getSoCode() {
 

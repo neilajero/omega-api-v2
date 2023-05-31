@@ -4,9 +4,9 @@ import com.ejb.NativeQueryHome;
 import com.ejb.entities.inv.LocalInvItemLocation;
 import com.ejb.entities.inv.LocalInvTag;
 import com.ejb.entities.inv.LocalInvUnitOfMeasure;
-
 import jakarta.persistence.*;
 import jakarta.xml.bind.annotation.XmlTransient;
+
 import java.io.Serializable;
 import java.util.List;
 
@@ -35,51 +35,61 @@ public class LocalArSalesOrderLine extends NativeQueryHome implements Serializab
 
     @Column(name = "SOL_AMNT", columnDefinition = "DOUBLE")
     private double solAmount = 0;
-
+    @Column(name = "SOL_GRSS_AMNT", columnDefinition = "DOUBLE")
+    private double solGrossAmount = 0;
+    @Column(name = "SOL_TX_AMNT", columnDefinition = "DOUBLE")
+    private double solTaxAmount = 0;
     @Column(name = "SOL_DSCNT_1", columnDefinition = "DOUBLE")
     private double solDiscount1 = 0;
-
     @Column(name = "SOL_DSCNT_2", columnDefinition = "DOUBLE")
     private double solDiscount2 = 0;
-
     @Column(name = "SOL_DSCNT_3", columnDefinition = "DOUBLE")
     private double solDiscount3 = 0;
-
     @Column(name = "SOL_DSCNT_4", columnDefinition = "DOUBLE")
     private double solDiscount4 = 0;
-
     @Column(name = "SOL_TTL_DSCNT", columnDefinition = "DOUBLE")
     private double solTotalDiscount = 0;
-
     @Column(name = "SOL_RQST_QTY", columnDefinition = "DOUBLE")
     private double solRequestQuantity = 0;
-
     @Column(name = "SOL_MISC", columnDefinition = "VARCHAR")
     private String solMisc;
-
     @Column(name = "SOL_TX", columnDefinition = "TINYINT")
     private byte solTax;
-
     @Column(name = "SOL_AD_CMPNY", columnDefinition = "INT")
     private Integer solAdCompany;
-
     @JoinColumn(name = "AR_SALES_ORDER", referencedColumnName = "SO_CODE")
     @ManyToOne
     private LocalArSalesOrder arSalesOrder;
-
     @JoinColumn(name = "INV_ITEM_LOCATION", referencedColumnName = "INV_IL_CODE")
     @ManyToOne
     private LocalInvItemLocation invItemLocation;
-
     @JoinColumn(name = "INV_UNIT_OF_MEASURE", referencedColumnName = "UOM_CODE")
     @ManyToOne
     private LocalInvUnitOfMeasure invUnitOfMeasure;
-
     @OneToMany(mappedBy = "arSalesOrderLine", fetch = FetchType.LAZY)
     private List<LocalArSalesOrderInvoiceLine> arSalesOrderInvoiceLines;
-
     @OneToMany(mappedBy = "arSalesOrderLine", fetch = FetchType.LAZY)
     private List<LocalInvTag> invTags;
+
+    public double getSolTaxAmount() {
+
+        return solTaxAmount;
+    }
+
+    public void setSolTaxAmount(double solTaxAmount) {
+
+        this.solTaxAmount = solTaxAmount;
+    }
+
+    public double getSolGrossAmount() {
+
+        return solGrossAmount;
+    }
+
+    public void setSolGrossAmount(double solGrossAmount) {
+
+        this.solGrossAmount = solGrossAmount;
+    }
 
     public Integer getSolCode() {
 

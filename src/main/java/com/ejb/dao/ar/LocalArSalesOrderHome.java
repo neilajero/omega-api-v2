@@ -1,6 +1,7 @@
 package com.ejb.dao.ar;
 
 import java.util.Date;
+import java.lang.*;
 
 import com.ejb.PersistenceBeanClass;
 import com.ejb.entities.ar.LocalArSalesOrder;
@@ -261,7 +262,9 @@ public class LocalArSalesOrderHome {
 	// CREATE METHODS
 
 	public LocalArSalesOrder create(Integer SO_CODE, Date SO_DT, String SO_DCMNT_NMBR, String SO_RFRNC_NMBR,
-                                    String SO_TRNSCTN_TYP, String SO_DESC, String SO_SHPPNG_LN, String SO_PRT, String SO_BLL_TO,
+                                    String SO_TRNSCTN_TYP, String SO_DESC,
+									double SO_AMNT_DUE, double SO_AMNT_UNEARND_INT, double SO_DWN_PYMNT,
+									String SO_SHPPNG_LN, String SO_PRT, String SO_BLL_TO,
                                     String SO_SHP_TO, Date SO_CNVRSN_DT, double SO_CNVRSN_RT, byte SO_VD, byte SO_MBL, String SO_APPRVL_STATUS,
                                     byte SO_PSTD, String SO_RSN_FR_RJCTN, String SO_CRTD_BY, Date SO_DT_CRTD, String SO_LST_MDFD_BY,
                                     Date SO_DT_LST_MDFD, String SO_APPRVD_RJCTD_BY, Date SO_DT_APPRVD_RJCTD, String SO_PSTD_BY, Date SO_DT_PSTD,
@@ -279,6 +282,9 @@ public class LocalArSalesOrderHome {
 			entity.setSoReferenceNumber(SO_RFRNC_NMBR);
 			entity.setSoTransactionType(SO_TRNSCTN_TYP);
 			entity.setSoDescription(SO_DESC);
+			entity.setSoAmountDue(SO_AMNT_DUE);
+			entity.setSoAmountUnearnedInterest(SO_AMNT_UNEARND_INT);
+			entity.setSoDownPayment(SO_DWN_PYMNT);
 			entity.setSoShippingLine(SO_SHPPNG_LN);
 			entity.setSoPort(SO_PRT);
 			entity.setSoBillTo(SO_BLL_TO);
@@ -314,7 +320,9 @@ public class LocalArSalesOrderHome {
 	}
 
 	public LocalArSalesOrder create(Date SO_DT, String SO_DCMNT_NMBR, String SO_RFRNC_NMBR,
-                                    String SO_TRNSCTN_TYP, String SO_DESC, String SO_SHPPNG_LN, String SO_PRT, String SO_BLL_TO,
+                                    String SO_TRNSCTN_TYP, String SO_DESC,
+									double SO_AMNT_DUE, double SO_AMNT_UNEARND_INT, double SO_DWN_PYMNT,
+									String SO_SHPPNG_LN, String SO_PRT, String SO_BLL_TO,
                                     String SO_SHP_TO, Date SO_CNVRSN_DT, double SO_CNVRSN_RT, byte SO_VD, byte SO_MBL, String SO_APPRVL_STATUS,
                                     byte SO_PSTD, String SO_RSN_FR_RJCTN, String SO_CRTD_BY, Date SO_DT_CRTD, String SO_LST_MDFD_BY,
                                     Date SO_DT_LST_MDFD, String SO_APPRVD_RJCTD_BY, Date SO_DT_APPRVD_RJCTD, String SO_PSTD_BY, Date SO_DT_PSTD,
@@ -331,6 +339,9 @@ public class LocalArSalesOrderHome {
 			entity.setSoReferenceNumber(SO_RFRNC_NMBR);
 			entity.setSoTransactionType(SO_TRNSCTN_TYP);
 			entity.setSoDescription(SO_DESC);
+			entity.setSoAmountDue(SO_AMNT_DUE);
+			entity.setSoAmountUnearnedInterest(SO_AMNT_UNEARND_INT);
+			entity.setSoDownPayment(SO_DWN_PYMNT);
 			entity.setSoShippingLine(SO_SHPPNG_LN);
 			entity.setSoPort(SO_PRT);
 			entity.setSoBillTo(SO_BLL_TO);
@@ -364,5 +375,4 @@ public class LocalArSalesOrderHome {
 			throw new CreateException(ex.getMessage());
 		}
 	}
-
 }

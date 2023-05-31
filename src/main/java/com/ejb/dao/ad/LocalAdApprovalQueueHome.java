@@ -2,6 +2,8 @@ package com.ejb.dao.ad;
 
 import com.ejb.PersistenceBeanClass;
 import com.ejb.entities.ad.LocalAdApprovalQueue;
+import com.ejb.entities.ar.LocalArSalesOrder;
+import com.util.ad.AdApprovalQueueDetails;
 import jakarta.ejb.CreateException;
 import jakarta.ejb.EJB;
 import jakarta.ejb.FinderException;
@@ -426,5 +428,52 @@ public class LocalAdApprovalQueueHome {
     public LocalAdApprovalQueueHome AqAdCompany(Integer companyCode) {
         this.companyCode = companyCode;
         return this;
+    }
+
+    public LocalAdApprovalQueue create(Integer AQ_CODE,
+                             byte AQ_FOR_APPRVL, String AQ_DCMNT, Integer AQ_DCMNT_CODE, String AQ_DCMNT_NMBR, Date AQ_DT, String AQ_AND_OR,
+                             byte AQ_USR_OR, Integer AQ_AD_BRNCH, Integer AQ_AD_CMPNY)
+            throws CreateException {
+
+        Debug.print("AdApprovalQueueBean create");
+
+        LocalAdApprovalQueue entity = new LocalAdApprovalQueue();
+
+        entity.setAqCode(AQ_CODE);
+        entity.setAqForApproval(AQ_FOR_APPRVL);
+        entity.setAqDocument(AQ_DCMNT);
+        entity.setAqDocumentCode(AQ_DCMNT_CODE);
+        entity.setAqDocumentNumber(AQ_DCMNT_NMBR);
+        entity.setAqDate(AQ_DT);
+        entity.setAqAndOr(AQ_AND_OR);
+        entity.setAqUserOr(AQ_USR_OR);
+        entity.setAqAdBranch(AQ_AD_BRNCH);
+        entity.setAqAdCompany(AQ_AD_CMPNY);
+
+        em.persist(entity);
+        return entity;
+    }
+
+    public LocalAdApprovalQueue create(
+            byte AQ_FOR_APPRVL, String AQ_DCMNT, Integer AQ_DCMNT_CODE, String AQ_DCMNT_NMBR, Date AQ_DT, String AQ_AND_OR,
+            byte AQ_USR_OR, Integer AQ_AD_BRNCH, Integer AQ_AD_CMPNY)
+            throws CreateException {
+
+        Debug.print("AdApprovalQueueBean create");
+
+        LocalAdApprovalQueue entity = new LocalAdApprovalQueue();
+
+        entity.setAqForApproval(AQ_FOR_APPRVL);
+        entity.setAqDocument(AQ_DCMNT);
+        entity.setAqDocumentCode(AQ_DCMNT_CODE);
+        entity.setAqDocumentNumber(AQ_DCMNT_NMBR);
+        entity.setAqDate(AQ_DT);
+        entity.setAqAndOr(AQ_AND_OR);
+        entity.setAqUserOr(AQ_USR_OR);
+        entity.setAqAdBranch(AQ_AD_BRNCH);
+        entity.setAqAdCompany(AQ_AD_CMPNY);
+
+        em.persist(entity);
+        return entity;
     }
 }

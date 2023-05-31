@@ -3,12 +3,12 @@ package com.ejb.entities.inv;
 import com.ejb.NativeQueryHome;
 import com.ejb.entities.ap.LocalApSupplier;
 import com.ejb.entities.ar.LocalArCustomer;
-
 import jakarta.persistence.*;
 import jakarta.xml.bind.annotation.XmlTransient;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
 
 @Entity(name = "InvItem")
 @Table(name = "INV_ITM")
@@ -269,6 +269,18 @@ public class LocalInvItem extends NativeQueryHome implements Serializable {
 
     @OneToMany(mappedBy = "invItem", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<LocalInvUnitOfMeasureConversion> invUnitOfMeasureConversions;
+    @OneToMany(mappedBy = "invItem", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<LocalInvBillOfMaterial> invBillOfMaterials;
+
+    public List<LocalInvBillOfMaterial> getInvBillOfMaterials() {
+
+        return invBillOfMaterials;
+    }
+
+    public void setInvBillOfMaterials(List<LocalInvBillOfMaterial> invBillOfMaterials) {
+
+        this.invBillOfMaterials = invBillOfMaterials;
+    }
 
     public Integer getIiCode() {
 

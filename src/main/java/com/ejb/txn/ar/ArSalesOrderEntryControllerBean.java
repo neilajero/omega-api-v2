@@ -295,7 +295,14 @@ public class ArSalesOrderEntryControllerBean extends EJBContextClass implements 
             Debug.print("1");
             if (details.getSoCode() == null) {
 
-                arSalesOrder = arSalesOrderHome.create(details.getSoDate(), details.getSoDocumentNumber(), details.getSoReferenceNumber(), details.getSoTransactionType(), details.getSoDescription(), details.getSoShippingLine(), details.getSoPort(), details.getSoBillTo(), details.getSoShipTo(), details.getSoConversionDate(), details.getSoConversionRate(), EJBCommon.FALSE, details.getSoMobile(), null, EJBCommon.FALSE, null, details.getSoCreatedBy(), details.getSoDateCreated(), details.getSoLastModifiedBy(), details.getSoDateLastModified(), null, null, null, null, EJBCommon.FALSE, EJBCommon.FALSE, details.getSoMemo(), details.getSoTransactionStatus(), AD_BRNCH, AD_CMPNY);
+                arSalesOrder = arSalesOrderHome.create(details.getSoDate(), details.getSoDocumentNumber(),
+                        details.getSoReferenceNumber(), details.getSoTransactionType(), details.getSoDescription(),
+                        details.getSoAmountDue(), details.getSoAmountUnearnedInterest(), details.getSoDownPayment(),
+                        details.getSoShippingLine(), details.getSoPort(), details.getSoBillTo(), details.getSoShipTo(),
+                        details.getSoConversionDate(), details.getSoConversionRate(), EJBCommon.FALSE, details.getSoMobile(), null,
+                        EJBCommon.FALSE, null, details.getSoCreatedBy(), details.getSoDateCreated(), details.getSoLastModifiedBy(),
+                        details.getSoDateLastModified(), null, null, null, null, EJBCommon.FALSE, EJBCommon.FALSE, details.getSoMemo(),
+                        details.getSoTransactionStatus(), AD_BRNCH, AD_CMPNY);
 
             } else {
 
@@ -415,7 +422,12 @@ public class ArSalesOrderEntryControllerBean extends EJBContextClass implements 
 
                     ArModSalesOrderLineDetails mSolDetails = (ArModSalesOrderLineDetails) i.next();
 
-                    LocalArSalesOrderLine arSalesOrderLine = arSalesOrderLineHome.create(mSolDetails.getSolLine(), mSolDetails.getSolLineIDesc(), mSolDetails.getSolQuantity(), mSolDetails.getSolUnitPrice(), mSolDetails.getSolAmount(), mSolDetails.getSolDiscount1(), mSolDetails.getSolDiscount2(), mSolDetails.getSolDiscount3(), mSolDetails.getSolDiscount4(), mSolDetails.getSolTotalDiscount(), 0d, mSolDetails.getSolMisc(), mSolDetails.getSolTax(), AD_CMPNY);
+                    LocalArSalesOrderLine arSalesOrderLine = arSalesOrderLineHome.create(mSolDetails.getSolLine(), mSolDetails.getSolLineIDesc(),
+                            mSolDetails.getSolQuantity(), mSolDetails.getSolUnitPrice(), mSolDetails.getSolAmount(),
+                            mSolDetails.getSolGrossAmount(), mSolDetails.getSolTaxAmount(),
+                            mSolDetails.getSolDiscount1(), mSolDetails.getSolDiscount2(), mSolDetails.getSolDiscount3(),
+                            mSolDetails.getSolDiscount4(), mSolDetails.getSolTotalDiscount(), 0d, mSolDetails.getSolMisc(),
+                            mSolDetails.getSolTax(), AD_CMPNY);
 
                     arSalesOrder.addArSalesOrderLine(arSalesOrderLine);
 

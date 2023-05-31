@@ -131,7 +131,8 @@ public class LocalArSalesOrderLineHome {
 	// CREATE METHODS
 
 	public LocalArSalesOrderLine create(Integer SOL_CODE, short SOL_LN, String SOL_IDESC, double SOL_QTY,
-                                        double SOL_UNT_PRC, double SOL_AMNT, double SOL_DSCNT_1, double SOL_DSCNT_2, double SOL_DSCNT_3,
+                                        double SOL_UNT_PRC, double SOL_AMNT, double SOL_GRSS_AMNT, double SOL_TX_AMNT,
+										double SOL_DSCNT_1, double SOL_DSCNT_2, double SOL_DSCNT_3,
                                         double SOL_DSCNT_4, double TTL_SOL_DSCNT, double SOL_RQST_QTY, String SOL_MISC, byte SOL_TX,
                                         Integer SOL_AD_CMPNY) throws CreateException {
 		try {
@@ -146,6 +147,8 @@ public class LocalArSalesOrderLineHome {
 			entity.setSolQuantity(SOL_QTY);
 			entity.setSolUnitPrice(SOL_UNT_PRC);
 			entity.setSolAmount(SOL_AMNT);
+			entity.setSolGrossAmount(SOL_GRSS_AMNT);
+			entity.setSolTaxAmount(SOL_TX_AMNT);
 			entity.setSolDiscount1(SOL_DSCNT_1);
 			entity.setSolDiscount2(SOL_DSCNT_2);
 			entity.setSolDiscount3(SOL_DSCNT_3);
@@ -165,7 +168,8 @@ public class LocalArSalesOrderLineHome {
 	}
 
 	public LocalArSalesOrderLine create(short SOL_LN, String SOL_IDESC, double SOL_QTY, double SOL_UNT_PRC,
-                                        double SOL_AMNT, double SOL_DSCNT_1, double SOL_DSCNT_2, double SOL_DSCNT_3, double SOL_DSCNT_4,
+                                        double SOL_AMNT, double SOL_GRSS_AMNT, double SOL_TX_AMNT,
+										double SOL_DSCNT_1, double SOL_DSCNT_2, double SOL_DSCNT_3, double SOL_DSCNT_4,
                                         double TTL_SOL_DSCNT, double SOL_RQST_QTY, String SOL_MISC, byte SOL_TX, Integer SOL_AD_CMPNY)
 			throws CreateException {
 		try {
@@ -179,6 +183,8 @@ public class LocalArSalesOrderLineHome {
 			entity.setSolQuantity(SOL_QTY);
 			entity.setSolUnitPrice(SOL_UNT_PRC);
 			entity.setSolAmount(SOL_AMNT);
+			entity.setSolGrossAmount(SOL_GRSS_AMNT);
+			entity.setSolTaxAmount(SOL_TX_AMNT);
 			entity.setSolDiscount1(SOL_DSCNT_1);
 			entity.setSolDiscount2(SOL_DSCNT_2);
 			entity.setSolDiscount3(SOL_DSCNT_3);
