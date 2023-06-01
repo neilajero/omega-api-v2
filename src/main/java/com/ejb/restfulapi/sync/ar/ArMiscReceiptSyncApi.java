@@ -26,13 +26,98 @@ public class ArMiscReceiptSyncApi {
     private ArMiscReceiptSyncController arMiscReceiptSyncController;
 
     @POST
-    @Path("/receipts")
+    @Path("/newandvoid")
     @RolesAllowed({"Admin"})
     public Response setArMiscReceiptAllNewAndVoid(ArMiscReceiptSyncRequest request) {
 
         ArMiscReceiptSyncResponse response = new ArMiscReceiptSyncResponse();
         try {
             response = arMiscReceiptSyncController.setArMiscReceiptAllNewAndVoid(request);
+            return Response.status(response.getStatusCode().equals(EJBCommonAPIErrCodes.OAPI_ERR_000) ?
+                            Response.Status.OK : Response.Status.BAD_REQUEST)
+                    .entity(response).build();
+        }
+        catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(response).build();
+        }
+    }
+
+    @POST
+    @Path("/us")
+    @RolesAllowed({"Admin"})
+    public Response setArMiscReceiptAllNewAndVoidUS(ArMiscReceiptSyncRequest request) {
+
+        ArMiscReceiptSyncResponse response = new ArMiscReceiptSyncResponse();
+        try {
+            response = arMiscReceiptSyncController.setArMiscReceiptAllNewAndVoidUS(request);
+            return Response.status(response.getStatusCode().equals(EJBCommonAPIErrCodes.OAPI_ERR_000) ?
+                            Response.Status.OK : Response.Status.BAD_REQUEST)
+                    .entity(response).build();
+        }
+        catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(response).build();
+        }
+    }
+
+    @POST
+    @Path("/expirydate")
+    @RolesAllowed({"Admin"})
+    public Response setArMiscReceiptAllNewAndVoidWithExpiryDate(ArMiscReceiptSyncRequest request) {
+
+        ArMiscReceiptSyncResponse response = new ArMiscReceiptSyncResponse();
+        try {
+            response = arMiscReceiptSyncController.setArMiscReceiptAllNewAndVoidWithExpiryDate(request);
+            return Response.status(response.getStatusCode().equals(EJBCommonAPIErrCodes.OAPI_ERR_000) ?
+                            Response.Status.OK : Response.Status.BAD_REQUEST)
+                    .entity(response).build();
+        }
+        catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(response).build();
+        }
+    }
+
+    @POST
+    @Path("/itemautobuild")
+    @RolesAllowed({"Admin"})
+    public Response setArMiscReceiptAllNewAndVoidWithExpiryDateEnableItemAutoBuild(ArMiscReceiptSyncRequest request) {
+
+        ArMiscReceiptSyncResponse response = new ArMiscReceiptSyncResponse();
+        try {
+            response = arMiscReceiptSyncController.setArMiscReceiptAllNewAndVoidWithExpiryDateEnableItemAutoBuild(request);
+            return Response.status(response.getStatusCode().equals(EJBCommonAPIErrCodes.OAPI_ERR_000) ?
+                            Response.Status.OK : Response.Status.BAD_REQUEST)
+                    .entity(response).build();
+        }
+        catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(response).build();
+        }
+    }
+
+    @POST
+    @Path("/entries")
+    @RolesAllowed({"Admin"})
+    public Response setArMiscReceiptAllNewAndVoidWithExpiryDateAndEntries(ArMiscReceiptSyncRequest request) {
+
+        ArMiscReceiptSyncResponse response = new ArMiscReceiptSyncResponse();
+        try {
+            response = arMiscReceiptSyncController.setArMiscReceiptAllNewAndVoidWithExpiryDateAndEntries(request);
+            return Response.status(response.getStatusCode().equals(EJBCommonAPIErrCodes.OAPI_ERR_000) ?
+                            Response.Status.OK : Response.Status.BAD_REQUEST)
+                    .entity(response).build();
+        }
+        catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(response).build();
+        }
+    }
+
+    @POST
+    @Path("/salesperson")
+    @RolesAllowed({"Admin"})
+    public Response setArMiscReceiptAllNewAndVoidWithSalesperson(ArMiscReceiptSyncRequest request) {
+
+        ArMiscReceiptSyncResponse response = new ArMiscReceiptSyncResponse();
+        try {
+            response = arMiscReceiptSyncController.setArMiscReceiptAllNewAndVoidWithSalesperson(request);
             return Response.status(response.getStatusCode().equals(EJBCommonAPIErrCodes.OAPI_ERR_000) ?
                             Response.Status.OK : Response.Status.BAD_REQUEST)
                     .entity(response).build();
