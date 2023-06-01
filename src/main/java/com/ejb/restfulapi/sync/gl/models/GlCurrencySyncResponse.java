@@ -1,11 +1,10 @@
-package com.ejb.restfulapi.sync.ar.models;
+package com.ejb.restfulapi.sync.gl.models;
 
-public class ArStandardMemoLineSyncResponse {
+public class GlCurrencySyncResponse {
 
     private String message;
     private String status;
     private String statusCode;
-    private int count;
     private String[] result;
 
     public String[] getResult() {
@@ -46,16 +45,6 @@ public class ArStandardMemoLineSyncResponse {
     public void setStatusCode(String statusCode) {
 
         this.statusCode = statusCode;
-    }
-
-    public int getCount() {
-
-        return count;
-    }
-
-    public void setCount(int count) {
-
-        this.count = count;
     }
 
 }
