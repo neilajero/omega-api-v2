@@ -203,14 +203,33 @@ public class LocalAdBranchItemLocationHome {
 			char NEW, char UPDATED, char DOWNLOADED_UPDATED) throws FinderException {
 
 		try {
-			Query query = em.createQuery(
-					"SELECT OBJECT(bil) FROM AdBranchItemLocation bil WHERE (bil.bilLocationDownloadStatus = ?3 OR bil.bilLocationDownloadStatus = ?4 OR bil.bilLocationDownloadStatus = ?5) AND bil.adBranch.brCode = ?1 AND bil.bilAdCompany = ?2");
+			Query query = em.createQuery("SELECT OBJECT(bil) FROM AdBranchItemLocation bil "
+					+ "WHERE (bil.bilLocationDownloadStatus = ?3 OR bil.bilLocationDownloadStatus = ?4 OR bil.bilLocationDownloadStatus = ?5) "
+					+ "AND bil.adBranch.brCode = ?1 AND bil.bilAdCompany = ?2");
 			query.setParameter(1, BR_CODE);
 			query.setParameter(2, AD_CMPNY);
 			query.setParameter(3, NEW);
 			query.setParameter(4, UPDATED);
 			query.setParameter(5, DOWNLOADED_UPDATED);
             return query.getResultList();
+		} catch (Exception ex) {
+			throw ex;
+		}
+	}
+
+	public java.util.Collection findLocByLocNewAndUpdated(java.lang.Integer BR_CODE, java.lang.Integer AD_CMPNY,
+														  char NEW, char UPDATED, char DOWNLOADED_UPDATED, String companyShortName) throws FinderException {
+
+		try {
+			Query query = em.createQueryPerCompany("SELECT OBJECT(bil) FROM AdBranchItemLocation bil "
+					+ "WHERE (bil.bilLocationDownloadStatus = ?3 OR bil.bilLocationDownloadStatus = ?4 OR bil.bilLocationDownloadStatus = ?5) "
+					+ "AND bil.adBranch.brCode = ?1 AND bil.bilAdCompany = ?2", companyShortName);
+			query.setParameter(1, BR_CODE);
+			query.setParameter(2, AD_CMPNY);
+			query.setParameter(3, NEW);
+			query.setParameter(4, UPDATED);
+			query.setParameter(5, DOWNLOADED_UPDATED);
+			return query.getResultList();
 		} catch (Exception ex) {
 			throw ex;
 		}

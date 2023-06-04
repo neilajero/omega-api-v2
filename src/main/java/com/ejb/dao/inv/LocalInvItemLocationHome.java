@@ -412,9 +412,27 @@ public class LocalInvItemLocationHome {
 		}
 	}
 
-	// OTHER METHODS
+	public java.util.Collection findLocByLocNewAndUpdated(
+			java.lang.Integer BR_CODE, java.lang.Integer AD_CMPNY, char NEW, char UPDATED, char DOWNLOADED_UPDATED, String companyShortName) throws FinderException {
 
-	// CREATE METHODS
+		try {
+			Query query = em.createQueryPerCompany("SELECT DISTINCT OBJECT(loc) FROM InvLocation loc, IN(loc.invItemLocations) il, IN(il.adBranchItemLocations) bil "
+					+ "WHERE (bil.bilLocationDownloadStatus = ?3 OR bil.bilLocationDownloadStatus = ?4 OR bil.bilLocationDownloadStatus = ?5) "
+					+ "AND bil.adBranch.brCode = ?1 AND bil.bilAdCompany = ?2", companyShortName.toLowerCase());
+			query.setParameter(1, BR_CODE);
+			query.setParameter(2, AD_CMPNY);
+			query.setParameter(3, NEW);
+			query.setParameter(4, UPDATED);
+			query.setParameter(5, DOWNLOADED_UPDATED);
+			return query.getResultList();
+		} catch (NoResultException ex) {
+			throw new FinderException(ex.getMessage());
+		} catch (Exception ex) {
+			throw ex;
+		}
+	}
+
+
 	public LocalInvItemLocation buildItemLocation() throws CreateException {
 
 		try {

@@ -1,10 +1,7 @@
 package com.ejb.restfulapi.sync.gl;
 
-import com.ejb.restfulapi.sync.ar.models.ArStandardMemoLineSyncRequest;
-import com.ejb.restfulapi.sync.ar.models.ArStandardMemoLineSyncResponse;
 import com.ejb.restfulapi.sync.gl.models.GlCurrencySyncRequest;
 import com.ejb.restfulapi.sync.gl.models.GlCurrencySyncResponse;
-import com.ejb.txnsync.ar.ArStandardMemoLineSyncController;
 import com.ejb.txnsync.gl.GlCurrencySyncController;
 import com.util.EJBCommonAPIErrCodes;
 import jakarta.annotation.security.RolesAllowed;
@@ -61,4 +58,5 @@ public class GlCurrencySyncApi {
             return Response.status(Response.Status.BAD_REQUEST).entity(response).build();
         }
     }
+
 }
