@@ -68,6 +68,18 @@ public class LocalInvUnitOfMeasureHome {
 		}
 	}
 
+	public java.util.Collection findEnabledUomAll(java.lang.Integer UOM_AD_CMPNY, String companyShortName) throws FinderException {
+
+		try {
+			Query query = em.createQueryPerCompany("SELECT OBJECT(uom) FROM InvUnitOfMeasure uom "
+					+ "WHERE uom.uomEnable = 1 AND uom.uomAdCompany = ?1", companyShortName);
+			query.setParameter(1, UOM_AD_CMPNY);
+			return query.getResultList();
+		} catch (Exception ex) {
+			throw ex;
+		}
+	}
+
 	public LocalInvUnitOfMeasure findByUomName(java.lang.String UOM_NM, java.lang.Integer UOM_AD_CMPNY)
 			throws FinderException {
 
