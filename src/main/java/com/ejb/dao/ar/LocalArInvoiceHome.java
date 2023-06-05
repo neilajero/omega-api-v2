@@ -824,6 +824,21 @@ public class LocalArInvoiceHome {
         }
     }
 
+    public java.util.Collection getInvByCriteria(java.lang.String jbossQl, java.lang.Object[] args) throws FinderException {
+
+        try {
+            Query query = em.createQuery(jbossQl);
+            int cnt = 1;
+            for (Object data : args) {
+                query.setParameter(cnt, data);
+                cnt++;
+            }
+            return query.getResultList();
+        } catch (Exception ex) {
+            throw ex;
+        }
+    }
+
     public java.util.Collection findAll(java.lang.Integer INV_AD_CMPNY)
             throws FinderException {
 

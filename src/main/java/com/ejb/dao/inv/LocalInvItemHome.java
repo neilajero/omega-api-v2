@@ -4,13 +4,13 @@ import com.ejb.PersistenceBeanClass;
 import com.ejb.entities.inv.LocalInvItem;
 import com.util.Debug;
 import com.util.EJBCommon;
-
 import jakarta.ejb.CreateException;
 import jakarta.ejb.EJB;
 import jakarta.ejb.FinderException;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.Query;
+
 import java.util.Date;
 
 @Stateless
@@ -1159,23 +1159,19 @@ public class LocalInvItemHome {
         }
     }
 
-    public LocalInvItem create(String II_NM, String II_DESC, String II_PRT_NMBR, String II_SHRT_NM,
-                               String II_BR_CD_1, String II_BR_CD_2, String II_BR_CD_3, String II_BRND, String II_CLSS,
-                               String II_AD_LV_CTGRY, String II_CST_MTHD, double II_UNT_CST, double II_SLS_PRC, byte II_ENBL,
-                               byte II_VS_ITM, String II_DNNSS, String II_SDNGS, String II_RMRKS, byte II_SRVC_CHRG,
-                               byte II_DN_IN_CHRG, byte II_SRVCS, byte II_JB_SRVCS, byte II_IS_VAT_RLF, byte II_IS_TX, byte II_IS_PRJCT,
-                               double II_PRCNT_MRKP, double II_SHPPNG_CST, double II_SPCFC_GRVTY, double II_STNDRD_FLL_SZ, double II_YLD,
-                               double II_LBR_CST, double II_PWR_CST, double II_OHD_CST, double II_FRGHT_CST, double II_FXD_CST,
-                               String II_GL_LBR_CST_ACCNT, String II_GL_PWR_CST_ACCNT, String II_GL_OHD_CST_ACCNT,
-                               String II_GL_FRGHT_CST_ACCNT, String II_GL_FXD_CST_ACCNT,
-
-                               double II_STD_LST_PRCNTG, double II_MRKP_VAL, String II_MRKT, byte II_ENBL_PO, short II_PO_CYCL,
-                               String II_UMC_PCKGNG, Integer II_RETAIL_UOM, byte II_OPN_PRDCT, byte II_FXD_ASST,
-                               java.util.Date II_DT_ACQRD, Integer II_DFLT_LCTN, byte II_TRC_MSC, byte II_SC_SNDY, byte II_SC_MNDY,
-                               byte II_SC_TSDY, byte II_SC_WDNSDY, byte II_SC_THRSDY, byte II_SC_FRDY, byte II_SC_STRDY,
-                               double II_ACQSTN_CST, double II_LF_SPN, double II_RSDL_VL, String II_GL_COA_FXD_ASST_ACCNT,
-                               String II_GL_COA_DPRCTN_ACCNT, String II_GL_ACCMLTD_DPRCTN_ACCNT, String II_CNDTN, String II_TX_CD,
-                               Integer II_AD_CMPNY) throws CreateException {
+    public LocalInvItem create(
+            String II_NM, String II_DESC, String II_PRT_NMBR, String II_SHRT_NM, String II_BR_CD_1, String II_BR_CD_2,
+            String II_BR_CD_3, String II_BRND, String II_CLSS, String II_AD_LV_CTGRY, String II_CST_MTHD, double II_UNT_CST,
+            double II_SLS_PRC, byte II_ENBL, byte II_VS_ITM, byte II_ENBL_AT_BLD, String II_DNNSS, String II_SDNGS,
+            String II_RMRKS, byte II_SRVC_CHRG, byte II_DN_IN_CHRG, byte II_SRVCS, byte II_JB_SRVCS, byte II_IS_VAT_RLF,
+            byte II_IS_TX, byte II_IS_PRJCT, double II_PRCNT_MRKP, double II_SHPPNG_CST, double II_SPCFC_GRVTY,
+            double II_STNDRD_FLL_SZ, double II_YLD, double II_LBR_CST, double II_PWR_CST, double II_OHD_CST,
+            double II_FRGHT_CST, double II_FXD_CST, String II_GL_LBR_CST_ACCNT, String II_GL_PWR_CST_ACCNT,
+            String II_GL_OHD_CST_ACCNT, String II_GL_FRGHT_CST_ACCNT, String II_GL_FXD_CST_ACCNT, double II_STD_LST_PRCNTG,
+            double II_MRKP_VAL, String II_MRKT, byte II_ENBL_PO, short II_PO_CYCL, String II_UMC_PCKGNG,
+            Integer II_RETAIL_UOM, byte II_OPN_PRDCT, byte II_FXD_ASST, java.util.Date II_DT_ACQRD,
+            Integer II_DFLT_LCTN, String II_TX_CD, byte II_SC_SNDY, byte II_SC_MNDY, byte II_SC_TSDY,
+            byte II_SC_WDNSDY, byte II_SC_THRSDY, byte II_SC_FRDY, byte II_SC_STRDY, Integer II_AD_CMPNY) throws CreateException {
 
         try {
 
@@ -1261,5 +1257,104 @@ public class LocalInvItemHome {
             throw new CreateException(ex.getMessage());
         }
     }
+
+//    public LocalInvItem create(
+//            String II_NM, String II_DESC, String II_PRT_NMBR, String II_SHRT_NM, String II_BR_CD_1, String II_BR_CD_2,
+//            String II_BR_CD_3, String II_BRND, String II_CLSS, String II_AD_LV_CTGRY, String II_CST_MTHD, double II_UNT_CST,
+//            double II_SLS_PRC, byte II_ENBL, byte II_VS_ITM, byte II_ENBL_AT_BLD, String II_DNNSS, String II_SDNGS,
+//            String II_RMRKS, byte II_SRVC_CHRG, byte II_DN_IN_CHRG, byte II_SRVCS, byte II_JB_SRVCS, byte II_IS_VAT_RLF,
+//            byte II_IS_TX, byte II_IS_PRJCT, double II_PRCNT_MRKP, double II_SHPPNG_CST, double II_SPCFC_GRVTY,
+//            double II_STNDRD_FLL_SZ, double II_YLD, double II_LBR_CST, double II_PWR_CST, double II_OHD_CST,
+//            double II_FRGHT_CST, double II_FXD_CST, String II_GL_LBR_CST_ACCNT, String II_GL_PWR_CST_ACCNT,
+//            String II_GL_OHD_CST_ACCNT, String II_GL_FRGHT_CST_ACCNT, String II_GL_FXD_CST_ACCNT, double II_STD_LST_PRCNTG,
+//            double II_MRKP_VAL, String II_MRKT, byte II_ENBL_PO, short II_PO_CYCL, String II_UMC_PCKGNG,
+//            Integer II_RETAIL_UOM, byte II_OPN_PRDCT, byte II_FXD_ASST, java.util.Date II_DT_ACQRD,
+//            Integer II_DFLT_LCTN, String II_TX_CD, byte II_SC_SNDY, byte II_SC_MNDY, byte II_SC_TSDY,
+//            byte II_SC_WDNSDY, byte II_SC_THRSDY, byte II_SC_FRDY, byte II_SC_STRDY, Integer II_AD_CMPNY)
+//            throws CreateException {
+//
+//        Debug.print("InvItemBean create");
+//
+//        try {
+//
+//            LocalInvItem entity = new LocalInvItem();
+//
+//            entity.setIiName(II_NM);
+//            entity.setIiDescription(II_DESC);
+//            entity.setIiPartNumber(II_PRT_NMBR);
+//            entity.setIiShortName(II_SHRT_NM);
+//            entity.setIiBarCode1(II_BR_CD_1);
+//            entity.setIiBarCode2(II_BR_CD_2);
+//            entity.setIiBarCode3(II_BR_CD_3);
+//            entity.setIiBrand(II_BRND);
+//            entity.setIiClass(II_CLSS);
+//            entity.setIiAdLvCategory(II_AD_LV_CTGRY);
+//            entity.setIiCostMethod(II_CST_MTHD);
+//            entity.setIiUnitCost(II_UNT_CST);
+//            entity.setIiSalesPrice(II_SLS_PRC);
+//            entity.setIiEnable(II_ENBL);
+//            entity.setIiVirtualStore(II_VS_ITM);
+//            entity.setIiEnableAutoBuild(II_ENBL_AT_BLD);
+//            entity.setIiDoneness(II_DNNSS);
+//            entity.setIiSidings(II_SDNGS);
+//            entity.setIiRemarks(II_RMRKS);
+//            entity.setIiServiceCharge(II_SRVC_CHRG);
+//            entity.setIiNonInventoriable(II_DN_IN_CHRG);
+//            entity.setIiServices(II_SRVCS);
+//            entity.setIiJobServices(II_JB_SRVCS);
+//            entity.setIiIsVatRelief(II_IS_VAT_RLF);
+//            entity.setIiIsTax(II_IS_TX);
+//            entity.setIiIsProject(II_IS_PRJCT);
+//
+//            entity.setIiPercentMarkup(II_PRCNT_MRKP);
+//            entity.setIiShippingCost(II_SHPPNG_CST);
+//            entity.setIiSpecificGravity(II_SPCFC_GRVTY);
+//            entity.setIiStandardFillSize(II_STNDRD_FLL_SZ);
+//            entity.setIiYield(II_YLD);
+//
+//            entity.setIiLaborCost(II_LBR_CST);
+//            entity.setIiPowerCost(II_PWR_CST);
+//            entity.setIiOverHeadCost(II_OHD_CST);
+//            entity.setIiFreightCost(II_FRGHT_CST);
+//            entity.setIiFreightCost(II_FRGHT_CST);
+//            entity.setIiFixedCost(II_FXD_CST);
+//
+//            entity.setGlCoaLaborCostAccount(II_GL_LBR_CST_ACCNT);
+//            entity.setGlCoaPowerCostAccount(II_GL_PWR_CST_ACCNT);
+//            entity.setGlCoaOverHeadCostAccount(II_GL_OHD_CST_ACCNT);
+//            entity.setGlCoaFreightCostAccount(II_GL_FRGHT_CST_ACCNT);
+//            entity.setGlCoaFixedCostAccount(II_GL_FXD_CST_ACCNT);
+//
+//            entity.setIiLossPercentage(II_STD_LST_PRCNTG);
+//            entity.setIiMarkupValue(II_MRKP_VAL);
+//            entity.setIiMarket(II_MRKT);
+//            entity.setIiEnablePo(II_ENBL_PO);
+//            entity.setIiPoCycle(II_PO_CYCL);
+//            entity.setIiUmcPackaging(II_UMC_PCKGNG);
+//            entity.setIiRetailUom(II_RETAIL_UOM);
+//            entity.setIiOpenProduct(II_OPN_PRDCT);
+//            entity.setIiFixedAsset(II_FXD_ASST);
+//            entity.setIiDateAcquired(II_DT_ACQRD);
+//            entity.setIiDefaultLocation(II_DFLT_LCTN);
+//
+//            entity.setIiScSunday(II_SC_SNDY);
+//            entity.setIiScMonday(II_SC_MNDY);
+//            entity.setIiScTuesday(II_SC_TSDY);
+//            entity.setIiScWednesday(II_SC_WDNSDY);
+//            entity.setIiScThursday(II_SC_THRSDY);
+//            entity.setIiScFriday(II_SC_FRDY);
+//            entity.setIiScSaturday(II_SC_STRDY);
+//
+//            entity.setIiAdCompany(II_AD_CMPNY);
+//
+//            em.persist(entity);
+//            return entity;
+//
+//        }
+//        catch (Exception ex) {
+//            throw new CreateException(ex.getMessage());
+//        }
+
+//    }
 
 }

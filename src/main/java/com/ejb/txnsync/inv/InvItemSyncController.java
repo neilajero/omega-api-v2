@@ -15,8 +15,8 @@ public interface InvItemSyncController {
     String[] getInvItemAllNewAndUpdated(String branchCodeName, String itemLocation, Integer companyCode);
     String[] getInvItemAllNewAndUpdatedPosUs(String branchCodeName, String itemLocation, Integer companyCode);
     String[] getInvItemAllNewAndUpdatedWithUnitPrice(String branchCodeName, String itemLocation, Integer companyCode);
-    int setInvItemAllNewAndUpdatedSuccessConfirmationAnyLoc(String branchCodeName, Integer companyCode);
-    int setInvItemAllNewAndUpdatedSuccessConfirmation(String branchCodeName, String itemLocation, Integer companyCode);
+    void setInvItemAllNewAndUpdatedSuccessConfirmationAnyLoc(String branchCodeName, Integer companyCode);
+    void setInvItemAllNewAndUpdatedSuccessConfirmation(String branchCodeName, String itemLocation, Integer companyCode);
     String[] getAllMemoLineInvoice(String branchCodeName, Integer companyCode);
     String[] getAllConsolidatedItems(String[] ItemStr, Integer companyCode);
     String[] getAllPostedArSoMatchedInvoice(String branchCodeName, Integer companyCode);
