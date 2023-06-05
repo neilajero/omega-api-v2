@@ -202,9 +202,21 @@ public class LocalInvItem extends NativeQueryHome implements Serializable {
     @OneToMany(mappedBy = "invItem", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<LocalInvPriceLevel> invPriceLevels;
     @OneToMany(mappedBy = "invItem", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<LocalInvPriceLevelDate> invPriceLevelsDate;
+    @OneToMany(mappedBy = "invItem", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<LocalInvUnitOfMeasureConversion> invUnitOfMeasureConversions;
     @OneToMany(mappedBy = "invItem", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<LocalInvBillOfMaterial> invBillOfMaterials;
+
+    public List<LocalInvPriceLevelDate> getInvPriceLevelsDate() {
+
+        return invPriceLevelsDate;
+    }
+
+    public void setInvPriceLevelsDate(List<LocalInvPriceLevelDate> invPriceLevelsDate) {
+
+        this.invPriceLevelsDate = invPriceLevelsDate;
+    }
 
     public byte getIiEnableAutoBuild() {
 

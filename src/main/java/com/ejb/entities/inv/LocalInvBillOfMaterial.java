@@ -21,7 +21,7 @@ public class LocalInvBillOfMaterial extends NativeQueryHome implements Serializa
     @Column(name = "BOM_QNTTY_NDD", columnDefinition = "DOUBLE")
     private double bomQuantityNeeded;
     @Column(name = "BOM_DWNLD_STATUS", columnDefinition = "VARCHAR")
-    private String bomDownloadStatus;
+    private char bomDownloadStatus;
     @Column(name = "BOM_AD_CMPNY", columnDefinition = "INT")
     private Integer bomAdCompany;
     @JoinColumn(name = "INV_ITEM", referencedColumnName = "II_CODE")
@@ -71,12 +71,12 @@ public class LocalInvBillOfMaterial extends NativeQueryHome implements Serializa
         this.bomQuantityNeeded = bomQuantityNeeded;
     }
 
-    public String getBomDownloadStatus() {
+    public char getBomDownloadStatus() {
 
         return bomDownloadStatus;
     }
 
-    public void setBomDownloadStatus(String bomDownloadStatus) {
+    public void setBomDownloadStatus(char bomDownloadStatus) {
 
         this.bomDownloadStatus = bomDownloadStatus;
     }
