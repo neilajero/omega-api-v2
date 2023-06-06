@@ -113,10 +113,13 @@ public class OmegaCommonDataControllerBean extends EJBContextClass implements Om
 
             LocalInvItem invItem = invItemHome.findByIiName(II_NM, companyCode);
 
-            LocalInvUnitOfMeasureConversion invUnitOfMeasureConversion = invUnitOfMeasureConversionHome.findUmcByIiNameAndUomName(II_NM, UOM_NM, companyCode);
-            LocalInvUnitOfMeasureConversion invDefaultUomConversion = invUnitOfMeasureConversionHome.findUmcByIiNameAndUomName(II_NM, invItem.getInvUnitOfMeasure().getUomName(), companyCode);
+            LocalInvUnitOfMeasureConversion invUnitOfMeasureConversion = invUnitOfMeasureConversionHome
+                    .findUmcByIiNameAndUomName(II_NM, UOM_NM, companyCode);
+            LocalInvUnitOfMeasureConversion invDefaultUomConversion = invUnitOfMeasureConversionHome
+                    .findUmcByIiNameAndUomName(II_NM, invItem.getInvUnitOfMeasure().getUomName(), companyCode);
 
-            return EJBCommon.roundIt(invItem.getIiUnitCost() * invDefaultUomConversion.getUmcConversionFactor() / invUnitOfMeasureConversion.getUmcConversionFactor(), this.getInvGpCostPrecisionUnit(companyCode));
+            return EJBCommon.roundIt(invItem.getIiUnitCost() * invDefaultUomConversion.getUmcConversionFactor()
+                    / invUnitOfMeasureConversion.getUmcConversionFactor(), this.getInvGpCostPrecisionUnit(companyCode));
 
         } catch (Exception ex) {
 
@@ -139,6 +142,27 @@ public class OmegaCommonDataControllerBean extends EJBContextClass implements Om
 
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
+        }
+    }
+
+    @Override
+    public double convertByUomFromAndUomToAndQuantity(LocalInvUnitOfMeasure invFromUnitOfMeasure, LocalInvUnitOfMeasure invToUnitOfMeasure, double ADJST_QTY, Integer AD_CMPNY) {
+
+        Debug.print("OmegaCommonDataControllerBean convertByUomFromAndUomToAndQuantity");
+
+        try {
+
+            LocalAdPreference adPreference = adPreferenceHome.findByPrfAdCompany(AD_CMPNY);
+
+            return EJBCommon.roundIt(ADJST_QTY * invFromUnitOfMeasure.getUomConversionFactor()
+                    / invToUnitOfMeasure.getUomConversionFactor(), adPreference.getPrfInvQuantityPrecisionUnit());
+
+        } catch (Exception ex) {
+
+            Debug.printStackTrace(ex);
+            ctx.setRollbackOnly();
+            throw new EJBException(ex.getMessage());
+
         }
     }
 

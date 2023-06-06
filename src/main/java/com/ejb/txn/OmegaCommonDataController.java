@@ -28,6 +28,8 @@ public interface OmegaCommonDataController {
 
     byte getInvIiIsTaxByIiName(String II_NM, Integer companyCode);
 
+    double convertByUomFromAndUomToAndQuantity(LocalInvUnitOfMeasure invFromUnitOfMeasure, LocalInvUnitOfMeasure invToUnitOfMeasure, double ADJST_QTY, Integer AD_CMPNY);
+
     double getInvIiUnitCostByIiNameAndUomName(String II_NM, String UOM_NM, Integer companyCode);
 
     double getFrRateByFrNameAndFrDate(String fcName, Date conversionDate, Integer companyCode) throws GlobalConversionDateNotExistException;
