@@ -35,18 +35,19 @@ public class LocalInvItemHome {
     private String II_CST_MTHD = null;
     private double II_UNT_CST = 0d;
     private double II_SLS_PRC = 0d;
-    private byte II_ENBL = 0;
-    private byte II_VS_ITM = 0;
+    private byte II_ENBL = EJBCommon.FALSE;
+    private byte II_VS_ITM = EJBCommon.FALSE;
+    private byte II_ENBLE_AT_BLD = EJBCommon.FALSE;
     private String II_DNNSS = null;
     private String II_SDNGS = null;
     private String II_RMRKS = null;
-    private byte II_SRVC_CHRG = 0;
-    private byte II_DN_IN_CHRG = 0;
-    private byte II_SRVCS = 0;
-    private byte II_JB_SRVCS = 0;
-    private byte II_IS_VAT_RLF = 0;
-    private byte II_IS_TX = 0;
-    private byte II_IS_PRJCT = 0;
+    private byte II_SRVC_CHRG = EJBCommon.FALSE;
+    private byte II_DN_IN_CHRG = EJBCommon.FALSE;
+    private byte II_SRVCS = EJBCommon.FALSE;
+    private byte II_JB_SRVCS = EJBCommon.FALSE;
+    private byte II_IS_VAT_RLF = EJBCommon.FALSE;
+    private byte II_IS_TX = EJBCommon.FALSE;
+    private byte II_IS_PRJCT = EJBCommon.FALSE;
     private double II_PRCNT_MRKP = 0d;
     private double II_SHPPNG_CST = 0d;
     private double II_SPCFC_GRVTY = 0d;
@@ -65,22 +66,22 @@ public class LocalInvItemHome {
     private double II_STD_LST_PRCNTG = 0d;
     private double II_MRKP_VAL = 0d;
     private String II_MRKT = null;
-    private byte II_ENBL_PO = 0;
+    private byte II_ENBL_PO = EJBCommon.FALSE;
     private short II_PO_CYCL = 0;
     private String II_UMC_PCKGNG = null;
     private Integer II_RETAIL_UOM = null;
-    private byte II_OPN_PRDCT = 0;
-    private byte II_FXD_ASST = 0;
+    private byte II_OPN_PRDCT = EJBCommon.FALSE;
+    private byte II_FXD_ASST = EJBCommon.FALSE;
     private Date II_DT_ACQRD = null;
     private Integer II_DFLT_LCTN = null;
-    private byte II_TRC_MSC = 0;
-    private byte II_SC_SNDY = 0;
-    private byte II_SC_MNDY = 0;
-    private byte II_SC_TSDY = 0;
-    private byte II_SC_WDNSDY = 0;
-    private byte II_SC_THRSDY = 0;
-    private byte II_SC_FRDY = 0;
-    private byte II_SC_STRDY = 0;
+    private byte II_TRC_MSC = EJBCommon.FALSE;
+    private byte II_SC_SNDY = EJBCommon.FALSE;
+    private byte II_SC_MNDY = EJBCommon.FALSE;
+    private byte II_SC_TSDY = EJBCommon.FALSE;
+    private byte II_SC_WDNSDY = EJBCommon.FALSE;
+    private byte II_SC_THRSDY = EJBCommon.FALSE;
+    private byte II_SC_FRDY = EJBCommon.FALSE;
+    private byte II_SC_STRDY = EJBCommon.FALSE;
     private double II_ACQSTN_CST = 0d;
     private double II_LF_SPN = 0d;
     private double II_RSDL_VL = 0d;
@@ -94,8 +95,8 @@ public class LocalInvItemHome {
     private Date II_DT_CRTD = null;
     private String II_LST_MDFD_BY = null;
     private Date II_DT_LST_MDFD = null;
-    private byte II_INTRST_EXCPTN = 0;
-    private byte II_PYMNT_TRM_EXCPTN = 0;
+    private byte II_INTRST_EXCPTN = EJBCommon.FALSE;
+    private byte II_PYMNT_TRM_EXCPTN = EJBCommon.FALSE;
 
     // FINDER METHODS
     public LocalInvItem findByPrimaryKey(java.lang.Integer pk) throws FinderException {
@@ -466,6 +467,7 @@ public class LocalInvItemHome {
             entity.setIiSalesPrice(II_SLS_PRC);
             entity.setIiEnable(II_ENBL);
             entity.setIiVirtualStore(II_VS_ITM);
+            entity.setIiEnableAutoBuild(II_ENBLE_AT_BLD);
             entity.setIiDoneness(II_DNNSS);
             entity.setIiSidings(II_SDNGS);
             entity.setIiRemarks(II_RMRKS);
@@ -629,6 +631,12 @@ public class LocalInvItemHome {
     public LocalInvItemHome IiVirtualStore(byte II_VS_ITM) {
 
         this.II_VS_ITM = II_VS_ITM;
+        return this;
+    }
+
+    public LocalInvItemHome IiEnableAutoBuild(byte II_ENBLE_AT_BLD) {
+
+        this.II_ENBLE_AT_BLD = II_ENBLE_AT_BLD;
         return this;
     }
 

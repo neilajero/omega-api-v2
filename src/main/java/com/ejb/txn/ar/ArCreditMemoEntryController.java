@@ -35,11 +35,28 @@ public interface ArCreditMemoEntryController {
 
     java.util.ArrayList getAdLvInvShiftAll(java.lang.Integer AD_CMPNY);
 
-    java.lang.Integer saveArInvEntry(ArInvoiceDetails details, java.lang.String CST_CSTMR_CODE, java.lang.String IB_NM, java.util.ArrayList drList, boolean isDraft, java.lang.Integer AD_BRNCH, java.lang.Integer AD_CMPNY) throws GlobalRecordAlreadyDeletedException, GlobalNoRecordFoundException, GlobalDocumentNumberNotUniqueException, GlobalTransactionAlreadyApprovedException, GlobalTransactionAlreadyPendingException, GlobalTransactionAlreadyPostedException, GlobalTransactionAlreadyVoidPostedException, ArINVOverapplicationNotAllowedException, GlobalTransactionAlreadyLockedException, GlobalNoApprovalRequesterFoundException, GlobalNoApprovalApproverFoundException, GlJREffectiveDateNoPeriodExistException, GlJREffectiveDatePeriodClosedException, GlobalJournalNotBalanceException, GlobalAccountNumberInvalidException, GlobalBranchAccountNumberInvalidException;
+    java.lang.Integer saveArCmInvEntry(ArInvoiceDetails details, String CST_CSTMR_CODE, String IB_NM, Integer AD_BRNCH, Integer AD_CMPNY);
 
-    java.lang.Integer saveArInvIliEntry(ArInvoiceDetails details, java.lang.String CST_CSTMR_CODE, java.lang.String IB_NM, java.util.ArrayList iliList, boolean isDraft, java.lang.Integer AD_BRNCH, java.lang.Integer AD_CMPNY) throws GlobalRecordAlreadyDeletedException, GlobalNoRecordFoundException, GlobalDocumentNumberNotUniqueException, GlobalTransactionAlreadyApprovedException, GlobalTransactionAlreadyPendingException, GlobalTransactionAlreadyPostedException, GlobalTransactionAlreadyVoidPostedException, ArINVOverapplicationNotAllowedException, GlobalTransactionAlreadyLockedException, GlobalNoApprovalRequesterFoundException, GlobalNoApprovalApproverFoundException, GlobalInvItemLocationNotFoundException, GlJREffectiveDateNoPeriodExistException, GlJREffectiveDatePeriodClosedException, GlobalJournalNotBalanceException, GlobalInventoryDateException, GlobalBranchAccountNumberInvalidException, AdPRFCoaGlVarianceAccountNotFoundException;
+    java.lang.Integer saveArInvEntry(ArInvoiceDetails details, java.lang.String CST_CSTMR_CODE, java.lang.String IB_NM,
+                                     java.util.ArrayList drList, boolean isDraft, java.lang.Integer AD_BRNCH, java.lang.Integer AD_CMPNY)
+            throws GlobalRecordAlreadyDeletedException, GlobalNoRecordFoundException, GlobalDocumentNumberNotUniqueException,
+            GlobalTransactionAlreadyApprovedException, GlobalTransactionAlreadyPendingException, GlobalTransactionAlreadyPostedException,
+            GlobalTransactionAlreadyVoidPostedException, ArINVOverapplicationNotAllowedException, GlobalTransactionAlreadyLockedException,
+            GlobalNoApprovalRequesterFoundException, GlobalNoApprovalApproverFoundException, GlJREffectiveDateNoPeriodExistException,
+            GlJREffectiveDatePeriodClosedException, GlobalJournalNotBalanceException, GlobalAccountNumberInvalidException,
+            GlobalBranchAccountNumberInvalidException;
 
-    void deleteArInvEntry(java.lang.Integer INV_CODE, java.lang.String AD_USR, java.lang.Integer AD_BRNCH, java.lang.Integer AD_CMPNY) throws GlobalRecordAlreadyDeletedException;
+    java.lang.Integer saveArInvIliEntry(ArInvoiceDetails details, java.lang.String CST_CSTMR_CODE, java.lang.String IB_NM,
+                                        java.util.ArrayList iliList, boolean isDraft, java.lang.Integer AD_BRNCH, java.lang.Integer AD_CMPNY)
+            throws GlobalRecordAlreadyDeletedException, GlobalNoRecordFoundException, GlobalDocumentNumberNotUniqueException,
+            GlobalTransactionAlreadyApprovedException, GlobalTransactionAlreadyPendingException, GlobalTransactionAlreadyPostedException,
+            GlobalTransactionAlreadyVoidPostedException, ArINVOverapplicationNotAllowedException, GlobalTransactionAlreadyLockedException,
+            GlobalNoApprovalRequesterFoundException, GlobalNoApprovalApproverFoundException, GlobalInvItemLocationNotFoundException,
+            GlJREffectiveDateNoPeriodExistException, GlJREffectiveDatePeriodClosedException, GlobalJournalNotBalanceException,
+            GlobalInventoryDateException, GlobalBranchAccountNumberInvalidException, AdPRFCoaGlVarianceAccountNotFoundException;
+
+    void deleteArInvEntry(java.lang.Integer INV_CODE, java.lang.String AD_USR, java.lang.Integer AD_BRNCH, java.lang.Integer AD_CMPNY)
+            throws GlobalRecordAlreadyDeletedException;
 
     short getGlFcPrecisionUnit(java.lang.Integer AD_CMPNY);
 
@@ -49,9 +66,11 @@ public interface ArCreditMemoEntryController {
 
     java.util.ArrayList getArOpenIbAll(java.lang.Integer AD_BRNCH, java.lang.Integer AD_CMPNY);
 
-    java.util.ArrayList getArSoInvLnItmByArInvNmbr(java.lang.String AR_INV_NMBR, java.lang.Integer AD_BRNCH, java.lang.Integer AD_CMPNY) throws GlobalNoRecordFoundException;
+    java.util.ArrayList getArSoInvLnItmByArInvNmbr(java.lang.String AR_INV_NMBR,
+                                                   java.lang.Integer AD_BRNCH, java.lang.Integer AD_CMPNY) throws GlobalNoRecordFoundException;
 
-    java.util.ArrayList getArJoInvLnItmByArInvNmbr(java.lang.String AR_INV_NMBR, java.lang.Integer AD_BRNCH, java.lang.Integer AD_CMPNY) throws GlobalNoRecordFoundException;
+    java.util.ArrayList getArJoInvLnItmByArInvNmbr(java.lang.String AR_INV_NMBR,
+                                                   java.lang.Integer AD_BRNCH, java.lang.Integer AD_CMPNY) throws GlobalNoRecordFoundException;
 
     ArModInvoiceDetails getArInvByArInvNmbr(java.lang.String AR_INV_NMBR, java.lang.Integer AD_BRNCH, java.lang.Integer AD_CMPNY) throws GlobalNoRecordFoundException;
 

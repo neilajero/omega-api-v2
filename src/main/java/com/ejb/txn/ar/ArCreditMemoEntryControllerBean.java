@@ -436,6 +436,93 @@ public class ArCreditMemoEntryControllerBean extends EJBContextClass implements 
         }
     }
 
+    @Override
+    public Integer saveArCmInvEntry(ArInvoiceDetails details, String CST_CSTMR_CODE, String IB_NM, Integer AD_BRNCH, Integer AD_CMPNY) {
+
+        Debug.print("ArCreditMemoEntryControllerBean saveArCmInvEntry");
+
+        LocalArInvoice arCreditMemo;
+
+        try {
+
+            LocalAdCompany adCompany = adCompanyHome.findByPrimaryKey(AD_CMPNY);
+
+            arCreditMemo = arInvoiceHome
+                    .InvType("ITEMS")
+                    .InvCreditMemo(EJBCommon.TRUE)
+                    .InvDescription(details.getInvDescription())
+                    .InvDate(details.getInvDate())
+                    .InvNumber(details.getInvNumber())
+                    .InvReferenceNumber(details.getInvReferenceNumber())
+                    .InvUploadNumber(details.getInvUploadNumber())
+                    .InvCmInvoiceNumber(details.getInvCmInvoiceNumber())
+                    .InvCmReferenceNumber(details.getInvCmReferenceNumber())
+                    .InvAmountDue(details.getInvAmountDue())
+                    .InvCreatedBy(details.getInvCreatedBy())
+                    .InvDateCreated(details.getInvDateCreated())
+                    .InvLastModifiedBy(details.getInvLastModifiedBy())
+                    .InvDateLastModified(details.getInvDateLastModified())
+                    .InvSubjectToCommission(details.getInvSubjectToCommission())
+                    .InvClientPO(details.getInvClientPO())
+                    .InvEffectivityDate(details.getInvEffectivityDate())
+                    .InvAdBranch(AD_BRNCH)
+                    .InvAdCompany(AD_CMPNY)
+                    .buildInvoice(adCompany.getCmpShortName());
+
+            LocalArInvoice arCMInvoice = arInvoiceHome.findByInvNumberAndInvCreditMemoAndBrCode(arCreditMemo.getInvCmInvoiceNumber(),
+                    EJBCommon.FALSE, AD_BRNCH, AD_CMPNY);
+            arCreditMemo.setArSalesperson(arCMInvoice.getArSalesperson());
+            arCreditMemo.setArCustomer(arCMInvoice.getArCustomer());
+            try {
+                LocalArInvoiceBatch arInvoiceBatch = arInvoiceBatchHome.findByIbName(IB_NM, AD_BRNCH, AD_CMPNY);
+                arCreditMemo.setArInvoiceBatch(arInvoiceBatch);
+            } catch (FinderException ex) {
+
+            }
+
+            // create distribution records
+            Iterator i;
+
+            double ratio = arCMInvoice.getInvAmountDue() / arCreditMemo.getInvAmountDue();
+
+            LocalArDistributionRecord arDistributionRecord = arDistributionRecordHome
+                    .findByDrClassAndInvCode("RECEIVABLE",arCMInvoice.getInvCode(),AD_CMPNY);
+
+            LocalArDistributionRecord revenueCmArDistributionRecord = arDistributionRecordHome
+                    .DrLine((short)1)
+                    .DrClass("REVENUE")
+                    .DrDebit(EJBCommon.TRUE)
+                    .DrAmount(arDistributionRecord.getDrAmount() * ratio)
+                    .DrAdCompany(AD_CMPNY)
+                    .buildDistributionRecords(adCompany.getCmpShortName());
+
+            revenueCmArDistributionRecord.setGlChartOfAccount(arDistributionRecord.getGlChartOfAccount());
+            arCreditMemo.addArDistributionRecord(revenueCmArDistributionRecord);
+
+            LocalArDistributionRecord receivableCmArDistributionRecord = arDistributionRecordHome.create(
+                    (short)2, "RECEIVABLE", (byte)0,
+                    arDistributionRecord.getDrAmount()*ratio, EJBCommon.FALSE, EJBCommon.FALSE, AD_CMPNY);
+
+            receivableCmArDistributionRecord.setGlChartOfAccount(arDistributionRecord.getGlChartOfAccount());
+            arCreditMemo.addArDistributionRecord(receivableCmArDistributionRecord);
+
+            // create new invoice payment schedule lock
+            Collection arInvoicePaymentSchedules = arCMInvoice.getArInvoicePaymentSchedules();
+            i = arInvoicePaymentSchedules.iterator();
+            while (i.hasNext()) {
+                LocalArInvoicePaymentSchedule arInvoicePaymentSchedule = (LocalArInvoicePaymentSchedule)i.next();
+                arInvoicePaymentSchedule.setIpsLock(EJBCommon.TRUE);
+            }
+            return 1;
+
+        } catch (Exception ex) {
+            Debug.printStackTrace(ex);
+            ctx.setRollbackOnly();
+            throw new EJBException(ex.getMessage());
+
+        }
+    }
+
     public Integer saveArInvEntry(ArInvoiceDetails details, String CST_CSTMR_CODE, String IB_NM, ArrayList drList, boolean isDraft, Integer branchCode, Integer companyCode) throws GlobalRecordAlreadyDeletedException, GlobalNoRecordFoundException, GlobalDocumentNumberNotUniqueException, GlobalTransactionAlreadyApprovedException, GlobalTransactionAlreadyPendingException, GlobalTransactionAlreadyPostedException, GlobalTransactionAlreadyVoidPostedException, ArINVOverapplicationNotAllowedException, GlobalTransactionAlreadyLockedException, GlobalNoApprovalRequesterFoundException, GlobalNoApprovalApproverFoundException, GlJREffectiveDateNoPeriodExistException, GlJREffectiveDatePeriodClosedException, GlobalJournalNotBalanceException, GlobalAccountNumberInvalidException, GlobalBranchAccountNumberInvalidException {
 
         Debug.print("ArCreditMemoEntryControllerBean saveArInvEntry");

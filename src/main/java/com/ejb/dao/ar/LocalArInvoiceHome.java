@@ -854,9 +854,6 @@ public class LocalArInvoiceHome {
         }
     }
 
-    // OTHER METHODS
-
-    // CREATE METHODS
     public LocalArInvoice buildInvoice(String companyCode) throws CreateException {
 
         try {

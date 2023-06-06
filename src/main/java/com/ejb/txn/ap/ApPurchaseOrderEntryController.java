@@ -1,13 +1,17 @@
 package com.ejb.txn.ap;
 
-import jakarta.ejb.Local;
-
+import com.ejb.exception.ad.AdPRFCoaGlVarianceAccountNotFoundException;
+import com.ejb.exception.gl.GlJREffectiveDateNoPeriodExistException;
+import com.ejb.exception.gl.GlJREffectiveDatePeriodClosedException;
 import com.ejb.exception.global.*;
 import com.util.SendEmailDetails;
+import com.util.ap.ApPurchaseOrderDetails;
 import com.util.ap.ApTaxCodeDetails;
 import com.util.mod.ap.ApModPurchaseOrderDetails;
 import com.util.mod.ap.ApModSupplierDetails;
-import com.util.ap.ApPurchaseOrderDetails;
+import jakarta.ejb.Local;
+
+import java.util.ArrayList;
 
 @Local
 public interface ApPurchaseOrderEntryController {
@@ -50,7 +54,48 @@ public interface ApPurchaseOrderEntryController {
 
     ApModPurchaseOrderDetails getApPoByPoCode(java.lang.Integer PO_CODE, java.lang.Integer AD_CMPNY) throws GlobalNoRecordFoundException;
 
-    java.lang.Integer saveApPoEntry(ApPurchaseOrderDetails details, java.lang.String BTCH_NM, java.lang.String PYT_NM, java.lang.String TC_NM, java.lang.String FC_NM, java.lang.String SPL_SPPLR_CODE, java.util.ArrayList plList, boolean isDraft, boolean validateShipmentNumber, java.lang.Integer AD_BRNCH, java.lang.Integer AD_CMPNY) throws GlobalRecordAlreadyDeletedException, GlobalDocumentNumberNotUniqueException, GlobalConversionDateNotExistException, GlobalPaymentTermInvalidException, GlobalTransactionAlreadyApprovedException, GlobalTransactionAlreadyPendingException, GlobalTransactionAlreadyPostedException, GlobalTransactionAlreadyVoidException, GlobalInvItemLocationNotFoundException, GlobalNoApprovalRequesterFoundException, GlobalNoApprovalApproverFoundException, GlobalSupplierItemInvalidException, GlobalRecordInvalidException;
+    Integer saveApPoEntry(ApPurchaseOrderDetails details, String PYT_NM, String TC_NM, String FC_NM, String SPL_SPPLR_CODE,
+                          ArrayList plList, boolean isDraft, Integer AD_BRNCH, Integer AD_CMPNY)
+            throws GlobalRecordAlreadyDeletedException, GlobalDocumentNumberNotUniqueException, GlobalConversionDateNotExistException,
+            GlobalPaymentTermInvalidException, GlobalTransactionAlreadyPendingException, GlobalTransactionAlreadyPostedException,
+            GlobalTransactionAlreadyVoidException, GlobalInvItemLocationNotFoundException, GlJREffectiveDateNoPeriodExistException,
+            GlJREffectiveDatePeriodClosedException, GlobalJournalNotBalanceException, GlobalTransactionAlreadyLockedException,
+            GlobalInventoryDateException, GlobalTransactionAlreadyVoidPostedException, GlobalBranchAccountNumberInvalidException,
+            AdPRFCoaGlVarianceAccountNotFoundException;
+
+    Integer saveApPoEntry2(ApPurchaseOrderDetails details, String PYT_NM, String TC_NM, String FC_NM, String SPL_SPPLR_CODE,
+                           ArrayList plList, boolean isDraft, Integer AD_BRNCH, Integer AD_CMPNY)
+            throws GlobalRecordAlreadyDeletedException, GlobalDocumentNumberNotUniqueException, GlobalConversionDateNotExistException,
+            GlobalPaymentTermInvalidException, GlobalTransactionAlreadyPendingException, GlobalTransactionAlreadyPostedException,
+            GlobalTransactionAlreadyVoidException, GlobalInvItemLocationNotFoundException, GlJREffectiveDateNoPeriodExistException,
+            GlJREffectiveDatePeriodClosedException, GlobalJournalNotBalanceException, GlobalTransactionAlreadyLockedException,
+            GlobalInventoryDateException, GlobalTransactionAlreadyVoidPostedException, GlobalBranchAccountNumberInvalidException,
+            AdPRFCoaGlVarianceAccountNotFoundException;
+
+    Integer saveApPoSyncEntry(ApPurchaseOrderDetails details, String PYT_NM, String TC_NM, String FC_NM, String SPL_SPPLR_CODE,
+                              ArrayList plList, boolean isDraft, Integer AD_BRNCH, Integer AD_CMPNY) throws
+            GlobalRecordAlreadyDeletedException,
+            GlobalDocumentNumberNotUniqueException,
+            GlobalConversionDateNotExistException,
+            GlobalPaymentTermInvalidException,
+            GlobalTransactionAlreadyApprovedException,
+            GlobalTransactionAlreadyPendingException,
+            GlobalTransactionAlreadyPostedException,
+            GlobalTransactionAlreadyVoidException,
+            GlobalInvItemLocationNotFoundException,
+            GlobalNoApprovalRequesterFoundException,
+            GlobalNoApprovalApproverFoundException,
+            GlobalSupplierItemInvalidException;
+
+    java.lang.Integer saveApPoEntry(ApPurchaseOrderDetails details, java.lang.String BTCH_NM, java.lang.String PYT_NM,
+                                    java.lang.String TC_NM, java.lang.String FC_NM, java.lang.String SPL_SPPLR_CODE,
+                                    java.util.ArrayList plList, boolean isDraft, boolean validateShipmentNumber,
+                                    java.lang.Integer AD_BRNCH, java.lang.Integer AD_CMPNY)
+            throws GlobalRecordAlreadyDeletedException, GlobalDocumentNumberNotUniqueException, GlobalConversionDateNotExistException,
+            GlobalPaymentTermInvalidException, GlobalTransactionAlreadyApprovedException, GlobalTransactionAlreadyPendingException,
+            GlobalTransactionAlreadyPostedException, GlobalTransactionAlreadyVoidException, GlobalInvItemLocationNotFoundException,
+            GlobalNoApprovalRequesterFoundException, GlobalNoApprovalApproverFoundException, GlobalSupplierItemInvalidException,
+            GlobalRecordInvalidException;
 
     void deleteApPoEntry(java.lang.Integer PO_CODE, java.lang.String AD_USR, java.lang.Integer AD_CMPNY) throws GlobalRecordAlreadyDeletedException;
 
@@ -71,4 +116,5 @@ public interface ApPurchaseOrderEntryController {
     java.util.ArrayList getApOpenVbAll(java.lang.String DPRTMNT, java.lang.Integer AD_BRNCH, java.lang.Integer AD_CMPNY);
 
     Integer getPrCodeByPrNumberAndBrCode(String PR_NMBR, Integer AD_BRNCH, Integer AD_CMPNY);
+
 }

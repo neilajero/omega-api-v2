@@ -21,8 +21,8 @@ import com.util.mod.inv.InvModBranchStockTransferDetails;
 import com.util.mod.inv.InvModBranchStockTransferLineDetails;
 import com.util.mod.inv.InvModTagListDetails;
 import com.util.mod.inv.InvModUnitOfMeasureDetails;
-
 import jakarta.ejb.*;
+
 import java.util.*;
 
 @Stateless(name = "InvBranchStockTransferInEntryControllerEJB")
@@ -337,6 +337,577 @@ public class InvBranchStockTransferInEntryControllerBean extends EJBContextClass
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
         }
+    }
+
+    @Override
+    public Integer saveInvBstInEntry(InvModBranchStockTransferDetails details, ArrayList bslList, String type, Integer AD_BRNCH, Integer AD_CMPNY)
+            throws GlobalRecordAlreadyDeletedException, GlobalTransactionAlreadyApprovedException, GlobalTransactionAlreadyPendingException,
+            GlobalTransactionAlreadyPostedException, GlobalInvItemLocationNotFoundException, GlJREffectiveDateNoPeriodExistException,
+            GlJREffectiveDatePeriodClosedException, GlobalJournalNotBalanceException, GlobalDocumentNumberNotUniqueException,
+            GlobalInventoryDateException, GlobalBranchAccountNumberInvalidException, InvATRAssemblyQtyGreaterThanAvailableQtyException,
+            GlobalRecordAlreadyAssignedException, AdPRFCoaGlVarianceAccountNotFoundException {
+
+        Debug.print("InvBranchStockTransferInEntryControllerBean saveInvBstInEntry");
+
+        try {
+            LocalAdPreference adPreference = adPreferenceHome.findByPrfAdCompany(AD_CMPNY);
+
+            LocalInvBranchStockTransfer invBranchStockTransfer = null;
+
+            //Validate if branch stock transfer is already deleted
+            try {
+
+                if (details.getBstCode() != null) {
+
+                    invBranchStockTransfer = invBranchStockTransferHome.findByPrimaryKey(details.getBstCode());
+
+                }
+
+            }
+            catch (FinderException ex) {
+
+                throw new GlobalRecordAlreadyDeletedException();
+
+            }
+
+            //Validate if branch stock transfer is already posted, void, approved or pending
+            if (details.getBstCode() != null) {
+
+                if (invBranchStockTransfer.getBstApprovalStatus() != null) {
+
+                    if (invBranchStockTransfer.getBstApprovalStatus().equals("APPROVED") ||
+                            invBranchStockTransfer.getBstApprovalStatus().equals("N/A")) {
+
+                        throw new GlobalTransactionAlreadyApprovedException();
+
+
+                    } else if (invBranchStockTransfer.getBstApprovalStatus().equals("PENDING")) {
+
+                        throw new GlobalTransactionAlreadyPendingException();
+
+                    }
+
+                }
+
+                if (invBranchStockTransfer.getBstPosted() == EJBCommon.TRUE) {
+
+                    throw new GlobalTransactionAlreadyPostedException();
+
+                }
+
+            }
+
+            LocalInvBranchStockTransfer invBranchExistingStockTransfer = null;
+
+            try {
+
+                invBranchExistingStockTransfer = invBranchStockTransferHome.findByBstNumberAndBrCode(details.getBstNumber(), AD_BRNCH, AD_CMPNY);
+
+            }
+            catch (FinderException ex) {
+
+            }
+
+            // validate if document number is unique and if document number is automatic then set next sequence\
+
+            if (details.getBstCode() == null) {
+
+                System.out.println("Checkpoint A");
+
+                LocalAdBranchDocumentSequenceAssignment adBranchDocumentSequenceAssignment = null;
+                LocalAdDocumentSequenceAssignment adDocumentSequenceAssignment = null;
+
+                if (invBranchExistingStockTransfer != null) {
+
+                    throw new GlobalDocumentNumberNotUniqueException();
+
+                }
+
+                try {
+
+                    adDocumentSequenceAssignment = adDocumentSequenceAssignmentHome.findByDcName("INV BRANCH STOCK TRANSFER-IN", AD_CMPNY);
+
+                }
+                catch (FinderException ex) {
+
+                }
+
+                try {
+
+                    adBranchDocumentSequenceAssignment = adBranchDocumentSequenceAssignmentHome.findBdsByDsaCodeAndBrCode(adDocumentSequenceAssignment.getDsaCode(), AD_BRNCH, AD_CMPNY);
+
+                }
+                catch (FinderException ex) {
+
+                }
+
+                if (adDocumentSequenceAssignment.getAdDocumentSequence().getDsNumberingType() == 'A' &&
+                        (details.getBstNumber() == null || details.getBstNumber().trim().length() == 0)) {
+
+                    while (true) {
+
+                        if (adBranchDocumentSequenceAssignment == null || adBranchDocumentSequenceAssignment.getBdsNextSequence() == null) {
+
+                            try {
+
+                                invBranchStockTransferHome.findByBstNumberAndBrCode(adDocumentSequenceAssignment.getDsaNextSequence(), AD_BRNCH, AD_CMPNY);
+                                adDocumentSequenceAssignment.setDsaNextSequence(EJBCommon.incrementStringNumber(adDocumentSequenceAssignment.getDsaNextSequence()));
+
+                            }
+                            catch (FinderException ex) {
+
+                                details.setBstNumber(adDocumentSequenceAssignment.getDsaNextSequence());
+                                adDocumentSequenceAssignment.setDsaNextSequence(EJBCommon.incrementStringNumber(adDocumentSequenceAssignment.getDsaNextSequence()));
+                                break;
+
+                            }
+
+                        } else {
+
+                            try {
+
+                                invBranchStockTransferHome.findByBstNumberAndBrCode(adBranchDocumentSequenceAssignment.getBdsNextSequence(), AD_BRNCH, AD_CMPNY);
+                                adBranchDocumentSequenceAssignment.setBdsNextSequence(EJBCommon.incrementStringNumber(adBranchDocumentSequenceAssignment.getBdsNextSequence()));
+
+                            }
+                            catch (FinderException ex) {
+
+                                details.setBstNumber(adBranchDocumentSequenceAssignment.getBdsNextSequence());
+                                adBranchDocumentSequenceAssignment.setBdsNextSequence(EJBCommon.incrementStringNumber(adBranchDocumentSequenceAssignment.getBdsNextSequence()));
+                                break;
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            } else {
+
+                System.out.println("Checkpoint B");
+
+                if (invBranchExistingStockTransfer != null &&
+                        !invBranchExistingStockTransfer.getBstCode().equals(details.getBstCode())) {
+
+                    throw new GlobalDocumentNumberNotUniqueException();
+
+                }
+
+                if (invBranchStockTransfer.getBstNumber() != details.getBstNumber() &&
+                        (details.getBstNumber() == null || details.getBstNumber().trim().length() == 0)) {
+
+                    details.setBstNumber(invBranchStockTransfer.getBstNumber());
+
+                }
+
+            }
+
+
+            // check if transfer-out already has transfer in
+            try {
+
+                LocalInvBranchStockTransfer invExistingBranchStockTransferIn = invBranchStockTransferHome.findInByBstOutNumberAndBrCode(
+                        details.getBstTransferOutNumber(), AD_BRNCH, AD_CMPNY);
+
+                System.out.println("details.getBstCode(): " + details.getBstCode());
+                System.out.println("invExistingBranchStockTransferIn.getBstCode(): " + invExistingBranchStockTransferIn.getBstCode());
+
+                if ((details.getBstCode() != null && !invExistingBranchStockTransferIn.getBstCode().equals(details.getBstCode())) ||
+                        details.getBstCode() == null) {
+
+                    throw new GlobalRecordAlreadyAssignedException();
+
+                }
+
+            }
+            catch (FinderException ex) {
+
+            }
+
+
+            // used in checking if branch stock transfer should re-generate distribution records
+
+            boolean isRecalculate = true;
+
+            // create branch stock transfer
+
+            if (details.getBstCode() == null) {
+
+                invBranchStockTransfer = invBranchStockTransferHome.create(details.getBstDate(),
+                        "IN", details.getBstNumber(), details.getBstTransferOutNumber(), null,
+                        details.getBstDescription(), details.getBstApprovalStatus(), details.getBstPosted(),
+                        details.getBstReasonForRejection(), details.getBstCreatedBy(), details.getBstDateCreated(),
+                        details.getBstLastModifiedBy(), details.getBstDateLastModified(), details.getBstApprovedRejectedBy(),
+                        details.getBstDateApprovedRejected(), details.getBstPostedBy(), details.getBstDatePosted(),
+                        EJBCommon.FALSE, EJBCommon.FALSE, AD_BRNCH, AD_CMPNY);
+
+            } else {
+
+                if (bslList.size() != invBranchStockTransfer.getInvBranchStockTransferLines().size() ||
+                        !(invBranchStockTransfer.getBstDate().equals(details.getBstDate()))) {
+
+                    isRecalculate = true;
+
+                } else if (bslList.size() == invBranchStockTransfer.getInvBranchStockTransferLines().size()) {
+
+                    Iterator bslIter = invBranchStockTransfer.getInvBranchStockTransferLines().iterator();
+                    Iterator bslIterList = bslList.iterator();
+
+                    while (bslIter.hasNext()) {
+
+                        LocalInvBranchStockTransferLine invBranchStockTransferLine = (LocalInvBranchStockTransferLine) bslIter.next();
+                        InvModBranchStockTransferLineDetails mdetails = (InvModBranchStockTransferLineDetails) bslIterList.next();
+
+
+                        if (!invBranchStockTransferLine.getInvItemLocation().getInvLocation().getLocName().equals(mdetails.getBslLocationName()) ||
+                                invBranchStockTransferLine.getBslQuantityReceived() != mdetails.getBslQuantityReceived()) {
+
+                            isRecalculate = true;
+                            break;
+
+                        }
+
+                        isRecalculate = false;
+
+                    }
+
+                } else {
+
+                    isRecalculate = true;
+
+                }
+
+                invBranchStockTransfer.setBstType("IN");
+                invBranchStockTransfer.setBstNumber(details.getBstNumber());
+                invBranchStockTransfer.setBstDescription(details.getBstDescription());
+                invBranchStockTransfer.setBstDate(details.getBstDate());
+                invBranchStockTransfer.setBstTransferOutNumber(details.getBstTransferOutNumber());
+                invBranchStockTransfer.setBstApprovalStatus(details.getBstApprovalStatus());
+                invBranchStockTransfer.setBstLastModifiedBy(details.getBstLastModifiedBy());
+                invBranchStockTransfer.setBstDateLastModified(details.getBstDateLastModified());
+                invBranchStockTransfer.setBstReasonForRejection(null);
+
+            }
+
+            LocalInvBranchStockTransfer invBranchStockTransferOut = null;
+
+            // get transfer out branch
+            LocalAdBranch adBranchFrom = adBranchHome.findByBrName(details.getBstBranchFrom(), AD_CMPNY);
+            adBranchFrom.addInvBranchStockTransfer(invBranchStockTransfer);
+
+            if (type.equalsIgnoreCase("BST-OUT MATCHED")) {
+
+                // lock corresponding transfer out
+                invBranchStockTransferOut =
+                        invBranchStockTransferHome.findByBstNumberAndBrCode(invBranchStockTransfer.getBstTransferOutNumber(),
+                                invBranchStockTransfer.getAdBranch().getBrCode(), AD_CMPNY);
+
+                invBranchStockTransferOut.setBstLock(EJBCommon.TRUE);
+
+            }
+
+            LocalInvLocation invLocation = invLocationHome.findByLocName(details.getBstTransitLocation(), AD_CMPNY);
+            //invLocation.addInvBranchStockTransfer(invBranchStockTransfer);
+            invBranchStockTransfer.setInvLocation(invLocation);
+
+            double ABS_TOTAL_AMOUNT = 0d;
+
+            if (isRecalculate) {
+
+                // remove all branch stock transfer lines
+
+                Iterator i = invBranchStockTransfer.getInvBranchStockTransferLines().iterator();
+
+                short LINE_NUMBER = 0;
+
+                while (i.hasNext()) {
+
+                    LINE_NUMBER++;
+
+                    LocalInvBranchStockTransferLine invBranchStockTransferLine = (LocalInvBranchStockTransferLine) i.next();
+
+                    LocalInvItemLocation invItemLocation = null;
+
+                    try {
+
+                        invItemLocation = invItemLocationHome.findByLocNameAndIiName(
+                                invBranchStockTransferLine.getInvItemLocation().getInvLocation().getLocName(),
+                                invBranchStockTransferLine.getInvItemLocation().getInvItem().getIiName(), AD_CMPNY);
+
+                    }
+                    catch (FinderException ex) {
+
+                        System.out.println("Line " + String.valueOf(LINE_NUMBER) + " - " + invBranchStockTransferLine.getInvItemLocation().getInvLocation().getLocName());
+
+                        throw new GlobalInvItemLocationNotFoundException("Line " + String.valueOf(LINE_NUMBER) + " - " + invBranchStockTransferLine.getInvItemLocation().getInvLocation().getLocName());
+
+                    }
+
+                    double convertedQuantity = this.convertByUomAndQuantity(
+                            invBranchStockTransferLine.getInvUnitOfMeasure(), invItemLocation.getInvItem(),
+                            invBranchStockTransferLine.getBslQuantityReceived(), AD_CMPNY);
+
+                    invItemLocation.setIlCommittedQuantity(invItemLocation.getIlCommittedQuantity() - convertedQuantity);
+
+                    i.remove();
+
+                    em.remove(invBranchStockTransferLine);
+
+                }
+
+                // remove all distribution records
+
+                i = invBranchStockTransfer.getInvDistributionRecords().iterator();
+
+                while (i.hasNext()) {
+
+                    LocalInvDistributionRecord arDistributionRecord = (LocalInvDistributionRecord) i.next();
+
+                    i.remove();
+
+                    em.remove(arDistributionRecord);
+
+                }
+
+                // add new branch stock transfer entry lines and distribution record
+
+                byte DEBIT = 0;
+
+                i = bslList.iterator();
+
+                while (i.hasNext()) {
+
+                    InvModBranchStockTransferLineDetails mdetails = (InvModBranchStockTransferLineDetails) i.next();
+
+                    LocalInvItemLocation invItemLocation = null;
+
+                    try {
+
+                        invItemLocation = invItemLocationHome.findByLocNameAndIiName(
+                                mdetails.getBslLocationName(),
+                                mdetails.getBslIiName(), AD_CMPNY);
+
+                    }
+                    catch (FinderException ex) {
+
+                        System.out.println("Line " + String.valueOf(mdetails.getBslLineNumber() + " - " + mdetails.getBslLocationName()));
+                        throw new GlobalInvItemLocationNotFoundException("Line " + String.valueOf(mdetails.getBslLineNumber() + " - " + mdetails.getBslLocationName()));
+
+                    }
+
+                    LocalInvItemLocation invItemTransitLocation = null;
+
+                    try {
+
+                        invItemTransitLocation = invItemLocationHome.findByLocNameAndIiName(
+                                details.getBstTransitLocation(),
+                                mdetails.getBslIiName(), AD_CMPNY);
+
+                    }
+                    catch (FinderException ex) {
+
+                        System.out.println("Transit Location " + String.valueOf(details.getBstTransitLocation()));
+                        throw new GlobalInvItemLocationNotFoundException("Transit Location " + String.valueOf(details.getBstTransitLocation()));
+
+                    }
+
+                    if (adPreference.getPrfArAllowPriorDate() == EJBCommon.FALSE) {
+                        //Start date validation
+                        Collection invNegTxnCosting = invCostingHome.findNegTxnByGreaterThanCstDateAndIiNameAndLocName(
+                                invBranchStockTransfer.getBstDate(), invItemLocation.getInvItem().getIiName(),
+                                invItemLocation.getInvLocation().getLocName(), AD_BRNCH, AD_CMPNY);
+                        if (!invNegTxnCosting.isEmpty()) {
+                            throw new GlobalInventoryDateException(invItemLocation.getInvItem().getIiName());
+                        }
+                    }
+
+
+                    LocalInvBranchStockTransferLine invBranchStockTransferLine = this.addInvBslEntryIn(mdetails, invBranchStockTransfer, AD_CMPNY);
+
+
+                    // add physical inventory distribution
+
+                    double COST = invBranchStockTransferLine.getBslUnitCost();
+
+                    double SHIPPING = mdetails.getBslShippingCost();
+
+                    double AMOUNT = 0d;
+
+                    AMOUNT = EJBCommon.roundIt(invBranchStockTransferLine.getBslQuantityReceived() * COST, commonData.getGlFcPrecisionUnit(AD_CMPNY));
+
+                    double SHIPPING_AMNT = 0d;
+
+                    SHIPPING_AMNT = EJBCommon.roundIt(invBranchStockTransferLine.getBslQuantityReceived() * SHIPPING, commonData.getGlFcPrecisionUnit(AD_CMPNY));
+
+                    // check branch mapping
+
+                    LocalAdBranchItemLocation adBranchItemLocation = null;
+
+                    try {
+
+                        adBranchItemLocation = adBranchItemLocationHome.findBilByIlCodeAndBrCode(
+                                invItemLocation.getIlCode(), AD_BRNCH, AD_CMPNY);
+
+
+                    }
+                    catch (FinderException ex) {
+
+                    }
+
+                    LocalGlChartOfAccount glChartOfAccount = null;
+
+                    if (adBranchItemLocation == null) {
+
+                        glChartOfAccount = glChartOfAccountHome.findByPrimaryKey(
+                                invItemLocation.getIlGlCoaInventoryAccount());
+
+                    } else {
+
+                        glChartOfAccount = glChartOfAccountHome.findByPrimaryKey(
+                                adBranchItemLocation.getBilCoaGlInventoryAccount());
+
+                    }
+
+                    // add dr for inventory
+
+                    this.addInvDrEntryIn(invBranchStockTransfer.getInvDrNextLine(), "INVENTORY", EJBCommon.TRUE,
+                            Math.abs(AMOUNT), glChartOfAccount.getCoaCode(), invBranchStockTransfer, AD_BRNCH, AD_CMPNY);
+
+
+                    // check branch mapping for transit location
+
+                    LocalAdBranchItemLocation adBranchItemTransitLocation = null;
+
+                    try {
+
+                        adBranchItemTransitLocation = adBranchItemLocationHome.findBilByIlCodeAndBrCode(
+                                invItemTransitLocation.getIlCode(), adBranchFrom.getBrCode(), AD_CMPNY);
+
+                    }
+                    catch (FinderException ex) {
+
+                    }
+
+                    LocalGlChartOfAccount glChartOfAccountTransit = null;
+
+                    if (adBranchItemTransitLocation == null) {
+
+                        glChartOfAccountTransit = glChartOfAccountHome.findByPrimaryKey(
+                                invItemTransitLocation.getIlGlCoaInventoryAccount());
+
+                    } else {
+
+                        glChartOfAccountTransit = glChartOfAccountHome.findByPrimaryKey(
+                                adBranchItemTransitLocation.getBilCoaGlInventoryAccount());
+
+                    }
+
+                    // add dr for inventory transit location
+
+                    this.addInvDrEntryIn(invBranchStockTransfer.getInvDrNextLine(), "INVENTORY", EJBCommon.FALSE,
+                            Math.abs(AMOUNT - SHIPPING_AMNT), glChartOfAccountTransit.getCoaCode(), invBranchStockTransfer, AD_BRNCH, AD_CMPNY);
+
+                    // add dr for shipping if shipping amount > 0
+
+                    if (SHIPPING_AMNT > 0d) {
+
+                        LocalAdBranch adBranch = adBranchHome.findByPrimaryKey(AD_BRNCH);
+                        LocalGlChartOfAccount glChartOfAccountShipping = adBranch.getGlChartOfAccount();
+
+                        this.addInvDrEntryIn(invBranchStockTransfer.getInvDrNextLine(), "INVENTORY", EJBCommon.FALSE,
+                                Math.abs(SHIPPING_AMNT), glChartOfAccountShipping.getCoaCode(), invBranchStockTransfer, AD_BRNCH, AD_CMPNY);
+
+                    }
+
+                    ABS_TOTAL_AMOUNT += Math.abs(AMOUNT);
+
+                    // set ilCommittedQuantity
+
+                    double convertedQuantity = this.convertByUomAndQuantity(
+                            invBranchStockTransferLine.getInvUnitOfMeasure(), invItemLocation.getInvItem(),
+                            invBranchStockTransferLine.getBslQuantityReceived(), AD_CMPNY);
+
+                    invItemLocation.setIlCommittedQuantity(invItemLocation.getIlCommittedQuantity() + convertedQuantity);
+
+                }
+
+            } else {
+
+                Iterator i = bslList.iterator();
+
+                while (i.hasNext()) {
+
+                    InvModBranchStockTransferLineDetails mdetails = (InvModBranchStockTransferLineDetails) i.next();
+
+                    LocalInvItemLocation invItemLocation = null;
+
+                    try {
+
+                        invItemLocation = invItemLocationHome.findByLocNameAndIiName(
+                                mdetails.getBslLocationName(),
+                                mdetails.getBslIiName(), AD_CMPNY);
+
+                    }
+                    catch (FinderException ex) {
+
+                        System.out.println("Line " + String.valueOf(mdetails.getBslLineNumber() + " - " + mdetails.getBslLocationName()));
+                        throw new GlobalInvItemLocationNotFoundException("Line " + String.valueOf(mdetails.getBslLineNumber() + " - " + mdetails.getBslLocationName()));
+
+                    }
+                    if (adPreference.getPrfArAllowPriorDate() == EJBCommon.FALSE) {
+                        //	start date validation
+
+                        Collection invNegTxnCosting = invCostingHome.findNegTxnByGreaterThanCstDateAndIiNameAndLocName(
+                                invBranchStockTransfer.getBstDate(), invItemLocation.getInvItem().getIiName(),
+                                invItemLocation.getInvLocation().getLocName(), AD_BRNCH, AD_CMPNY);
+                        if (!invNegTxnCosting.isEmpty()) {
+                            throw new GlobalInventoryDateException(invItemLocation.getInvItem().getIiName());
+                        }
+                    }
+
+
+                    i = invBranchStockTransfer.getInvDistributionRecords().iterator();
+
+                    while (i.hasNext()) {
+
+                        LocalInvDistributionRecord distributionRecord = (LocalInvDistributionRecord) i.next();
+
+                        if (distributionRecord.getDrDebit() == 1) {
+
+                            ABS_TOTAL_AMOUNT += distributionRecord.getDrAmount();
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+            // set stock transfer approval status
+            invBranchStockTransfer.setBstApprovalStatus(null);
+
+            return invBranchStockTransfer.getBstCode();
+
+        }
+        catch (InvATRAssemblyQtyGreaterThanAvailableQtyException | GlobalRecordAlreadyDeletedException |
+               GlobalTransactionAlreadyApprovedException | GlobalTransactionAlreadyPendingException |
+               GlobalTransactionAlreadyPostedException | GlobalInvItemLocationNotFoundException |
+               GlobalInventoryDateException | GlobalDocumentNumberNotUniqueException |
+               GlobalBranchAccountNumberInvalidException | GlobalRecordAlreadyAssignedException ex) {
+            ctx.setRollbackOnly();
+            throw ex;
+        }
+        catch (Exception ex) {
+
+            Debug.printStackTrace(ex);
+            ctx.setRollbackOnly();
+            throw new EJBException(ex.getMessage());
+
+        }
+
     }
 
     public Integer saveInvBstEntry(InvModBranchStockTransferDetails details, ArrayList bslList,
@@ -3321,6 +3892,116 @@ public class InvBranchStockTransferInEntryControllerBean extends EJBContextClass
         }
 
         return list;
+    }
+
+
+    private LocalInvBranchStockTransferLine addInvBslEntryIn(InvModBranchStockTransferLineDetails mdetails,
+                                                             LocalInvBranchStockTransfer invBranchStockTransfer, Integer AD_CMPNY)
+            throws InvATRAssemblyQtyGreaterThanAvailableQtyException {
+
+        Debug.print("InvBranchStockTransferInEntryControllerBean addInvBslEntry");
+
+        try {
+
+            if (mdetails.getBslQuantity() < mdetails.getBslQuantityReceived()) {
+                throw new InvATRAssemblyQtyGreaterThanAvailableQtyException();
+            }
+
+            LocalInvBranchStockTransferLine invBranchStockTransferLine =
+                    invBranchStockTransferLineHome.create(mdetails.getBslQuantity(), mdetails.getBslQuantityReceived(),
+                            mdetails.getBslUnitCost(), mdetails.getBslAmount(), AD_CMPNY);
+
+            invBranchStockTransferLine.setBslMisc("");
+
+            //invBranchStockTransfer.addInvBranchStockTransferLine(invBranchStockTransferLine);
+            invBranchStockTransferLine.setInvBranchStockTransfer(invBranchStockTransfer);
+
+            LocalInvUnitOfMeasure invUnitOfMeasure = invUnitOfMeasureHome.findByUomName(
+                    mdetails.getBslUomName(), AD_CMPNY);
+
+            //invUnitOfMeasure.addInvBranchStockTransferLine(invBranchStockTransferLine);
+            invBranchStockTransferLine.setInvUnitOfMeasure(invUnitOfMeasure);
+
+
+            LocalInvItemLocation invItemLocation = invItemLocationHome.findByIiNameAndLocName(
+                    mdetails.getBslIiName(), mdetails.getBslLocationName(), AD_CMPNY);
+
+            //invItemLocation.addInvBranchStockTransferLine(invBranchStockTransferLine);
+            invBranchStockTransferLine.setInvItemLocation(invItemLocation);
+
+            return invBranchStockTransferLine;
+
+        }
+        catch (InvATRAssemblyQtyGreaterThanAvailableQtyException ex) {
+
+            ctx.setRollbackOnly();
+            throw ex;
+
+        }
+        catch (Exception ex) {
+
+            Debug.printStackTrace(ex);
+            ctx.setRollbackOnly();
+            throw new EJBException(ex.getMessage());
+
+        }
+
+    }
+
+    private void addInvDrEntryIn(short DR_LN, String DR_CLSS, byte DR_DBT, double DR_AMNT,
+                                 Integer COA_CODE, LocalInvBranchStockTransfer invBranchStockTransfer,
+                                 Integer AD_BRNCH, Integer AD_CMPNY)
+            throws GlobalBranchAccountNumberInvalidException {
+
+        Debug.print("InvBranchStockTransferInEntryControllerBean addInvDrEntry");
+
+        try {
+
+            // get company
+
+            LocalAdCompany adCompany = adCompanyHome.findByPrimaryKey(AD_CMPNY);
+
+            // validate coa
+
+            LocalGlChartOfAccount glChartOfAccount = null;
+
+            try {
+
+                glChartOfAccount = glChartOfAccountHome.findByCoaCodeAndBranchCode(COA_CODE, AD_BRNCH, AD_CMPNY);
+
+            }
+            catch (FinderException ex) {
+
+                throw new GlobalBranchAccountNumberInvalidException();
+
+            }
+
+            // create distribution record
+
+            LocalInvDistributionRecord invDistributionRecord = invDistributionRecordHome.create(
+                    DR_LN, DR_CLSS, DR_DBT, EJBCommon.roundIt(DR_AMNT, adCompany.getGlFunctionalCurrency().getFcPrecision()),
+                    EJBCommon.FALSE, EJBCommon.FALSE, AD_CMPNY);
+
+            //invBranchStockTransfer.addInvDistributionRecord(invDistributionRecord);
+            invDistributionRecord.setInvBranchStockTransfer(invBranchStockTransfer);
+            //glChartOfAccount.addInvDistributionRecord(invDistributionRecord);
+            invDistributionRecord.setInvChartOfAccount(glChartOfAccount);
+
+        }
+        catch (GlobalBranchAccountNumberInvalidException ex) {
+
+            ctx.setRollbackOnly();
+            throw ex;
+
+        }
+        catch (Exception ex) {
+
+            Debug.printStackTrace(ex);
+            ctx.setRollbackOnly();
+            throw new EJBException(ex.getMessage());
+
+        }
+
     }
 
     // SessionBean methods

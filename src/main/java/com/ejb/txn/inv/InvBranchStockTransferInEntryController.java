@@ -24,6 +24,22 @@ public interface InvBranchStockTransferInEntryController
 
    ArrayList getInvBranchUomByIiName(String II_NM, Integer AD_CMPNY);
 
+   Integer saveInvBstInEntry(InvModBranchStockTransferDetails details, ArrayList bslList, String type, Integer AD_BRNCH, Integer AD_CMPNY)
+           throws GlobalRecordAlreadyDeletedException,
+           GlobalTransactionAlreadyApprovedException,
+           GlobalTransactionAlreadyPendingException,
+           GlobalTransactionAlreadyPostedException,
+           GlobalInvItemLocationNotFoundException,
+           GlJREffectiveDateNoPeriodExistException,
+           GlJREffectiveDatePeriodClosedException,
+           GlobalJournalNotBalanceException,
+           GlobalDocumentNumberNotUniqueException,
+           GlobalInventoryDateException,
+           GlobalBranchAccountNumberInvalidException,
+           InvATRAssemblyQtyGreaterThanAvailableQtyException,
+           GlobalRecordAlreadyAssignedException,
+           AdPRFCoaGlVarianceAccountNotFoundException;
+
    Integer saveInvBstEntry(InvModBranchStockTransferDetails details, ArrayList bslList,
                            boolean isDraft, String type, Integer AD_BRNCH, Integer AD_CMPNY)
       throws GlobalRecordAlreadyDeletedException, GlobalTransactionAlreadyApprovedException,

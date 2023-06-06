@@ -6,101 +6,40 @@
  */
 package com.ejb.txn.ap;
 
-import java.util.*;
-
-import jakarta.ejb.CreateException;
-import jakarta.ejb.EJB;
-import jakarta.ejb.EJBException;
-import jakarta.ejb.FinderException;
-import jakarta.ejb.Stateless;
-import javax.naming.NamingException;
-
 import com.ejb.PersistenceBeanClass;
-import com.ejb.dao.ad.ILocalAdCompanyHome;
-import com.ejb.dao.ad.ILocalAdPreferenceHome;
-import com.ejb.dao.ad.LocalAdAmountLimitHome;
-import com.ejb.entities.ad.LocalAdApproval;
-import com.ejb.dao.ad.LocalAdApprovalHome;
-import com.ejb.entities.ad.LocalAdApprovalQueue;
-import com.ejb.dao.ad.LocalAdApprovalQueueHome;
-import com.ejb.dao.ad.LocalAdApprovalUserHome;
-import com.ejb.entities.ad.LocalAdBranchDocumentSequenceAssignment;
-import com.ejb.dao.ad.LocalAdBranchDocumentSequenceAssignmentHome;
-import com.ejb.entities.ad.LocalAdCompany;
-import com.ejb.dao.ad.LocalAdDeleteAuditTrailHome;
-import com.ejb.entities.ad.LocalAdDocumentSequenceAssignment;
-import com.ejb.dao.ad.LocalAdDocumentSequenceAssignmentHome;
-import com.ejb.entities.ad.LocalAdLookUpValue;
-import com.ejb.dao.ad.LocalAdLookUpValueHome;
-import com.ejb.entities.ad.LocalAdPaymentTerm;
-import com.ejb.dao.ad.LocalAdPaymentTermHome;
-import com.ejb.entities.ad.LocalAdPreference;
-import com.ejb.entities.ad.LocalAdUser;
-import com.ejb.dao.ad.LocalAdUserHome;
-import com.ejb.dao.ap.ILocalApSupplierHome;
-import com.ejb.entities.ap.LocalApPurchaseOrder;
-import com.ejb.dao.ap.LocalApPurchaseOrderHome;
-import com.ejb.entities.ap.LocalApPurchaseOrderLine;
-import com.ejb.dao.ap.LocalApPurchaseOrderLineHome;
-import com.ejb.entities.ap.LocalApPurchaseRequisition;
-import com.ejb.dao.ap.LocalApPurchaseRequisitionHome;
-import com.ejb.entities.ap.LocalApSupplier;
-import com.ejb.entities.ap.LocalApTaxCode;
-import com.ejb.dao.ap.LocalApTaxCodeHome;
-import com.ejb.dao.ap.LocalApVoucherBatch;
-import com.ejb.dao.ap.LocalApVoucherBatchHome;
-import com.ejb.exception.global.GlobalConversionDateNotExistException;
-import com.ejb.exception.global.GlobalDocumentNumberNotUniqueException;
-import com.ejb.exception.global.GlobalInvItemLocationNotFoundException;
-import com.ejb.exception.global.GlobalNoApprovalApproverFoundException;
-import com.ejb.exception.global.GlobalNoApprovalRequesterFoundException;
-import com.ejb.exception.global.GlobalNoRecordFoundException;
-import com.ejb.exception.global.GlobalPaymentTermInvalidException;
-import com.ejb.exception.global.GlobalRecordAlreadyDeletedException;
-import com.ejb.exception.global.GlobalRecordInvalidException;
-import com.ejb.exception.global.GlobalSupplierItemInvalidException;
-import com.ejb.exception.global.GlobalTransactionAlreadyApprovedException;
-import com.ejb.exception.global.GlobalTransactionAlreadyPendingException;
-import com.ejb.exception.global.GlobalTransactionAlreadyPostedException;
-import com.ejb.exception.global.GlobalTransactionAlreadyVoidException;
+import com.ejb.dao.ad.*;
+import com.ejb.dao.ap.*;
 import com.ejb.dao.gen.LocalGenSegmentHome;
 import com.ejb.dao.gen.LocalGenValueSetValueHome;
 import com.ejb.dao.gl.ILocalGlChartOfAccountBalanceHome;
-import com.ejb.entities.gl.LocalGlAccountingCalendarValue;
-import com.ejb.entities.gl.LocalGlChartOfAccount;
-import com.ejb.entities.gl.LocalGlChartOfAccountBalance;
-import com.ejb.entities.gl.LocalGlFunctionalCurrency;
+import com.ejb.dao.gl.ILocalGlChartOfAccountHome;
 import com.ejb.dao.gl.LocalGlFunctionalCurrencyHome;
-import com.ejb.entities.gl.LocalGlFunctionalCurrencyRate;
 import com.ejb.dao.gl.LocalGlFunctionalCurrencyRateHome;
-import com.ejb.entities.inv.LocalInvItem;
-import com.ejb.dao.inv.LocalInvItemHome;
-import com.ejb.entities.inv.LocalInvItemLocation;
-import com.ejb.dao.inv.LocalInvItemLocationHome;
-import com.ejb.entities.inv.LocalInvLocation;
-import com.ejb.dao.inv.LocalInvLocationHome;
-import com.ejb.entities.inv.LocalInvTag;
-import com.ejb.dao.inv.LocalInvTagHome;
-import com.ejb.entities.inv.LocalInvTransactionalBudget;
-import com.ejb.dao.inv.LocalInvTransactionalBudgetHome;
-import com.ejb.entities.inv.LocalInvUnitOfMeasure;
-import com.ejb.entities.inv.LocalInvUnitOfMeasureConversion;
-import com.ejb.dao.inv.LocalInvUnitOfMeasureConversionHome;
-import com.ejb.dao.inv.LocalInvUnitOfMeasureHome;
+import com.ejb.dao.inv.*;
+import com.ejb.entities.ad.*;
+import com.ejb.entities.ap.*;
+import com.ejb.entities.gl.*;
+import com.ejb.entities.inv.*;
+import com.ejb.exception.ad.AdPRFCoaGlVarianceAccountNotFoundException;
+import com.ejb.exception.gl.GlJREffectiveDateNoPeriodExistException;
+import com.ejb.exception.gl.GlJREffectiveDatePeriodClosedException;
+import com.ejb.exception.global.*;
 import com.ejb.txn.ad.AdApprovalDocumentEmailNotificationController;
-import com.util.mod.ap.ApModPurchaseOrderDetails;
-import com.util.mod.ap.ApModPurchaseOrderLineDetails;
-import com.util.mod.ap.ApModSupplierDetails;
-import com.util.ap.ApTaxCodeDetails;
 import com.util.Debug;
 import com.util.EJBCommon;
 import com.util.EJBContextClass;
-import com.util.EJBHomeFactory;
+import com.util.SendEmailDetails;
+import com.util.ap.ApPurchaseOrderDetails;
+import com.util.ap.ApTaxCodeDetails;
+import com.util.mod.ap.ApModPurchaseOrderDetails;
+import com.util.mod.ap.ApModPurchaseOrderLineDetails;
+import com.util.mod.ap.ApModSupplierDetails;
 import com.util.mod.gl.GlModFunctionalCurrencyDetails;
 import com.util.mod.inv.InvModTagListDetails;
 import com.util.mod.inv.InvModUnitOfMeasureDetails;
-import com.util.SendEmailDetails;
-import com.util.ap.ApPurchaseOrderDetails;
+import jakarta.ejb.*;
+
+import java.util.*;
 
 @Stateless(name = "ApPurchaseOrderEntryControllerEJB")
 public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implements ApPurchaseOrderEntryController {
@@ -171,7 +110,14 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
     private LocalInvUnitOfMeasureConversionHome invUnitOfMeasureConversionHome;
     @EJB
     private LocalInvUnitOfMeasureHome invUnitOfMeasureHome;
-
+    @EJB
+    private LocalInvCostingHome invCostingHome;
+    @EJB
+    private LocalAdBranchItemLocationHome adBranchItemLocationHome;
+    @EJB
+    private ILocalGlChartOfAccountHome glChartOfAccountHome;
+    @EJB
+    private LocalApDistributionRecordHome apDistributionRecordHome;
 
     public ArrayList getApSplAll(Integer AD_BRNCH, Integer AD_CMPNY) {
 
@@ -192,7 +138,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
             return list;
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
@@ -218,7 +165,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
             return list;
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
@@ -239,9 +187,11 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
             adUsers = adUserHome.findUsrAll(AD_CMPNY);
 
-        } catch (FinderException ex) {
+        }
+        catch (FinderException ex) {
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             throw new EJBException(ex.getMessage());
         }
@@ -280,7 +230,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
             return list;
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
@@ -306,7 +257,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
             return list;
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
@@ -333,7 +285,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
             return list;
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
@@ -359,7 +312,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
             return list;
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
@@ -385,7 +339,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
             return list;
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
@@ -411,7 +366,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
             return list;
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
@@ -475,7 +431,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
                     break;
             }
 
-        } catch (FinderException ex) {
+        }
+        catch (FinderException ex) {
             Debug.print("no item found in transactional budget table");
             // throw new GlobalNoRecordFoundException();
         }
@@ -501,7 +458,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
             return list;
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
@@ -524,7 +482,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
             return details;
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
@@ -548,7 +507,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
             glFunctionalCurrencies = glFunctionalCurrencyHome.findFcAllEnabled(EJBCommon.getGcCurrentDateWoTime().getTime(), AD_CMPNY);
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             throw new EJBException(ex.getMessage());
         }
@@ -596,7 +556,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
             return list;
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
@@ -613,7 +574,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
             return adCompany.getGlFunctionalCurrency().getFcPrecision();
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
@@ -630,7 +592,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
             return adPreference.getPrfInvQuantityPrecisionUnit();
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
@@ -647,7 +610,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
             return adPreference.getPrfInvCostPrecisionUnit();
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
@@ -664,7 +628,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
             return adPreference.getPrfApJournalLineNumber();
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
@@ -687,7 +652,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
                 isTraceMisc = true;
             }
             return isTraceMisc;
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
@@ -706,7 +672,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
                 apPurchaseOrder = apPurchaseOrderHome.findByPrimaryKey(PO_CODE);
 
-            } catch (FinderException ex) {
+            }
+            catch (FinderException ex) {
 
                 throw new GlobalNoRecordFoundException();
             }
@@ -805,15 +772,1859 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
             return mPoDetails;
 
-        } catch (GlobalNoRecordFoundException ex) {
+        }
+        catch (GlobalNoRecordFoundException ex) {
 
             throw ex;
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
         }
+    }
+
+    @Override
+    public Integer saveApPoEntry(ApPurchaseOrderDetails details, String PYT_NM, String TC_NM, String FC_NM,
+                                 String SPL_SPPLR_CODE, ArrayList plList, boolean isDraft, Integer AD_BRNCH, Integer AD_CMPNY)
+            throws GlobalRecordAlreadyDeletedException, GlobalDocumentNumberNotUniqueException, GlobalConversionDateNotExistException,
+            GlobalPaymentTermInvalidException, GlobalTransactionAlreadyPendingException, GlobalTransactionAlreadyPostedException,
+            GlobalTransactionAlreadyVoidException, GlobalInvItemLocationNotFoundException, GlJREffectiveDateNoPeriodExistException,
+            GlJREffectiveDatePeriodClosedException, GlobalJournalNotBalanceException, GlobalTransactionAlreadyLockedException,
+            GlobalInventoryDateException, GlobalTransactionAlreadyVoidPostedException, GlobalBranchAccountNumberInvalidException,
+            AdPRFCoaGlVarianceAccountNotFoundException {
+
+        Debug.print("ApPurchaseOrderEntryControllerBean saveApPoEntry");
+
+        LocalApPurchaseOrder apPurchaseOrder = null;
+
+        try {
+
+            // validate if receiving item is already deleted
+            try {
+
+                if (details.getPoCode() != null) {
+                    apPurchaseOrder = apPurchaseOrderHome.findByPrimaryKey(details.getPoCode());
+                }
+            }
+            catch (FinderException ex) {
+                throw new GlobalRecordAlreadyDeletedException();
+            }
+
+            // validate if receiving item is already posted, void, approved or pending
+            if (details.getPoCode() != null) {
+                if (apPurchaseOrder.getPoApprovalStatus() != null) {
+                    if (apPurchaseOrder.getPoApprovalStatus().equals("APPROVED") ||
+                            apPurchaseOrder.getPoApprovalStatus().equals("N/A")) {
+                        throw new GlobalTransactionAlreadyApprovedException();
+                    } else if (apPurchaseOrder.getPoApprovalStatus().equals("PENDING")) {
+                        throw new GlobalTransactionAlreadyPendingException();
+                    }
+                }
+
+                if (apPurchaseOrder.getPoPosted() == EJBCommon.TRUE) {
+                    throw new GlobalTransactionAlreadyPostedException();
+                } else if (apPurchaseOrder.getPoVoid() == EJBCommon.TRUE) {
+                    throw new GlobalTransactionAlreadyVoidException();
+                }
+            }
+
+            // receiving item void
+            if (details.getPoCode() != null && details.getPoVoid() == EJBCommon.TRUE &&
+                    apPurchaseOrder.getPoPosted() == EJBCommon.FALSE) {
+                apPurchaseOrder.setPoVoid(EJBCommon.TRUE);
+                apPurchaseOrder.setPoLastModifiedBy(details.getPoLastModifiedBy());
+                apPurchaseOrder.setPoDateLastModified(details.getPoDateLastModified());
+                return apPurchaseOrder.getPoCode();
+            }
+
+            // validate if document number is unique document number is automatic then set next sequence
+            try {
+                LocalAdBranchDocumentSequenceAssignment adBranchDocumentSequenceAssignment = null;
+                LocalAdDocumentSequenceAssignment adDocumentSequenceAssignment = null;
+                if (details.getPoCode() == null) {
+                    try {
+                        adDocumentSequenceAssignment = adDocumentSequenceAssignmentHome.findByDcName("AP RECEIVING ITEM", AD_CMPNY);
+                    }
+                    catch (FinderException ex) {
+                    }
+
+                    try {
+                        adBranchDocumentSequenceAssignment = adBranchDocumentSequenceAssignmentHome
+                                .findBdsByDsaCodeAndBrCode(adDocumentSequenceAssignment.getDsaCode(), AD_BRNCH, AD_CMPNY);
+                    }
+                    catch (FinderException ex) {
+                    }
+
+                    LocalApPurchaseOrder apExistingReceivingItem = null;
+                    try {
+                        apExistingReceivingItem = apPurchaseOrderHome.findByPoDocumentNumberAndPoReceivingAndBrCode(
+                                details.getPoDocumentNumber(), EJBCommon.TRUE, AD_BRNCH, AD_CMPNY);
+                    }
+                    catch (FinderException ex) {
+                    }
+
+                    if (apExistingReceivingItem != null) {
+                        throw new GlobalDocumentNumberNotUniqueException();
+                    }
+
+                    if (adDocumentSequenceAssignment.getAdDocumentSequence().getDsNumberingType() == 'A' &&
+                            (details.getPoDocumentNumber() == null || details.getPoDocumentNumber().trim().length() == 0)) {
+                        while (true) {
+                            if (adBranchDocumentSequenceAssignment == null || adBranchDocumentSequenceAssignment.getBdsNextSequence() == null) {
+                                try {
+                                    apPurchaseOrderHome.findByPoDocumentNumberAndPoReceivingAndBrCode(
+                                            adDocumentSequenceAssignment.getDsaNextSequence(), EJBCommon.TRUE, AD_BRNCH, AD_CMPNY);
+                                    adDocumentSequenceAssignment.setDsaNextSequence(EJBCommon.incrementStringNumber(adDocumentSequenceAssignment.getDsaNextSequence()));
+                                }
+                                catch (FinderException ex) {
+                                    details.setPoDocumentNumber(adDocumentSequenceAssignment.getDsaNextSequence());
+                                    adDocumentSequenceAssignment.setDsaNextSequence(EJBCommon.incrementStringNumber(adDocumentSequenceAssignment.getDsaNextSequence()));
+                                    break;
+                                }
+                            } else {
+                                try {
+                                    apPurchaseOrderHome.findByPoDocumentNumberAndPoReceivingAndBrCode(
+                                            adBranchDocumentSequenceAssignment.getBdsNextSequence(), EJBCommon.TRUE, AD_BRNCH, AD_CMPNY);
+                                    adBranchDocumentSequenceAssignment.setBdsNextSequence(
+                                            EJBCommon.incrementStringNumber(adBranchDocumentSequenceAssignment.getBdsNextSequence()));
+                                }
+                                catch (FinderException ex) {
+                                    details.setPoDocumentNumber(adBranchDocumentSequenceAssignment.getBdsNextSequence());
+                                    adBranchDocumentSequenceAssignment.setBdsNextSequence(EJBCommon.incrementStringNumber(adBranchDocumentSequenceAssignment.getBdsNextSequence()));
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    LocalApPurchaseOrder apExistingReceivingItem = null;
+                    try {
+                        apExistingReceivingItem = apPurchaseOrderHome.findByPoDocumentNumberAndPoReceivingAndBrCode(
+                                details.getPoDocumentNumber(), EJBCommon.TRUE, AD_BRNCH, AD_CMPNY);
+                    }
+                    catch (FinderException ex) {
+                    }
+
+                    if (apExistingReceivingItem != null &&
+                            !apExistingReceivingItem.getPoCode().equals(details.getPoCode())) {
+                        throw new GlobalDocumentNumberNotUniqueException();
+                    }
+
+                    assert apPurchaseOrder != null;
+                    if (!Objects.equals(apPurchaseOrder.getPoDocumentNumber(), details.getPoDocumentNumber()) &&
+                            (details.getPoDocumentNumber() == null || details.getPoDocumentNumber().trim().length() == 0)) {
+                        details.setPoDocumentNumber(apPurchaseOrder.getPoDocumentNumber());
+                    }
+                }
+            }
+            catch (GlobalDocumentNumberNotUniqueException ex) {
+                ctx.setRollbackOnly();
+                throw ex;
+            }
+            catch (Exception ex) {
+                Debug.printStackTrace(ex);
+                ctx.setRollbackOnly();
+                throw new EJBException(ex.getMessage());
+
+            }
+
+            // validate if conversion date exists
+            try {
+
+                if (details.getPoConversionDate() != null) {
+                    LocalGlFunctionalCurrency glValidateFunctionalCurrency = glFunctionalCurrencyHome.findByFcName(FC_NM, AD_CMPNY);
+                    LocalAdCompany adCompany = adCompanyHome.findByPrimaryKey(AD_CMPNY);
+                    if (!glValidateFunctionalCurrency.getFcName().equals("USD")) {
+                        LocalGlFunctionalCurrencyRate glFunctionalCurrencyRate =
+                                glFunctionalCurrencyRateHome.findByFcCodeAndDate(glValidateFunctionalCurrency.getFcCode(),
+                                        details.getPoConversionDate(), AD_CMPNY);
+                    } else if (!adCompany.getGlFunctionalCurrency().getFcName().equals("USD")) {
+                        LocalGlFunctionalCurrencyRate glFunctionalCurrencyRate =
+                                glFunctionalCurrencyRateHome.findByFcCodeAndDate(
+                                        adCompany.getGlFunctionalCurrency().getFcCode(), details.getPoConversionDate(), AD_CMPNY);
+                    }
+                }
+            }
+            catch (FinderException ex) {
+                throw new GlobalConversionDateNotExistException();
+            }
+
+            // validate if payment term has at least one payment schedule
+            if (adPaymentTermHome.findByPytName(PYT_NM, AD_CMPNY).getAdPaymentSchedules().isEmpty()) {
+                throw new GlobalPaymentTermInvalidException();
+            }
+
+            // lock purchase order
+            LocalApPurchaseOrder apExistingPurchaseOrder = null;
+            if (details.getPoType().equals("PO MATCHED")) {
+                try {
+                    apExistingPurchaseOrder = apPurchaseOrderHome.findByPoDocumentNumberAndPoReceivingAndBrCode(
+                            details.getPoRcvPoNumber(), EJBCommon.FALSE, AD_BRNCH, AD_CMPNY);
+                    if (apPurchaseOrder == null || !apPurchaseOrder.getPoRcvPoNumber().equals(details.getPoRcvPoNumber())) {
+                        if (apExistingPurchaseOrder.getPoLock() == EJBCommon.TRUE) {
+                            throw new GlobalTransactionAlreadyLockedException();
+                        }
+
+                        if (apPurchaseOrder != null && apPurchaseOrder.getPoRcvPoNumber() != null) {
+                            LocalApPurchaseOrder apPreviousPO;
+                            apPreviousPO = apPurchaseOrderHome.findByPoDocumentNumberAndPoReceivingAndBrCode(
+                                    apPurchaseOrder.getPoRcvPoNumber(), EJBCommon.FALSE, AD_BRNCH, AD_CMPNY);
+                            apPreviousPO.setPoLock(EJBCommon.FALSE);
+                        }
+
+                        if (apExistingPurchaseOrder.getPoVoid() == EJBCommon.TRUE) {
+                            throw new GlobalTransactionAlreadyVoidPostedException();
+                        }
+                    }
+                }
+                catch (FinderException ex) {
+                }
+            }
+
+            // used in checking if receiving item should re-generate distribution records and re-calculate taxes
+            boolean isRecalculate = true;
+
+            // create receiving item
+            boolean newPurchaseOrder = false;
+
+            if (details.getPoCode() == null) {
+
+                apPurchaseOrder = apPurchaseOrderHome.create(EJBCommon.TRUE, details.getPoType(),
+                        details.getPoDate(), details.getPoDeliveryPeriod(), details.getPoDocumentNumber(), details.getPoReferenceNumber(),
+                        details.getPoRcvPoNumber(), details.getPoDescription(), null, null,
+                        details.getPoConversionDate(), details.getPoConversionRate(), details.getPoTotalAmount(), EJBCommon.FALSE, EJBCommon.FALSE, null,
+                        null, EJBCommon.FALSE, null, details.getPoCreatedBy(), details.getPoDateCreated(),
+                        details.getPoLastModifiedBy(), details.getPoDateLastModified(),
+                        null, null, null, null, EJBCommon.FALSE,
+                        0d, 0d, 0d, 0d, 0d,
+                        AD_BRNCH, AD_CMPNY);
+
+                newPurchaseOrder = true;
+
+            } else {
+
+                // check if critical fields are changed
+                if (!apPurchaseOrder.getApTaxCode().getTcName().equals(TC_NM) ||
+                        !apPurchaseOrder.getApSupplier().getSplSupplierCode().equals(SPL_SPPLR_CODE) ||
+                        !apPurchaseOrder.getAdPaymentTerm().getPytName().equals(PYT_NM) ||
+                        plList.size() != apPurchaseOrder.getApPurchaseOrderLines().size() ||
+                        !(apPurchaseOrder.getPoDate().equals(details.getPoDate()))) {
+
+                    isRecalculate = true;
+
+                } else if (plList.size() == apPurchaseOrder.getApPurchaseOrderLines().size()) {
+
+                    Iterator ilIter = apPurchaseOrder.getApPurchaseOrderLines().iterator();
+                    Iterator ilListIter = plList.iterator();
+
+                    while (ilIter.hasNext()) {
+
+                        LocalApPurchaseOrderLine apPurchaseOrderLine = (LocalApPurchaseOrderLine) ilIter.next();
+                        ApModPurchaseOrderLineDetails mdetails = (ApModPurchaseOrderLineDetails) ilListIter.next();
+
+                        if (!apPurchaseOrderLine.getInvItemLocation().getInvItem().getIiName().equals(mdetails.getPlIiName()) ||
+                                !apPurchaseOrderLine.getInvItemLocation().getInvLocation().getLocName().equals(mdetails.getPlLocName()) ||
+                                !apPurchaseOrderLine.getInvUnitOfMeasure().getUomName().equals(mdetails.getPlUomName()) ||
+                                apPurchaseOrderLine.getPlQuantity() != mdetails.getPlQuantity() ||
+                                apPurchaseOrderLine.getPlUnitCost() != mdetails.getPlUnitCost() ||
+                                apPurchaseOrderLine.getPlTotalDiscount() != mdetails.getPlTotalDiscount()) {
+                            isRecalculate = true;
+                            break;
+                        }
+                        isRecalculate = false;
+                    }
+
+                } else {
+                    isRecalculate = false;
+                }
+
+                apPurchaseOrder.setPoReceiving(EJBCommon.TRUE);
+                apPurchaseOrder.setPoDescription(details.getPoDescription());
+                apPurchaseOrder.setPoRcvPoNumber(details.getPoRcvPoNumber());
+                apPurchaseOrder.setPoType(details.getPoType());
+                apPurchaseOrder.setPoDate(details.getPoDate());
+                apPurchaseOrder.setPoDocumentNumber(details.getPoDocumentNumber());
+                apPurchaseOrder.setPoReferenceNumber(details.getPoReferenceNumber());
+                apPurchaseOrder.setPoConversionDate(details.getPoConversionDate());
+                apPurchaseOrder.setPoConversionRate(details.getPoConversionRate());
+                apPurchaseOrder.setPoLastModifiedBy(details.getPoLastModifiedBy());
+                apPurchaseOrder.setPoDateLastModified(details.getPoDateLastModified());
+                apPurchaseOrder.setPoReasonForRejection(null);
+
+            }
+
+            LocalAdPaymentTerm adPaymentTerm = adPaymentTermHome.findByPytName(PYT_NM, AD_CMPNY);
+            apPurchaseOrder.setAdPaymentTerm(adPaymentTerm);
+
+            LocalApTaxCode apTaxCode = apTaxCodeHome.findByTcName(TC_NM, AD_CMPNY);
+            apPurchaseOrder.setApTaxCode(apTaxCode);
+
+            LocalGlFunctionalCurrency glFunctionalCurrency = glFunctionalCurrencyHome.findByFcName(FC_NM, AD_CMPNY);
+            apPurchaseOrder.setGlFunctionalCurrency(glFunctionalCurrency);
+
+            System.out.println(SPL_SPPLR_CODE + " " + AD_CMPNY);
+            LocalApSupplier apSupplier = apSupplierHome.findBySplSupplierCode(SPL_SPPLR_CODE, AD_CMPNY);
+            apPurchaseOrder.setApSupplier(apSupplier);
+
+            double TOTAL_AMOUNT = 0;
+
+            if (isRecalculate) {
+
+                // remove all receiving item line
+                Collection apPurchaseOrderLines = apPurchaseOrder.getApPurchaseOrderLines();
+                Iterator i = apPurchaseOrderLines.iterator();
+                while (i.hasNext()) {
+                    LocalApPurchaseOrderLine apPurchaseOrderLine = (LocalApPurchaseOrderLine) i.next();
+                    i.remove();
+                    em.remove(apPurchaseOrderLine);
+                }
+
+                // remove all distribution records
+                Collection apDistributionRecords = apPurchaseOrder.getApDistributionRecords();
+                i = apDistributionRecords.iterator();
+                while (i.hasNext()) {
+                    LocalApDistributionRecord apDistributionRecord = (LocalApDistributionRecord) i.next();
+                    i.remove();
+                    em.remove(apDistributionRecord);
+                }
+
+                LocalAdPreference adPreference = adPreferenceHome.findByPrfAdCompany(AD_CMPNY);
+
+                // add new receiving item line and distribution record
+                double TOTAL_TAX = 0d;
+                double TOTAL_LINE = 0d;
+
+                i = plList.iterator();
+                LocalInvItemLocation invItemLocation;
+                while (i.hasNext()) {
+                    ApModPurchaseOrderLineDetails mPlDetails = (ApModPurchaseOrderLineDetails) i.next();
+                    try {
+                        invItemLocation = invItemLocationHome.findByLocNameAndIiName(mPlDetails.getPlLocName(), mPlDetails.getPlIiName(), AD_CMPNY);
+                    }
+                    catch (FinderException ex) {
+                        throw new GlobalInvItemLocationNotFoundException(String.valueOf(mPlDetails.getPlLine()));
+                    }
+
+                    //	start date validation
+                    if (mPlDetails.getPlQuantity() > 0) {
+                        Collection invNegTxnCosting = invCostingHome.findNegTxnByGreaterThanCstDateAndIiNameAndLocName(
+                                apPurchaseOrder.getPoDate(), invItemLocation.getInvItem().getIiName(),
+                                invItemLocation.getInvLocation().getLocName(), AD_BRNCH, AD_CMPNY);
+                        if (!invNegTxnCosting.isEmpty()) {
+                            throw new GlobalInventoryDateException(invItemLocation.getInvItem().getIiName());
+                        }
+                    }
+
+                    LocalApPurchaseOrderLine apPurchaseOrderLine = this.addApPlEntry(mPlDetails, apPurchaseOrder, invItemLocation, newPurchaseOrder, AD_CMPNY);
+                    if (mPlDetails.getPlQuantity() == 0) {
+                        continue;
+                    }
+
+                    // add inventory distributions
+                    LocalAdBranchItemLocation adBranchItemLocation = null;
+                    try {
+                        adBranchItemLocation = adBranchItemLocationHome.findBilByIlCodeAndBrCode(
+                                apPurchaseOrderLine.getInvItemLocation().getIlCode(), AD_BRNCH, AD_CMPNY);
+                    }
+                    catch (FinderException ex) {
+
+                    }
+
+                    if (adBranchItemLocation != null) {
+
+                        // Use AdBranchItemLocation Coa Account
+                        this.addApDrPlEntry(apPurchaseOrder.getApDrNextLine(),
+                                "INVENTORY", EJBCommon.TRUE, apPurchaseOrderLine.getPlAmount(),
+                                adBranchItemLocation.getBilCoaGlInventoryAccount(), apPurchaseOrder, AD_BRNCH, AD_CMPNY);
+
+
+                    } else {
+
+                        // Use default account
+                        this.addApDrPlEntry(apPurchaseOrder.getApDrNextLine(),
+                                "INVENTORY", EJBCommon.TRUE, apPurchaseOrderLine.getPlAmount(),
+                                apPurchaseOrderLine.getInvItemLocation().getIlGlCoaInventoryAccount(), apPurchaseOrder, AD_BRNCH, AD_CMPNY);
+
+                    }
+
+                    TOTAL_LINE += apPurchaseOrderLine.getPlAmount();
+                    TOTAL_TAX += apPurchaseOrderLine.getPlTaxAmount();
+
+                }
+
+                // add tax distribution if necessary
+                if (!apTaxCode.getTcType().equals("NONE") &&
+                        !apTaxCode.getTcType().equals("EXEMPT")) {
+
+                    if (adPreference.getPrfApUseAccruedVat() == EJBCommon.FALSE) {
+
+                        this.addApDrPlEntry(apPurchaseOrder.getApDrNextLine(),
+                                "TAX", EJBCommon.TRUE, TOTAL_TAX, apTaxCode.getGlChartOfAccount().getCoaCode(),
+                                apPurchaseOrder, AD_BRNCH, AD_CMPNY);
+
+                    } else {
+
+                        this.addApDrPlEntry(apPurchaseOrder.getApDrNextLine(),
+                                "ACC TAX", EJBCommon.TRUE, TOTAL_TAX, adPreference.getPrfApGlCoaAccruedVatAccount(),
+                                apPurchaseOrder, AD_BRNCH, AD_CMPNY);
+
+                    }
+
+                }
+
+                TOTAL_AMOUNT = TOTAL_LINE + TOTAL_TAX;
+
+            } else {
+
+                Iterator i = plList.iterator();
+
+                LocalInvItemLocation invItemLocation = null;
+
+                while (i.hasNext()) {
+
+                    ApModPurchaseOrderLineDetails mPlDetails = (ApModPurchaseOrderLineDetails) i.next();
+
+                    try {
+
+                        invItemLocation = invItemLocationHome.findByLocNameAndIiName(mPlDetails.getPlLocName(), mPlDetails.getPlIiName(), AD_CMPNY);
+
+                    }
+                    catch (FinderException ex) {
+
+                        throw new GlobalInvItemLocationNotFoundException(String.valueOf(mPlDetails.getPlLine()));
+
+                    }
+
+                    //	start date validation
+
+                    Collection invNegTxnCosting = invCostingHome.findNegTxnByGreaterThanCstDateAndIiNameAndLocName(
+                            apPurchaseOrder.getPoDate(), invItemLocation.getInvItem().getIiName(),
+                            invItemLocation.getInvLocation().getLocName(), AD_BRNCH, AD_CMPNY);
+                    if (!invNegTxnCosting.isEmpty()) {
+                        throw new GlobalInventoryDateException(invItemLocation.getInvItem().getIiName());
+                    }
+
+                }
+
+                Collection apDistributionRecords = apPurchaseOrder.getApDistributionRecords();
+
+                i = apDistributionRecords.iterator();
+
+                while (i.hasNext()) {
+
+                    LocalApDistributionRecord apDistributionRecord = (LocalApDistributionRecord) i.next();
+
+                    if (apDistributionRecord.getDrDebit() == 0) {
+
+                        TOTAL_AMOUNT += apDistributionRecord.getDrAmount();
+
+                    }
+                }
+
+            }
+
+            // generate approval status
+
+            String PO_APPRVL_STATUS = null;
+
+            if (!isDraft) {
+
+                PO_APPRVL_STATUS = "N/A";
+
+                // release purchase order lock
+
+                if (details.getPoType().equals("PO MATCHED")) {
+
+                    apExistingPurchaseOrder.setPoLock(EJBCommon.FALSE);
+
+                }
+
+            }
+
+            LocalAdPreference adPreference = adPreferenceHome.findByPrfAdCompany(AD_CMPNY);
+
+            if (PO_APPRVL_STATUS != null && PO_APPRVL_STATUS.equals("N/A")) {
+
+                //this.executeApPoPost(apPurchaseOrder.getPoCode(), apPurchaseOrder.getPoLastModifiedBy(), AD_BRNCH, AD_CMPNY);
+
+            }
+
+            // set receiving item approval status
+
+            apPurchaseOrder.setPoApprovalStatus(PO_APPRVL_STATUS);
+
+            return apPurchaseOrder.getPoCode();
+
+
+        }
+        catch (GlobalRecordAlreadyDeletedException ex) {
+
+            ctx.setRollbackOnly();
+            throw ex;
+
+        }
+        catch (GlobalDocumentNumberNotUniqueException ex) {
+
+            ctx.setRollbackOnly();
+            throw ex;
+
+        }
+        catch (GlobalConversionDateNotExistException ex) {
+
+            ctx.setRollbackOnly();
+            throw ex;
+
+        }
+        catch (GlobalPaymentTermInvalidException ex) {
+
+            ctx.setRollbackOnly();
+            throw ex;
+
+        }
+        catch (GlobalTransactionAlreadyPendingException ex) {
+
+            ctx.setRollbackOnly();
+            throw ex;
+
+        }
+        catch (GlobalTransactionAlreadyPostedException ex) {
+
+            ctx.setRollbackOnly();
+            throw ex;
+
+        }
+        catch (GlobalTransactionAlreadyVoidException ex) {
+
+            ctx.setRollbackOnly();
+            throw ex;
+
+        }
+        catch (GlobalInvItemLocationNotFoundException ex) {
+
+            ctx.setRollbackOnly();
+            throw ex;
+
+        }
+        catch (GlobalTransactionAlreadyLockedException ex) {
+
+            ctx.setRollbackOnly();
+            throw ex;
+
+        }
+        catch (GlobalInventoryDateException ex) {
+
+            ctx.setRollbackOnly();
+            throw ex;
+
+        }
+        catch (GlobalTransactionAlreadyVoidPostedException ex) {
+
+            ctx.setRollbackOnly();
+            throw ex;
+
+        }
+        catch (GlobalBranchAccountNumberInvalidException ex) {
+
+            ctx.setRollbackOnly();
+            throw ex;
+
+        } /*catch (AdPRFCoaGlVarianceAccountNotFoundException ex){
+
+            ctx.setRollbackOnly();
+            throw ex;
+
+        } */
+        catch (Exception ex) {
+
+            Debug.printStackTrace(ex);
+            ctx.setRollbackOnly();
+            throw new EJBException(ex.getMessage());
+
+        }
+
+    }
+
+    @Override
+    public Integer saveApPoEntry2(ApPurchaseOrderDetails details, String PYT_NM, String TC_NM, String FC_NM,
+                                  String SPL_SPPLR_CODE, ArrayList plList, boolean isDraft, Integer AD_BRNCH, Integer AD_CMPNY)
+            throws GlobalRecordAlreadyDeletedException, GlobalDocumentNumberNotUniqueException, GlobalConversionDateNotExistException,
+            GlobalPaymentTermInvalidException, GlobalTransactionAlreadyPendingException, GlobalTransactionAlreadyPostedException,
+            GlobalTransactionAlreadyVoidException, GlobalInvItemLocationNotFoundException, GlJREffectiveDateNoPeriodExistException,
+            GlJREffectiveDatePeriodClosedException, GlobalJournalNotBalanceException, GlobalTransactionAlreadyLockedException,
+            GlobalInventoryDateException, GlobalTransactionAlreadyVoidPostedException, GlobalBranchAccountNumberInvalidException,
+            AdPRFCoaGlVarianceAccountNotFoundException {
+
+        Debug.print("ApPurchaseOrderEntryControllerBean saveApPoEntry2");
+
+        LocalApPurchaseOrder apPurchaseOrder = null;
+
+        try {
+
+            // validate if receiving item is already deleted
+            try {
+                if (details.getPoCode() != null) {
+                    apPurchaseOrder = apPurchaseOrderHome.findByPrimaryKey(details.getPoCode());
+                }
+            }
+            catch (FinderException ex) {
+                throw new GlobalRecordAlreadyDeletedException();
+            }
+
+            // validate if receiving item is already posted, void, approved or pending
+            if (details.getPoCode() != null) {
+                assert apPurchaseOrder != null;
+                if (apPurchaseOrder.getPoApprovalStatus() != null) {
+                    if (apPurchaseOrder.getPoApprovalStatus().equals("APPROVED") ||
+                            apPurchaseOrder.getPoApprovalStatus().equals("N/A")) {
+                        throw new GlobalTransactionAlreadyApprovedException();
+                    } else if (apPurchaseOrder.getPoApprovalStatus().equals("PENDING")) {
+                        throw new GlobalTransactionAlreadyPendingException();
+                    }
+                }
+
+                if (apPurchaseOrder.getPoPosted() == EJBCommon.TRUE) {
+                    throw new GlobalTransactionAlreadyPostedException();
+                } else if (apPurchaseOrder.getPoVoid() == EJBCommon.TRUE) {
+                    throw new GlobalTransactionAlreadyVoidException();
+                }
+            }
+
+            // receiving item void
+            if (details.getPoCode() != null && details.getPoVoid() == EJBCommon.TRUE) {
+                assert apPurchaseOrder != null;
+                if (apPurchaseOrder.getPoPosted() == EJBCommon.FALSE) {
+                    apPurchaseOrder.setPoVoid(EJBCommon.TRUE);
+                    apPurchaseOrder.setPoLastModifiedBy(details.getPoLastModifiedBy());
+                    apPurchaseOrder.setPoDateLastModified(details.getPoDateLastModified());
+                    return apPurchaseOrder.getPoCode();
+                }
+            }
+
+            // validate if document number is unique document number is automatic then set next sequence
+            try {
+
+                LocalAdBranchDocumentSequenceAssignment adBranchDocumentSequenceAssignment = null;
+                LocalAdDocumentSequenceAssignment adDocumentSequenceAssignment = null;
+                if (details.getPoCode() == null) {
+                    try {
+                        adDocumentSequenceAssignment = adDocumentSequenceAssignmentHome.findByDcName("AP RECEIVING ITEM", AD_CMPNY);
+                    }
+                    catch (FinderException ex) {
+                    }
+
+                    try {
+                        adBranchDocumentSequenceAssignment = adBranchDocumentSequenceAssignmentHome
+                                .findBdsByDsaCodeAndBrCode(adDocumentSequenceAssignment.getDsaCode(), AD_BRNCH, AD_CMPNY);
+                    }
+                    catch (FinderException ex) {
+                    }
+
+                    LocalApPurchaseOrder apExistingReceivingItem = null;
+                    try {
+                        apExistingReceivingItem = apPurchaseOrderHome.findByPoDocumentNumberAndPoReceivingAndBrCode(
+                                details.getPoDocumentNumber(), EJBCommon.TRUE, AD_BRNCH, AD_CMPNY);
+                    }
+                    catch (FinderException ex) {
+                    }
+
+                    if (apExistingReceivingItem != null) {
+                        throw new GlobalDocumentNumberNotUniqueException();
+                    }
+
+                    if (adDocumentSequenceAssignment.getAdDocumentSequence().getDsNumberingType() == 'A' &&
+                            (details.getPoDocumentNumber() == null || details.getPoDocumentNumber().trim().length() == 0)) {
+                        while (true) {
+                            if (adBranchDocumentSequenceAssignment == null || adBranchDocumentSequenceAssignment.getBdsNextSequence() == null) {
+                                try {
+                                    apPurchaseOrderHome.findByPoDocumentNumberAndPoReceivingAndBrCode(
+                                            adDocumentSequenceAssignment.getDsaNextSequence(), EJBCommon.TRUE, AD_BRNCH, AD_CMPNY);
+                                    adDocumentSequenceAssignment.setDsaNextSequence(EJBCommon.incrementStringNumber(adDocumentSequenceAssignment.getDsaNextSequence()));
+                                }
+                                catch (FinderException ex) {
+                                    details.setPoDocumentNumber(adDocumentSequenceAssignment.getDsaNextSequence());
+                                    adDocumentSequenceAssignment.setDsaNextSequence(EJBCommon.incrementStringNumber(adDocumentSequenceAssignment.getDsaNextSequence()));
+                                    break;
+                                }
+
+                            } else {
+
+                                try {
+                                    apPurchaseOrderHome.findByPoDocumentNumberAndPoReceivingAndBrCode(
+                                            adBranchDocumentSequenceAssignment.getBdsNextSequence(), EJBCommon.TRUE, AD_BRNCH, AD_CMPNY);
+                                    adBranchDocumentSequenceAssignment.setBdsNextSequence(
+                                            EJBCommon.incrementStringNumber(adBranchDocumentSequenceAssignment.getBdsNextSequence()));
+                                }
+                                catch (FinderException ex) {
+                                    details.setPoDocumentNumber(adBranchDocumentSequenceAssignment.getBdsNextSequence());
+                                    adBranchDocumentSequenceAssignment.setBdsNextSequence(
+                                            EJBCommon.incrementStringNumber(adBranchDocumentSequenceAssignment.getBdsNextSequence()));
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                } else {
+
+                    LocalApPurchaseOrder apExistingReceivingItem = null;
+                    try {
+                        apExistingReceivingItem = apPurchaseOrderHome.findByPoDocumentNumberAndPoReceivingAndBrCode(
+                                details.getPoDocumentNumber(), EJBCommon.TRUE, AD_BRNCH, AD_CMPNY);
+                    }
+                    catch (FinderException ex) {
+                    }
+
+                    if (apExistingReceivingItem != null &&
+                            !apExistingReceivingItem.getPoCode().equals(details.getPoCode())) {
+                        throw new GlobalDocumentNumberNotUniqueException();
+                    }
+
+                    assert apPurchaseOrder != null;
+                    if (!Objects.equals(apPurchaseOrder.getPoDocumentNumber(), details.getPoDocumentNumber()) &&
+                            (details.getPoDocumentNumber() == null || details.getPoDocumentNumber().trim().length() == 0)) {
+                        details.setPoDocumentNumber(apPurchaseOrder.getPoDocumentNumber());
+                    }
+                }
+            }
+            catch (GlobalDocumentNumberNotUniqueException ex) {
+                ctx.setRollbackOnly();
+                throw ex;
+            }
+            catch (Exception ex) {
+                Debug.printStackTrace(ex);
+                ctx.setRollbackOnly();
+                throw new EJBException(ex.getMessage());
+
+            }
+
+            // validate if document number is unique document number is automatic then set next sequence. PO
+            String poDocNum = "";
+            if (!Objects.equals(details.getPoReferenceNumber(), "") && details.getPoReferenceNumber() != null) {
+                try {
+                    LocalAdBranchDocumentSequenceAssignment adBranchDocumentSequenceAssignment = null;
+                    LocalAdDocumentSequenceAssignment adDocumentSequenceAssignment = null;
+
+                    if (poDocNum.equals("")) {
+                        try {
+                            adDocumentSequenceAssignment = adDocumentSequenceAssignmentHome.findByDcName("AP PURCHASE ORDER", AD_CMPNY);
+                        }
+                        catch (FinderException ex) {
+                        }
+
+                        try {
+                            adBranchDocumentSequenceAssignment = adBranchDocumentSequenceAssignmentHome
+                                    .findBdsByDsaCodeAndBrCode(adDocumentSequenceAssignment.getDsaCode(), AD_BRNCH, AD_CMPNY);
+
+                        }
+                        catch (FinderException ex) {
+                        }
+
+                        LocalApPurchaseOrder apExistingPurchaseOrder = null;
+                        try {
+                            apExistingPurchaseOrder = apPurchaseOrderHome.findByPoDocumentNumberAndBrCode(
+                                    poDocNum, AD_BRNCH, AD_CMPNY);
+                        }
+                        catch (FinderException ex) {
+                        }
+
+                        if (apExistingPurchaseOrder != null) {
+                            throw new GlobalDocumentNumberNotUniqueException();
+                        }
+
+                        if (adDocumentSequenceAssignment.getAdDocumentSequence().getDsNumberingType() == 'A' && poDocNum == "") {
+                            while (true) {
+                                if (adBranchDocumentSequenceAssignment == null || adBranchDocumentSequenceAssignment.getBdsNextSequence() == null) {
+                                    try {
+                                        apPurchaseOrderHome.findByPoDocumentNumberAndBrCode(adDocumentSequenceAssignment.getDsaNextSequence(), AD_BRNCH, AD_CMPNY);
+                                        adDocumentSequenceAssignment.setDsaNextSequence(EJBCommon.incrementStringNumber(adDocumentSequenceAssignment.getDsaNextSequence()));
+
+                                    }
+                                    catch (FinderException ex) {
+                                        poDocNum = adDocumentSequenceAssignment.getDsaNextSequence();
+                                        adDocumentSequenceAssignment.setDsaNextSequence(EJBCommon.incrementStringNumber(adDocumentSequenceAssignment.getDsaNextSequence()));
+                                        break;
+                                    }
+
+                                } else {
+
+                                    try {
+                                        apPurchaseOrderHome.findByPoDocumentNumberAndBrCode(adBranchDocumentSequenceAssignment.getBdsNextSequence(), AD_BRNCH, AD_CMPNY);
+                                        adBranchDocumentSequenceAssignment.setBdsNextSequence(
+                                                EJBCommon.incrementStringNumber(adBranchDocumentSequenceAssignment.getBdsNextSequence()));
+                                    }
+                                    catch (FinderException ex) {
+                                        poDocNum = adBranchDocumentSequenceAssignment.getBdsNextSequence();
+                                        adBranchDocumentSequenceAssignment.setBdsNextSequence(
+                                                EJBCommon.incrementStringNumber(adBranchDocumentSequenceAssignment.getBdsNextSequence()));
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+                    } else {
+
+                        LocalApPurchaseOrder apExistingPurchaseOrder = null;
+                        try {
+                            apExistingPurchaseOrder = apPurchaseOrderHome.findByPoDocumentNumberAndBrCode(
+                                    details.getPoReferenceNumber().trim(), AD_BRNCH, AD_CMPNY);
+                        }
+                        catch (FinderException ex) {
+                        }
+
+                        if (apExistingPurchaseOrder != null &&
+                                !apExistingPurchaseOrder.getPoCode().equals(details.getPoCode())) {
+                            throw new GlobalDocumentNumberNotUniqueException();
+                        }
+
+                        if (apPurchaseOrder.getPoDocumentNumber() != details.getPoReferenceNumber().trim() &&
+                                (details.getPoReferenceNumber().trim() == null || details.getPoReferenceNumber().trim().length() == 0)) {
+                            poDocNum = apPurchaseOrder.getPoReferenceNumber();
+                        }
+                    }
+                }
+                catch (GlobalDocumentNumberNotUniqueException ex) {
+                    ctx.setRollbackOnly();
+                    throw ex;
+                }
+                catch (Exception ex) {
+                    Debug.printStackTrace(ex);
+                    ctx.setRollbackOnly();
+                    throw new EJBException(ex.getMessage());
+                }
+            }
+
+            // validate if conversion date exists
+            try {
+
+                if (details.getPoConversionDate() != null) {
+                    LocalGlFunctionalCurrency glValidateFunctionalCurrency = glFunctionalCurrencyHome.findByFcName(FC_NM, AD_CMPNY);
+                    LocalAdCompany adCompany = adCompanyHome.findByPrimaryKey(AD_CMPNY);
+                    if (!glValidateFunctionalCurrency.getFcName().equals("USD")) {
+                        LocalGlFunctionalCurrencyRate glFunctionalCurrencyRate =
+                                glFunctionalCurrencyRateHome.findByFcCodeAndDate(glValidateFunctionalCurrency.getFcCode(),
+                                        details.getPoConversionDate(), AD_CMPNY);
+                    } else if (!adCompany.getGlFunctionalCurrency().getFcName().equals("USD")) {
+                        LocalGlFunctionalCurrencyRate glFunctionalCurrencyRate =
+                                glFunctionalCurrencyRateHome.findByFcCodeAndDate(
+                                        adCompany.getGlFunctionalCurrency().getFcCode(), details.getPoConversionDate(), AD_CMPNY);
+                    }
+                }
+            }
+            catch (FinderException ex) {
+                throw new GlobalConversionDateNotExistException();
+            }
+
+            // validate if payment term has at least one payment schedule
+            if (adPaymentTermHome.findByPytName(PYT_NM, AD_CMPNY).getAdPaymentSchedules().isEmpty()) {
+                throw new GlobalPaymentTermInvalidException();
+            }
+
+            // lock purchase order
+            LocalApPurchaseOrder apExistingPurchaseOrder = null;
+            if (details.getPoType().equals("PO MATCHED")) {
+                try {
+                    apExistingPurchaseOrder = apPurchaseOrderHome.findByPoDocumentNumberAndPoReceivingAndBrCode(
+                            details.getPoRcvPoNumber(), EJBCommon.FALSE, AD_BRNCH, AD_CMPNY);
+                    if (apPurchaseOrder == null || !apPurchaseOrder.getPoRcvPoNumber().equals(details.getPoRcvPoNumber())) {
+                        if (apExistingPurchaseOrder.getPoLock() == EJBCommon.TRUE) {
+                            throw new GlobalTransactionAlreadyLockedException();
+                        }
+
+                        if (apPurchaseOrder != null && apPurchaseOrder.getPoRcvPoNumber() != null) {
+                            LocalApPurchaseOrder apPreviousPO;
+                            apPreviousPO = apPurchaseOrderHome.findByPoDocumentNumberAndPoReceivingAndBrCode(
+                                    apPurchaseOrder.getPoRcvPoNumber(), EJBCommon.FALSE, AD_BRNCH, AD_CMPNY);
+                            apPreviousPO.setPoLock(EJBCommon.FALSE);
+                        }
+
+                        if (apExistingPurchaseOrder.getPoVoid() == EJBCommon.TRUE) {
+                            throw new GlobalTransactionAlreadyVoidPostedException();
+                        }
+                    }
+                }
+                catch (FinderException ex) {
+
+                }
+
+                LocalApPurchaseOrder apCheckPurchaseOrder;
+                try {
+
+                    apCheckPurchaseOrder = apPurchaseOrderHome.findByPoDocumentNumberAndPoReceivingAndBrCode(
+                            details.getPoReferenceNumber(), EJBCommon.FALSE, AD_BRNCH, AD_CMPNY);
+                    if (apCheckPurchaseOrder != null) {
+                        LocalApPurchaseOrder apPurchaseOrderNew = null;
+                        LocalApPurchaseOrderLine apPurchaseOrderLineNew = null;
+                        if (plList.size() == apCheckPurchaseOrder.getApPurchaseOrderLines().size()) {
+                            Iterator ilIter = apCheckPurchaseOrder.getApPurchaseOrderLines().iterator();
+                            Iterator ilListIter = plList.iterator();
+                            int asd = 1;
+                            while (ilIter.hasNext()) {
+                                double quantity = 0;
+                                double quantity2 = 0;
+                                LocalInvItemLocation invItemLocationNew = null;
+                                LocalApPurchaseOrderLine apPurchaseOrderLine = (LocalApPurchaseOrderLine) ilIter.next();
+                                ApModPurchaseOrderLineDetails mdetails = (ApModPurchaseOrderLineDetails) ilListIter.next();
+                                if (!apPurchaseOrderLine.getInvItemLocation().getInvItem().getIiName().equals(mdetails.getPlIiName()) ||
+                                        !apPurchaseOrderLine.getInvItemLocation().getInvLocation().getLocName().equals(mdetails.getPlLocName()) ||
+                                        !apPurchaseOrderLine.getInvUnitOfMeasure().getUomName().equals(mdetails.getPlUomName()) ||
+                                        apPurchaseOrderLine.getPlQuantity() != mdetails.getPlQuantity()) {
+                                    try {
+                                        invItemLocationNew = invItemLocationHome.findByLocNameAndIiName(mdetails.getPlLocName(), mdetails.getPlIiName(), AD_CMPNY);
+                                    }
+                                    catch (FinderException ex) {
+                                        throw new GlobalInvItemLocationNotFoundException(String.valueOf(mdetails.getPlLine()));
+                                    }
+                                    if (asd == 1) {
+                                        System.out.println("poDocNum: " + poDocNum);
+                                        apPurchaseOrderNew = apPurchaseOrderHome.create(EJBCommon.FALSE, details.getPoType(),
+                                                details.getPoDate(), details.getPoDeliveryPeriod(), poDocNum,
+                                                "Additional PO for " + details.getPoDocumentNumber(),
+                                                details.getPoRcvPoNumber(), details.getPoDescription(), null, null,
+                                                details.getPoConversionDate(), details.getPoConversionRate(), details.getPoTotalAmount(),
+                                                EJBCommon.FALSE, EJBCommon.FALSE, null,
+                                                null, EJBCommon.FALSE, null, details.getPoCreatedBy(), details.getPoDateCreated(),
+                                                details.getPoLastModifiedBy(), details.getPoDateLastModified(),
+                                                null, null, null, null, EJBCommon.FALSE,
+                                                0d, 0d, 0d, 0d, 0d,
+                                                AD_BRNCH, AD_CMPNY);
+
+                                        asd++;
+
+                                        LocalAdPaymentTerm adPaymentTerm = adPaymentTermHome.findByPytName(PYT_NM, AD_CMPNY);
+                                        apPurchaseOrderNew.setAdPaymentTerm(adPaymentTerm);
+
+                                        LocalApTaxCode apTaxCode = apTaxCodeHome.findByTcName(TC_NM, AD_CMPNY);
+                                        apPurchaseOrderNew.setApTaxCode(apTaxCode);
+
+                                        LocalGlFunctionalCurrency glFunctionalCurrency = glFunctionalCurrencyHome.findByFcName(FC_NM, AD_CMPNY);
+                                        apPurchaseOrderNew.setGlFunctionalCurrency(glFunctionalCurrency);
+
+                                        LocalApSupplier apSupplier = apSupplierHome.findBySplSupplierCode(SPL_SPPLR_CODE, AD_CMPNY);
+                                        apPurchaseOrderNew.setApSupplier(apSupplier);
+                                    }
+
+                                    quantity = mdetails.getPlQuantity() - apPurchaseOrderLine.getPlQuantity();
+
+                                    quantity2 = mdetails.getPlQuantity();
+                                    mdetails.setPlQuantity(quantity);
+
+                                    apPurchaseOrderLineNew = this.addApPlEntry(mdetails, apPurchaseOrderNew, invItemLocationNew, true, AD_CMPNY);
+                                    mdetails.setPlQuantity(apPurchaseOrderLine.getPlQuantity());
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (FinderException ex) {
+                }
+            }
+
+            // used in checking if receiving item should re-generate distribution records and re-calculate taxes
+            boolean isRecalculate = true;
+
+            // create receiving item
+
+            boolean newPurchaseOrder = false;
+
+            if (details.getPoCode() == null) {
+
+                apPurchaseOrder = apPurchaseOrderHome.create(EJBCommon.TRUE, details.getPoType(),
+                        details.getPoDate(), details.getPoDeliveryPeriod(), details.getPoDocumentNumber(), details.getPoReferenceNumber(),
+                        details.getPoRcvPoNumber(), details.getPoDescription(), null, null,
+                        details.getPoConversionDate(), details.getPoConversionRate(), details.getPoTotalAmount(), EJBCommon.FALSE, EJBCommon.FALSE, null,
+                        null, EJBCommon.FALSE, null, details.getPoCreatedBy(), details.getPoDateCreated(),
+                        details.getPoLastModifiedBy(), details.getPoDateLastModified(),
+                        null, null, null, null, EJBCommon.FALSE,
+                        0d, 0d, 0d, 0d, 0d,
+                        AD_BRNCH, AD_CMPNY);
+
+                newPurchaseOrder = true;
+
+            } else {
+
+                // check if critical fields are changed
+
+                if (!apPurchaseOrder.getApTaxCode().getTcName().equals(TC_NM) ||
+                        !apPurchaseOrder.getApSupplier().getSplSupplierCode().equals(SPL_SPPLR_CODE) ||
+                        !apPurchaseOrder.getAdPaymentTerm().getPytName().equals(PYT_NM) ||
+                        plList.size() != apPurchaseOrder.getApPurchaseOrderLines().size() ||
+                        !(apPurchaseOrder.getPoDate().equals(details.getPoDate()))) {
+
+                    isRecalculate = true;
+
+                } else if (plList.size() == apPurchaseOrder.getApPurchaseOrderLines().size()) {
+
+                    Iterator ilIter = apPurchaseOrder.getApPurchaseOrderLines().iterator();
+                    Iterator ilListIter = plList.iterator();
+
+                    while (ilIter.hasNext()) {
+
+                        LocalApPurchaseOrderLine apPurchaseOrderLine = (LocalApPurchaseOrderLine) ilIter.next();
+                        ApModPurchaseOrderLineDetails mdetails = (ApModPurchaseOrderLineDetails) ilListIter.next();
+
+                        if (!apPurchaseOrderLine.getInvItemLocation().getInvItem().getIiName().equals(mdetails.getPlIiName()) ||
+                                !apPurchaseOrderLine.getInvItemLocation().getInvLocation().getLocName().equals(mdetails.getPlLocName()) ||
+                                !apPurchaseOrderLine.getInvUnitOfMeasure().getUomName().equals(mdetails.getPlUomName()) ||
+                                apPurchaseOrderLine.getPlQuantity() != mdetails.getPlQuantity() ||
+                                apPurchaseOrderLine.getPlUnitCost() != mdetails.getPlUnitCost() ||
+                                apPurchaseOrderLine.getPlTotalDiscount() != mdetails.getPlTotalDiscount()) {
+
+                            isRecalculate = true;
+                            break;
+
+                        }
+
+                        isRecalculate = false;
+
+                    }
+
+                } else {
+
+                    isRecalculate = false;
+
+                }
+
+                apPurchaseOrder.setPoReceiving(EJBCommon.TRUE);
+                apPurchaseOrder.setPoDescription(details.getPoDescription());
+                apPurchaseOrder.setPoRcvPoNumber(details.getPoRcvPoNumber());
+                apPurchaseOrder.setPoType(details.getPoType());
+                apPurchaseOrder.setPoDate(details.getPoDate());
+                apPurchaseOrder.setPoDocumentNumber(details.getPoDocumentNumber());
+                apPurchaseOrder.setPoReferenceNumber(details.getPoReferenceNumber());
+                apPurchaseOrder.setPoConversionDate(details.getPoConversionDate());
+                apPurchaseOrder.setPoConversionRate(details.getPoConversionRate());
+                apPurchaseOrder.setPoLastModifiedBy(details.getPoLastModifiedBy());
+                apPurchaseOrder.setPoDateLastModified(details.getPoDateLastModified());
+                apPurchaseOrder.setPoReasonForRejection(null);
+
+            }
+
+            LocalAdPaymentTerm adPaymentTerm = adPaymentTermHome.findByPytName(PYT_NM, AD_CMPNY);
+            apPurchaseOrder.setAdPaymentTerm(adPaymentTerm);
+
+            LocalApTaxCode apTaxCode = apTaxCodeHome.findByTcName(TC_NM, AD_CMPNY);
+            apPurchaseOrder.setApTaxCode(apTaxCode);
+
+            LocalGlFunctionalCurrency glFunctionalCurrency = glFunctionalCurrencyHome.findByFcName(FC_NM, AD_CMPNY);
+            apPurchaseOrder.setGlFunctionalCurrency(glFunctionalCurrency);
+
+            System.out.println(SPL_SPPLR_CODE + " " + AD_CMPNY);
+            LocalApSupplier apSupplier = apSupplierHome.findBySplSupplierCode(SPL_SPPLR_CODE, AD_CMPNY);
+            apPurchaseOrder.setApSupplier(apSupplier);
+
+            double TOTAL_AMOUNT = 0;
+
+            if (isRecalculate) {
+
+                // remove all receiving item line
+                Collection apPurchaseOrderLines = apPurchaseOrder.getApPurchaseOrderLines();
+                Iterator i = apPurchaseOrderLines.iterator();
+                while (i.hasNext()) {
+                    LocalApPurchaseOrderLine apPurchaseOrderLine = (LocalApPurchaseOrderLine) i.next();
+                    i.remove();
+                    em.remove(apPurchaseOrderLine);
+
+                }
+
+                // remove all distribution records
+                Collection apDistributionRecords = apPurchaseOrder.getApDistributionRecords();
+                i = apDistributionRecords.iterator();
+                while (i.hasNext()) {
+                    LocalApDistributionRecord apDistributionRecord = (LocalApDistributionRecord) i.next();
+                    i.remove();
+                    em.remove(apDistributionRecord);
+                }
+
+                LocalAdPreference adPreference = adPreferenceHome.findByPrfAdCompany(AD_CMPNY);
+
+                // add new receiving item line and distribution record
+                double TOTAL_TAX = 0d;
+                double TOTAL_LINE = 0d;
+                i = plList.iterator();
+                LocalInvItemLocation invItemLocation;
+                while (i.hasNext()) {
+                    ApModPurchaseOrderLineDetails mPlDetails = (ApModPurchaseOrderLineDetails) i.next();
+                    try {
+                        invItemLocation = invItemLocationHome.findByLocNameAndIiName(mPlDetails.getPlLocName(), mPlDetails.getPlIiName(), AD_CMPNY);
+                    }
+                    catch (FinderException ex) {
+                        throw new GlobalInvItemLocationNotFoundException(String.valueOf(mPlDetails.getPlLine()));
+                    }
+
+                    //	start date validation
+                    if (mPlDetails.getPlQuantity() > 0) {
+                        Collection invNegTxnCosting = invCostingHome.findNegTxnByGreaterThanCstDateAndIiNameAndLocName(
+                                apPurchaseOrder.getPoDate(), invItemLocation.getInvItem().getIiName(),
+                                invItemLocation.getInvLocation().getLocName(), AD_BRNCH, AD_CMPNY);
+                        if (!invNegTxnCosting.isEmpty()) {
+                            throw new GlobalInventoryDateException(invItemLocation.getInvItem().getIiName());
+                        }
+                    }
+
+                    LocalApPurchaseOrderLine apPurchaseOrderLine = this.addApPlEntry(mPlDetails, apPurchaseOrder, invItemLocation, newPurchaseOrder, AD_CMPNY);
+                    if (mPlDetails.getPlQuantity() == 0) {
+                        continue;
+                    }
+
+                    // add inventory distributions
+                    LocalAdBranchItemLocation adBranchItemLocation = null;
+                    try {
+                        adBranchItemLocation = adBranchItemLocationHome
+                                .findBilByIlCodeAndBrCode(apPurchaseOrderLine.getInvItemLocation().getIlCode(), AD_BRNCH, AD_CMPNY);
+                    }
+                    catch (FinderException ex) {
+
+                    }
+
+                    if (adBranchItemLocation != null) {
+
+                        // Use AdBranchItemLocation Coa Account
+                        this.addApDrPlEntry(apPurchaseOrder.getApDrNextLine(),
+                                "INVENTORY", EJBCommon.TRUE, apPurchaseOrderLine.getPlAmount(),
+                                adBranchItemLocation.getBilCoaGlInventoryAccount(), apPurchaseOrder, AD_BRNCH, AD_CMPNY);
+
+
+                    } else {
+
+                        // Use default account
+                        this.addApDrPlEntry(apPurchaseOrder.getApDrNextLine(),
+                                "INVENTORY", EJBCommon.TRUE, apPurchaseOrderLine.getPlAmount(),
+                                apPurchaseOrderLine.getInvItemLocation().getIlGlCoaInventoryAccount(), apPurchaseOrder, AD_BRNCH, AD_CMPNY);
+
+
+                    }
+
+                    TOTAL_LINE += apPurchaseOrderLine.getPlAmount();
+                    TOTAL_TAX += apPurchaseOrderLine.getPlTaxAmount();
+
+                }
+
+                // add tax distribution if necessary
+
+                if (!apTaxCode.getTcType().equals("NONE") &&
+                        !apTaxCode.getTcType().equals("EXEMPT")) {
+
+                    if (adPreference.getPrfApUseAccruedVat() == EJBCommon.FALSE) {
+
+                        this.addApDrPlEntry(apPurchaseOrder.getApDrNextLine(),
+                                "TAX", EJBCommon.TRUE, TOTAL_TAX, apTaxCode.getGlChartOfAccount().getCoaCode(),
+                                apPurchaseOrder, AD_BRNCH, AD_CMPNY);
+
+                    } else {
+
+                        this.addApDrPlEntry(apPurchaseOrder.getApDrNextLine(),
+                                "ACC TAX", EJBCommon.TRUE, TOTAL_TAX, adPreference.getPrfApGlCoaAccruedVatAccount(),
+                                apPurchaseOrder, AD_BRNCH, AD_CMPNY);
+
+                    }
+
+                }
+
+                TOTAL_AMOUNT = TOTAL_LINE + TOTAL_TAX;
+
+            } else {
+
+                Iterator i = plList.iterator();
+
+                LocalInvItemLocation invItemLocation = null;
+
+                while (i.hasNext()) {
+
+                    ApModPurchaseOrderLineDetails mPlDetails = (ApModPurchaseOrderLineDetails) i.next();
+
+                    try {
+
+                        invItemLocation = invItemLocationHome.findByLocNameAndIiName(mPlDetails.getPlLocName(), mPlDetails.getPlIiName(), AD_CMPNY);
+
+                    }
+                    catch (FinderException ex) {
+
+                        throw new GlobalInvItemLocationNotFoundException(String.valueOf(mPlDetails.getPlLine()));
+
+                    }
+
+                    //	start date validation
+
+                    Collection invNegTxnCosting = invCostingHome.findNegTxnByGreaterThanCstDateAndIiNameAndLocName(
+                            apPurchaseOrder.getPoDate(), invItemLocation.getInvItem().getIiName(),
+                            invItemLocation.getInvLocation().getLocName(), AD_BRNCH, AD_CMPNY);
+                    if (!invNegTxnCosting.isEmpty()) {
+                        throw new GlobalInventoryDateException(invItemLocation.getInvItem().getIiName());
+                    }
+
+                }
+
+                Collection apDistributionRecords = apPurchaseOrder.getApDistributionRecords();
+
+                i = apDistributionRecords.iterator();
+
+                while (i.hasNext()) {
+
+                    LocalApDistributionRecord apDistributionRecord = (LocalApDistributionRecord) i.next();
+
+                    if (apDistributionRecord.getDrDebit() == 0) {
+
+                        TOTAL_AMOUNT += apDistributionRecord.getDrAmount();
+
+                    }
+                }
+
+            }
+
+            // generate approval status
+
+            String PO_APPRVL_STATUS = null;
+
+            if (!isDraft) {
+
+                PO_APPRVL_STATUS = "N/A";
+
+                // release purchase order lock
+
+                if (details.getPoType().equals("PO MATCHED")) {
+
+                    apExistingPurchaseOrder.setPoLock(EJBCommon.FALSE);
+
+                }
+
+            }
+
+            LocalAdPreference adPreference = adPreferenceHome.findByPrfAdCompany(AD_CMPNY);
+
+            if (PO_APPRVL_STATUS != null && PO_APPRVL_STATUS.equals("N/A")) {
+
+                //this.executeApPoPost(apPurchaseOrder.getPoCode(), apPurchaseOrder.getPoLastModifiedBy(), AD_BRNCH, AD_CMPNY);
+
+            }
+
+            // set receiving item approval status
+
+            apPurchaseOrder.setPoApprovalStatus(PO_APPRVL_STATUS);
+
+            return apPurchaseOrder.getPoCode();
+
+
+        }
+        catch (GlobalRecordAlreadyDeletedException | GlobalDocumentNumberNotUniqueException |
+               GlobalPaymentTermInvalidException | GlobalConversionDateNotExistException |
+               GlobalTransactionAlreadyPendingException | GlobalTransactionAlreadyPostedException |
+               GlobalTransactionAlreadyVoidException | GlobalInvItemLocationNotFoundException |
+               GlobalTransactionAlreadyLockedException | GlobalInventoryDateException |
+               GlobalTransactionAlreadyVoidPostedException | GlobalBranchAccountNumberInvalidException ex) {
+            ctx.setRollbackOnly();
+            throw ex;
+        }
+        catch (Exception ex) {
+            Debug.printStackTrace(ex);
+            ctx.setRollbackOnly();
+            throw new EJBException(ex.getMessage());
+        }
+    }
+
+    @Override
+    public Integer saveApPoSyncEntry(ApPurchaseOrderDetails details, String PYT_NM, String TC_NM, String FC_NM,
+                                     String SPL_SPPLR_CODE, ArrayList plList, boolean isDraft, Integer AD_BRNCH, Integer AD_CMPNY)
+            throws GlobalRecordAlreadyDeletedException, GlobalDocumentNumberNotUniqueException, GlobalConversionDateNotExistException,
+            GlobalPaymentTermInvalidException, GlobalTransactionAlreadyApprovedException, GlobalTransactionAlreadyPendingException,
+            GlobalTransactionAlreadyPostedException, GlobalTransactionAlreadyVoidException, GlobalInvItemLocationNotFoundException,
+            GlobalNoApprovalRequesterFoundException, GlobalNoApprovalApproverFoundException, GlobalSupplierItemInvalidException {
+
+        Debug.print("ApPurchaseOrderEntryControllerBean saveApPoSyncEntry");
+
+        LocalApPurchaseOrder apPurchaseOrder = null;
+
+        try {
+
+            // validate if purchase order is already deleted
+            try {
+                if (details.getPoCode() != null) {
+                    apPurchaseOrder = apPurchaseOrderHome.findByPrimaryKey(details.getPoCode());
+                }
+            }
+            catch (FinderException ex) {
+                throw new GlobalRecordAlreadyDeletedException();
+
+            }
+
+            // validate if purchase order is already posted, void, approved or pending
+            if (details.getPoCode() != null && details.getPoVoid() == EJBCommon.FALSE) {
+
+                assert apPurchaseOrder != null;
+                if (apPurchaseOrder.getPoApprovalStatus() != null) {
+                    if (apPurchaseOrder.getPoApprovalStatus().equals("APPROVED") ||
+                            apPurchaseOrder.getPoApprovalStatus().equals("N/A")) {
+                        throw new GlobalTransactionAlreadyApprovedException();
+                    } else if (apPurchaseOrder.getPoApprovalStatus().equals("PENDING")) {
+                        throw new GlobalTransactionAlreadyPendingException();
+                    }
+                }
+
+                if (apPurchaseOrder.getPoPosted() == EJBCommon.TRUE) {
+
+                    throw new GlobalTransactionAlreadyPostedException();
+
+                } else if (apPurchaseOrder.getPoVoid() == EJBCommon.TRUE) {
+
+                    throw new GlobalTransactionAlreadyVoidException();
+
+                }
+            }
+
+            // purchase order void
+            if (details.getPoCode() != null && details.getPoVoid() == EJBCommon.TRUE) {
+
+                assert apPurchaseOrder != null;
+                apPurchaseOrder.setPoVoid(EJBCommon.TRUE);
+                apPurchaseOrder.setPoLastModifiedBy(details.getPoLastModifiedBy());
+                apPurchaseOrder.setPoDateLastModified(details.getPoDateLastModified());
+
+                return apPurchaseOrder.getPoCode();
+
+            }
+
+            // validate if document number is unique document number is automatic then set next sequence
+            try {
+
+                LocalAdBranchDocumentSequenceAssignment adBranchDocumentSequenceAssignment = null;
+                LocalAdDocumentSequenceAssignment adDocumentSequenceAssignment = null;
+
+                if (details.getPoCode() == null) {
+
+                    try {
+
+                        adDocumentSequenceAssignment = adDocumentSequenceAssignmentHome.findByDcName("AP PURCHASE ORDER", AD_CMPNY);
+
+                    }
+                    catch (FinderException ex) {
+                    }
+
+                    try {
+
+                        adBranchDocumentSequenceAssignment = adBranchDocumentSequenceAssignmentHome.findBdsByDsaCodeAndBrCode(adDocumentSequenceAssignment.getDsaCode(), AD_BRNCH, AD_CMPNY);
+
+                    }
+                    catch (FinderException ex) {
+                    }
+
+                    LocalApPurchaseOrder apExistingPurchaseOrder = null;
+
+                    try {
+
+                        apExistingPurchaseOrder = apPurchaseOrderHome.findByPoDocumentNumberAndBrCode(
+                                details.getPoDocumentNumber(), AD_BRNCH, AD_CMPNY);
+
+                    }
+                    catch (FinderException ex) {
+                    }
+
+                    if (apExistingPurchaseOrder != null) {
+
+                        throw new GlobalDocumentNumberNotUniqueException();
+
+                    }
+
+                    if (adDocumentSequenceAssignment.getAdDocumentSequence().getDsNumberingType() == 'A' &&
+                            (details.getPoDocumentNumber() == null || details.getPoDocumentNumber().trim().length() == 0)) {
+
+                        while (true) {
+
+                            if (adBranchDocumentSequenceAssignment == null || adBranchDocumentSequenceAssignment.getBdsNextSequence() == null) {
+
+                                try {
+
+                                    apPurchaseOrderHome.findByPoDocumentNumberAndBrCode(adDocumentSequenceAssignment.getDsaNextSequence(), AD_BRNCH, AD_CMPNY);
+                                    adDocumentSequenceAssignment.setDsaNextSequence(EJBCommon.incrementStringNumber(adDocumentSequenceAssignment.getDsaNextSequence()));
+
+                                }
+                                catch (FinderException ex) {
+
+                                    details.setPoDocumentNumber(adDocumentSequenceAssignment.getDsaNextSequence());
+                                    adDocumentSequenceAssignment.setDsaNextSequence(EJBCommon.incrementStringNumber(adDocumentSequenceAssignment.getDsaNextSequence()));
+                                    break;
+
+                                }
+
+                            } else {
+
+                                try {
+
+                                    apPurchaseOrderHome.findByPoDocumentNumberAndBrCode(adBranchDocumentSequenceAssignment.getBdsNextSequence(), AD_BRNCH, AD_CMPNY);
+                                    adBranchDocumentSequenceAssignment.setBdsNextSequence(EJBCommon.incrementStringNumber(adBranchDocumentSequenceAssignment.getBdsNextSequence()));
+
+                                }
+                                catch (FinderException ex) {
+
+                                    details.setPoDocumentNumber(adBranchDocumentSequenceAssignment.getBdsNextSequence());
+                                    adBranchDocumentSequenceAssignment.setBdsNextSequence(EJBCommon.incrementStringNumber(adBranchDocumentSequenceAssignment.getBdsNextSequence()));
+                                    break;
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                } else {
+
+                    LocalApPurchaseOrder apExistingPurchaseOrder = null;
+
+                    try {
+
+                        apExistingPurchaseOrder = apPurchaseOrderHome.findByPoDocumentNumberAndBrCode(
+                                details.getPoDocumentNumber(), AD_BRNCH, AD_CMPNY);
+
+                    }
+                    catch (FinderException ex) {
+                    }
+
+                    if (apExistingPurchaseOrder != null &&
+                            !apExistingPurchaseOrder.getPoCode().equals(details.getPoCode())) {
+
+                        throw new GlobalDocumentNumberNotUniqueException();
+
+                    }
+
+                    if (apPurchaseOrder.getPoDocumentNumber() != details.getPoDocumentNumber() &&
+                            (details.getPoDocumentNumber() == null || details.getPoDocumentNumber().trim().length() == 0)) {
+
+                        details.setPoDocumentNumber(apPurchaseOrder.getPoDocumentNumber());
+
+                    }
+
+                }
+
+            }
+            catch (GlobalDocumentNumberNotUniqueException ex) {
+
+                ctx.setRollbackOnly();
+                throw ex;
+
+            }
+            catch (Exception ex) {
+
+                Debug.printStackTrace(ex);
+                ctx.setRollbackOnly();
+                throw new EJBException(ex.getMessage());
+
+            }
+
+            // validate if conversion date exists
+
+            try {
+
+                if (details.getPoConversionDate() != null) {
+
+                    LocalAdCompany adCompany = adCompanyHome.findByPrimaryKey(AD_CMPNY);
+                    LocalGlFunctionalCurrency glValidateFunctionalCurrency = glFunctionalCurrencyHome.findByFcName(FC_NM, AD_CMPNY);
+
+                    if (!glValidateFunctionalCurrency.getFcName().equals("USD")) {
+
+                        LocalGlFunctionalCurrencyRate glFunctionalCurrencyRate = glFunctionalCurrencyRateHome.findByFcCodeAndDate(glValidateFunctionalCurrency.getFcCode(),
+                                details.getPoConversionDate(), AD_CMPNY);
+
+                    } else if (!adCompany.getGlFunctionalCurrency().getFcName().equals("USD")) {
+
+                        LocalGlFunctionalCurrencyRate glFunctionalCurrencyRate =
+                                glFunctionalCurrencyRateHome.findByFcCodeAndDate(
+                                        adCompany.getGlFunctionalCurrency().getFcCode(), details.getPoConversionDate(), AD_CMPNY);
+
+                    }
+                }
+
+            }
+            catch (FinderException ex) {
+
+                throw new GlobalConversionDateNotExistException();
+
+            }
+
+            // validate if payment term has at least one payment schedule
+
+            if (adPaymentTermHome.findByPytName(PYT_NM, AD_CMPNY).getAdPaymentSchedules().isEmpty()) {
+
+                throw new GlobalPaymentTermInvalidException();
+
+            }
+
+            boolean isRecalculate = true;
+
+            // create purchase order
+
+            if (details.getPoCode() == null) {
+
+                apPurchaseOrder = apPurchaseOrderHome.create(EJBCommon.FALSE, null, details.getPoDate(), details.getPoDeliveryPeriod(), details.getPoDocumentNumber(),
+                        details.getPoReferenceNumber(), null, details.getPoDescription(), details.getPoBillTo(), details.getPoShipTo(),
+                        details.getPoConversionDate(), details.getPoConversionRate(), details.getPoTotalAmount(), EJBCommon.FALSE, EJBCommon.FALSE, null, null,
+                        EJBCommon.FALSE, null, details.getPoCreatedBy(), details.getPoDateCreated(), details.getPoLastModifiedBy(),
+                        details.getPoDateLastModified(), null, null, null, null, EJBCommon.FALSE,
+                        0d, 0d, 0d, 0d, 0d,
+                        AD_BRNCH, AD_CMPNY);
+
+				/*.create(EJBCommon.FALSE, null, details.getPoDate(), details.getPoDeliveryPeriod(), details.getPoDocumentNumber(),
+						details.getPoReferenceNumber(), null, details.getPoDescription(), details.getPoBillTo(), details.getPoShipTo(),
+						details.getPoConversionDate(), details.getPoConversionRate(), details.getPoTotalAmount(), EJBCommon.FALSE, EJBCommon.FALSE, null, null,
+						EJBCommon.FALSE, null, details.getPoCreatedBy(), details.getPoDateCreated(), details.getPoLastModifiedBy(),
+						details.getPoDateLastModified(), null, null, null, null, EJBCommon.FALSE, EJBCommon.FALSE,
+						EJBCommon.FALSE,null,null,null,null,null,null, EJBCommon.FALSE, EJBCommon.FALSE, EJBCommon.FALSE, EJBCommon.FALSE,
+						EJBCommon.FALSE, EJBCommon.FALSE, EJBCommon.FALSE, EJBCommon.FALSE,
+						null,null,null,null,null,null,null,null,null,
+						AD_BRNCH, AD_CMPNY);*/
+
+            } else {
+
+                // check if critical fields are changed
+
+                if (!apPurchaseOrder.getApTaxCode().getTcName().equals(TC_NM) ||
+                        !apPurchaseOrder.getApSupplier().getSplSupplierCode().equals(SPL_SPPLR_CODE) ||
+                        !apPurchaseOrder.getAdPaymentTerm().getPytName().equals(PYT_NM) ||
+                        plList.size() != apPurchaseOrder.getApPurchaseOrderLines().size()) {
+
+                    isRecalculate = true;
+
+                } else if (plList.size() == apPurchaseOrder.getApPurchaseOrderLines().size()) {
+
+                    Iterator ilIter = apPurchaseOrder.getApPurchaseOrderLines().iterator();
+                    Iterator ilListIter = plList.iterator();
+
+                    while (ilIter.hasNext()) {
+
+                        LocalApPurchaseOrderLine apPurchaseOrderLine = (LocalApPurchaseOrderLine) ilIter.next();
+                        ApModPurchaseOrderLineDetails mdetails = (ApModPurchaseOrderLineDetails) ilListIter.next();
+
+                        if (!apPurchaseOrderLine.getInvItemLocation().getInvItem().getIiName().equals(mdetails.getPlIiName()) ||
+                                !apPurchaseOrderLine.getInvItemLocation().getInvItem().getIiDescription().equals(mdetails.getPlIiDescription()) ||
+                                !apPurchaseOrderLine.getInvItemLocation().getInvLocation().getLocName().equals(mdetails.getPlLocName()) ||
+                                !apPurchaseOrderLine.getInvUnitOfMeasure().getUomName().equals(mdetails.getPlUomName()) ||
+                                apPurchaseOrderLine.getPlQuantity() != mdetails.getPlQuantity() ||
+                                apPurchaseOrderLine.getPlUnitCost() != mdetails.getPlUnitCost() ||
+                                apPurchaseOrderLine.getPlTotalDiscount() != mdetails.getPlTotalDiscount()) {
+
+                            isRecalculate = true;
+                            break;
+
+                        }
+
+                        isRecalculate = false;
+
+                    }
+
+                } else {
+
+                    isRecalculate = false;
+
+                }
+
+                apPurchaseOrder.setPoDate(details.getPoDate());
+                apPurchaseOrder.setPoDocumentNumber(details.getPoDocumentNumber());
+                apPurchaseOrder.setPoReferenceNumber(details.getPoReferenceNumber());
+                apPurchaseOrder.setPoDescription(details.getPoDescription());
+                apPurchaseOrder.setPoBillTo(details.getPoBillTo());
+                apPurchaseOrder.setPoShipTo(details.getPoShipTo());
+                apPurchaseOrder.setPoPrinted(details.getPoPrinted());
+                apPurchaseOrder.setPoVoid(details.getPoVoid());
+                apPurchaseOrder.setPoConversionDate(details.getPoConversionDate());
+                apPurchaseOrder.setPoConversionRate(details.getPoConversionRate());
+                apPurchaseOrder.setPoLastModifiedBy(details.getPoLastModifiedBy());
+                apPurchaseOrder.setPoDateLastModified(details.getPoDateLastModified());
+
+            }
+
+            LocalApSupplier apSupplier = apSupplierHome.findBySplSupplierCode(SPL_SPPLR_CODE, AD_CMPNY);
+            //apSupplier.addApPurchaseOrder(apPurchaseOrder);
+            apPurchaseOrder.setApSupplier(apSupplier);
+
+            LocalAdPaymentTerm adPaymentTerm = adPaymentTermHome.findByPytName(PYT_NM, AD_CMPNY);
+            //adPaymentTerm.addApPurchaseOrder(apPurchaseOrder);
+            apPurchaseOrder.setAdPaymentTerm(adPaymentTerm);
+
+            LocalApTaxCode apTaxCode = apTaxCodeHome.findByTcName(TC_NM, AD_CMPNY);
+            //apTaxCode.addApPurchaseOrder(apPurchaseOrder);
+            apPurchaseOrder.setApTaxCode(apTaxCode);
+
+            LocalGlFunctionalCurrency glFunctionalCurrency = glFunctionalCurrencyHome.findByFcName(FC_NM, AD_CMPNY);
+            //glFunctionalCurrency.addApPurchaseOrder(apPurchaseOrder);
+            apPurchaseOrder.setGlFunctionalCurrency(glFunctionalCurrency);
+
+            double ABS_TOTAL_AMOUNT = 0d;
+
+            //	 Map Supplier and Item
+
+            Iterator iter = plList.iterator();
+
+            while (iter.hasNext()) {
+
+                ApModPurchaseOrderLineDetails mPlDetails = (ApModPurchaseOrderLineDetails) iter.next();
+                LocalInvItem invItem = invItemHome.findByIiName(mPlDetails.getPlIiName(), AD_CMPNY);
+
+                if (invItem.getApSupplier() != null &&
+                        !invItem.getApSupplier().getSplSupplierCode().equals(
+                                apPurchaseOrder.getApSupplier().getSplSupplierCode())) {
+
+                    throw new GlobalSupplierItemInvalidException("" + mPlDetails.getPlLine());
+
+                }
+
+            }
+
+
+            if (isRecalculate) {
+
+                // remove all purchase order line items
+
+                Collection apPurchaseOrderLines = apPurchaseOrder.getApPurchaseOrderLines();
+
+                Iterator i = apPurchaseOrderLines.iterator();
+
+                while (i.hasNext()) {
+
+                    LocalApPurchaseOrderLine apPurchaseOrderLine = (LocalApPurchaseOrderLine) i.next();
+
+                    i.remove();
+
+                    em.remove(apPurchaseOrderLine);
+
+                }
+
+                // add new purchase order line item
+
+                i = plList.iterator();
+
+                LocalInvItemLocation invItemLocation = null;
+
+                while (i.hasNext()) {
+
+                    ApModPurchaseOrderLineDetails mPlDetails = (ApModPurchaseOrderLineDetails) i.next();
+
+                    LocalApPurchaseOrderLine apPurchaseOrderLine = apPurchaseOrderLineHome.create(
+                            mPlDetails.getPlLine(), mPlDetails.getPlQuantity(), mPlDetails.getPlUnitCost(),
+                            mPlDetails.getPlAmount(), mPlDetails.getPlQcNumber(), mPlDetails.getPlQcExpiryDate(), mPlDetails.getPlConversionFactor(), 0d, null, mPlDetails.getPlDiscount1(),
+                            mPlDetails.getPlDiscount2(), mPlDetails.getPlDiscount3(), mPlDetails.getPlDiscount4(), mPlDetails.getPlTotalDiscount(),
+                            AD_CMPNY);
+
+                    //apPurchaseOrder.addApPurchaseOrderLine(apPurchaseOrderLine);
+                    apPurchaseOrderLine.setApPurchaseOrder(apPurchaseOrder);
+
+                    try {
+
+                        invItemLocation = invItemLocationHome.findByLocNameAndIiName(
+                                mPlDetails.getPlLocName(), mPlDetails.getPlIiName(), AD_CMPNY);
+
+                    }
+                    catch (FinderException ex) {
+
+                        throw new GlobalInvItemLocationNotFoundException(String.valueOf(mPlDetails.getPlLine()));
+
+                    }
+
+                    ABS_TOTAL_AMOUNT += apPurchaseOrderLine.getPlAmount();
+
+                    //invItemLocation.addApPurchaseOrderLine(apPurchaseOrderLine);
+                    apPurchaseOrderLine.setInvItemLocation(invItemLocation);
+
+                    LocalInvUnitOfMeasure invUnitOfMeasure = invUnitOfMeasureHome.findByUomName(
+                            mPlDetails.getPlUomName(), AD_CMPNY);
+
+                    //invUnitOfMeasure.addApPurchaseOrderLine(apPurchaseOrderLine);
+                    apPurchaseOrderLine.setInvUnitOfMeasure(invUnitOfMeasure);
+
+                }
+
+            } else {
+
+                Collection apPurchaseOrderLines = apPurchaseOrder.getApPurchaseOrderLines();
+
+                Iterator i = apPurchaseOrderLines.iterator();
+
+                while (i.hasNext()) {
+
+                    LocalApPurchaseOrderLine apPurchaseOrderLine = (LocalApPurchaseOrderLine) i.next();
+
+                    ABS_TOTAL_AMOUNT += apPurchaseOrderLine.getPlAmount();
+
+                }
+            }
+
+            LocalAdPreference adPreference = adPreferenceHome.findByPrfAdCompany(AD_CMPNY);
+
+            // set purchase order approval status
+
+            String PO_APPRVL_STATUS = null;
+
+            if (!isDraft) {
+
+                LocalAdApproval adApproval = adApprovalHome.findByAprAdCompany(AD_CMPNY);
+
+                // check if ap voucher approval is enabled
+
+                if (adApproval.getAprEnableApPurchaseOrder() == EJBCommon.FALSE) {
+
+                    PO_APPRVL_STATUS = "N/A";
+
+                } else {
+
+                    // check if voucher is self approved
+
+                    LocalAdAmountLimit adAmountLimit = null;
+
+                    try {
+
+                        adAmountLimit = adAmountLimitHome.findByAdcTypeAndAuTypeAndUsrName("AP PURCHASE ORDER", "REQUESTER", details.getPoLastModifiedBy(), AD_CMPNY);
+
+                    }
+                    catch (FinderException ex) {
+
+                        throw new GlobalNoApprovalRequesterFoundException();
+
+                    }
+
+                    if (ABS_TOTAL_AMOUNT <= adAmountLimit.getCalAmountLimit()) {
+
+                        PO_APPRVL_STATUS = "N/A";
+
+                    } else {
+
+                        // for approval, create approval queue
+
+                        Collection adAmountLimits = adAmountLimitHome.findByAdcTypeAndGreaterThanCalAmountLimit("AP PURCHASE ORDER", adAmountLimit.getCalAmountLimit(), AD_CMPNY);
+
+                        if (adAmountLimits.isEmpty()) {
+
+                            Collection adApprovalUsers = adApprovalUserHome.findByAuTypeAndCalCode("APPROVER", adAmountLimit.getCalCode(), AD_CMPNY);
+
+                            if (adApprovalUsers.isEmpty()) {
+
+                                throw new GlobalNoApprovalApproverFoundException();
+
+                            }
+
+                            Iterator j = adApprovalUsers.iterator();
+
+                            while (j.hasNext()) {
+
+                                LocalAdApprovalUser adApprovalUser = (LocalAdApprovalUser) j.next();
+
+                                LocalAdApprovalQueue adApprovalQueue = adApprovalQueueHome.create(EJBCommon.TRUE, "AP PURCHASE ORDER", apPurchaseOrder.getPoCode(),
+                                        apPurchaseOrder.getPoDocumentNumber(), apPurchaseOrder.getPoDate(), adAmountLimit.getCalAndOr(), adApprovalUser.getAuOr(), AD_BRNCH, AD_CMPNY);
+
+                                adApprovalUser.getAdUser().addAdApprovalQueue(adApprovalQueue);
+
+                            }
+
+                        } else {
+
+                            boolean isApprovalUsersFound = false;
+
+                            Iterator i = adAmountLimits.iterator();
+
+                            while (i.hasNext()) {
+
+                                LocalAdAmountLimit adNextAmountLimit = (LocalAdAmountLimit) i.next();
+
+                                if (ABS_TOTAL_AMOUNT <= adNextAmountLimit.getCalAmountLimit()) {
+
+                                    Collection adApprovalUsers = adApprovalUserHome.findByAuTypeAndCalCode("APPROVER", adAmountLimit.getCalCode(), AD_CMPNY);
+
+                                    Iterator j = adApprovalUsers.iterator();
+
+                                    while (j.hasNext()) {
+
+                                        isApprovalUsersFound = true;
+
+                                        LocalAdApprovalUser adApprovalUser = (LocalAdApprovalUser) j.next();
+
+                                        LocalAdApprovalQueue adApprovalQueue = adApprovalQueueHome.create(EJBCommon.TRUE, "AP PURCHASE ORDER", apPurchaseOrder.getPoCode(),
+                                                apPurchaseOrder.getPoDocumentNumber(), apPurchaseOrder.getPoDate(), adAmountLimit.getCalAndOr(), adApprovalUser.getAuOr(), AD_BRNCH, AD_CMPNY);
+
+                                        adApprovalUser.getAdUser().addAdApprovalQueue(adApprovalQueue);
+
+                                    }
+
+                                    break;
+
+                                } else if (!i.hasNext()) {
+
+                                    Collection adApprovalUsers = adApprovalUserHome.findByAuTypeAndCalCode("APPROVER", adNextAmountLimit.getCalCode(), AD_CMPNY);
+
+                                    Iterator j = adApprovalUsers.iterator();
+
+                                    while (j.hasNext()) {
+
+                                        isApprovalUsersFound = true;
+
+                                        LocalAdApprovalUser adApprovalUser = (LocalAdApprovalUser) j.next();
+
+                                        LocalAdApprovalQueue adApprovalQueue = adApprovalQueueHome.create(EJBCommon.TRUE, "AP PURCHASE ORDER", apPurchaseOrder.getPoCode(),
+                                                apPurchaseOrder.getPoDocumentNumber(), apPurchaseOrder.getPoDate(), adNextAmountLimit.getCalAndOr(), adApprovalUser.getAuOr(), AD_BRNCH, AD_CMPNY);
+
+                                        adApprovalUser.getAdUser().addAdApprovalQueue(adApprovalQueue);
+
+                                    }
+
+                                    break;
+
+                                }
+
+                                adAmountLimit = adNextAmountLimit;
+
+                            }
+
+                            if (!isApprovalUsersFound) {
+
+                                throw new GlobalNoApprovalApproverFoundException();
+
+                            }
+
+                        }
+
+                        PO_APPRVL_STATUS = "PENDING";
+
+                    }
+
+                }
+
+                apPurchaseOrder.setPoApprovalStatus(PO_APPRVL_STATUS);
+
+                // set post purchase order
+
+                if (PO_APPRVL_STATUS.equals("N/A")) {
+
+                    apPurchaseOrder.setPoPosted(EJBCommon.TRUE);
+                    apPurchaseOrder.setPoPosted(EJBCommon.TRUE);
+                    apPurchaseOrder.setPoPostedBy(apPurchaseOrder.getPoLastModifiedBy());
+                    apPurchaseOrder.setPoDatePosted(EJBCommon.getGcCurrentDateWoTime().getTime());
+
+                }
+
+            }
+
+            return apPurchaseOrder.getPoCode();
+
+
+        }
+        catch (GlobalRecordAlreadyDeletedException | GlobalDocumentNumberNotUniqueException |
+               GlobalConversionDateNotExistException | GlobalPaymentTermInvalidException |
+               GlobalTransactionAlreadyApprovedException | GlobalTransactionAlreadyPendingException |
+               GlobalTransactionAlreadyPostedException | GlobalTransactionAlreadyVoidException |
+               GlobalNoApprovalRequesterFoundException | GlobalNoApprovalApproverFoundException |
+               GlobalInvItemLocationNotFoundException | GlobalSupplierItemInvalidException ex) {
+
+            ctx.setRollbackOnly();
+            throw ex;
+
+        }
+        catch (Exception ex) {
+
+            Debug.printStackTrace(ex);
+            ctx.setRollbackOnly();
+            throw new EJBException(ex.getMessage());
+
+        }
+
     }
 
     public Integer saveApPoEntry(ApPurchaseOrderDetails details, String BTCH_NM, String PYT_NM, String TC_NM, String FC_NM, String SPL_SPPLR_CODE, ArrayList plList, boolean isDraft, boolean validateShipmentNumber, Integer AD_BRNCH, Integer AD_CMPNY) throws GlobalRecordAlreadyDeletedException, GlobalDocumentNumberNotUniqueException, GlobalConversionDateNotExistException, GlobalPaymentTermInvalidException, GlobalTransactionAlreadyApprovedException, GlobalTransactionAlreadyPendingException, GlobalTransactionAlreadyPostedException, GlobalTransactionAlreadyVoidException, GlobalInvItemLocationNotFoundException, GlobalNoApprovalRequesterFoundException, GlobalNoApprovalApproverFoundException, GlobalSupplierItemInvalidException, GlobalRecordInvalidException {
@@ -833,7 +2644,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
                     apPurchaseOrder = apPurchaseOrderHome.findByPrimaryKey(details.getPoCode());
                 }
 
-            } catch (FinderException ex) {
+            }
+            catch (FinderException ex) {
 
                 throw new GlobalRecordAlreadyDeletedException();
             }
@@ -889,14 +2701,16 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
                         adDocumentSequenceAssignment = adDocumentSequenceAssignmentHome.findByDcName("AP PURCHASE ORDER", AD_CMPNY);
 
-                    } catch (FinderException ex) {
+                    }
+                    catch (FinderException ex) {
                     }
 
                     try {
 
                         adBranchDocumentSequenceAssignment = adBranchDocumentSequenceAssignmentHome.findBdsByDsaCodeAndBrCode(adDocumentSequenceAssignment.getDsaCode(), AD_BRNCH, AD_CMPNY);
 
-                    } catch (FinderException ex) {
+                    }
+                    catch (FinderException ex) {
                     }
 
                     LocalApPurchaseOrder apExistingPurchaseOrder = null;
@@ -905,7 +2719,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
                         apExistingPurchaseOrder = apPurchaseOrderHome.findByPoDocumentNumberAndBrCode(details.getPoDocumentNumber(), AD_BRNCH, AD_CMPNY);
 
-                    } catch (FinderException ex) {
+                    }
+                    catch (FinderException ex) {
                     }
 
                     if (apExistingPurchaseOrder != null) {
@@ -924,7 +2739,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
                                     apPurchaseOrderHome.findByPoDocumentNumberAndBrCode(adDocumentSequenceAssignment.getDsaNextSequence(), AD_BRNCH, AD_CMPNY);
                                     adDocumentSequenceAssignment.setDsaNextSequence(EJBCommon.incrementStringNumber(adDocumentSequenceAssignment.getDsaNextSequence()));
 
-                                } catch (FinderException ex) {
+                                }
+                                catch (FinderException ex) {
 
                                     details.setPoDocumentNumber(adDocumentSequenceAssignment.getDsaNextSequence());
                                     adDocumentSequenceAssignment.setDsaNextSequence(EJBCommon.incrementStringNumber(adDocumentSequenceAssignment.getDsaNextSequence()));
@@ -938,7 +2754,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
                                     apPurchaseOrderHome.findByPoDocumentNumberAndBrCode(adBranchDocumentSequenceAssignment.getBdsNextSequence(), AD_BRNCH, AD_CMPNY);
                                     adBranchDocumentSequenceAssignment.setBdsNextSequence(EJBCommon.incrementStringNumber(adBranchDocumentSequenceAssignment.getBdsNextSequence()));
 
-                                } catch (FinderException ex) {
+                                }
+                                catch (FinderException ex) {
 
                                     details.setPoDocumentNumber(adBranchDocumentSequenceAssignment.getBdsNextSequence());
                                     adBranchDocumentSequenceAssignment.setBdsNextSequence(EJBCommon.incrementStringNumber(adBranchDocumentSequenceAssignment.getBdsNextSequence()));
@@ -956,7 +2773,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
                         apExistingPurchaseOrder = apPurchaseOrderHome.findByPoDocumentNumberAndBrCode(details.getPoDocumentNumber(), AD_BRNCH, AD_CMPNY);
 
-                    } catch (FinderException ex) {
+                    }
+                    catch (FinderException ex) {
                     }
 
                     if (apExistingPurchaseOrder != null && !apExistingPurchaseOrder.getPoCode().equals(details.getPoCode())) {
@@ -970,12 +2788,14 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
                     }
                 }
 
-            } catch (GlobalDocumentNumberNotUniqueException ex) {
+            }
+            catch (GlobalDocumentNumberNotUniqueException ex) {
 
                 getSessionContext().setRollbackOnly();
                 throw ex;
 
-            } catch (Exception ex) {
+            }
+            catch (Exception ex) {
 
                 Debug.printStackTrace(ex);
                 getSessionContext().setRollbackOnly();
@@ -984,7 +2804,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
             try {
                 Debug.print("PO SHIPMENT" + details.getPoShipmentNumber() + details.getPoShipmentNumber().length());
-            } catch (Exception ex) {
+            }
+            catch (Exception ex) {
 
             }
 
@@ -996,14 +2817,17 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
                     for (Object existingPurchaseOrderLine : apExistingPurchaseOrderLines) {
                         LocalApPurchaseOrderLine apExistingPurchaseOrderLine = (LocalApPurchaseOrderLine) existingPurchaseOrderLine;
-                        if (!apExistingPurchaseOrderLine.getApPurchaseOrder().getPoCode().equals(details.getPoCode()))
+                        if (!apExistingPurchaseOrderLine.getApPurchaseOrder().getPoCode().equals(details.getPoCode())) {
                             throw new GlobalRecordInvalidException();
+                        }
                     }
                 }
 
             } else if (!validateShipmentNumber && details.getPoShipmentNumber() != null && details.getPoShipmentNumber().length() > 0) {
                 Collection apExistingPurchaseOrderLines = apPurchaseOrderLineHome.findByPoReceivingAndPoShipmentAndBrCode(EJBCommon.FALSE, details.getPoShipmentNumber(), AD_CMPNY);
-                if (apExistingPurchaseOrderLines.size() == 0) throw new GlobalRecordInvalidException();
+                if (apExistingPurchaseOrderLines.size() == 0) {
+                    throw new GlobalRecordInvalidException();
+                }
             }
             // validate if conversion date exists
 
@@ -1017,7 +2841,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
                     details.setPoConversionRate(glFunctionalCurrencyRate.getFrXToUsd());
                 }
 
-            } catch (FinderException ex) {
+            }
+            catch (FinderException ex) {
 
                 throw new GlobalConversionDateNotExistException();
             }
@@ -1041,7 +2866,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
                 try {
                     LocalAdUser adUser = adUserHome.findByUsrName(details.getPoCreatedBy(), AD_CMPNY);
                     department = adUser.getUsrDept();
-                } catch (FinderException ex) {
+                }
+                catch (FinderException ex) {
                     Debug.print("NO user found, no department assigned");
                 }
 
@@ -1101,7 +2927,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
                 LocalApVoucherBatch apVoucherBatch = apVoucherBatchHome.findByVbName(BTCH_NM, AD_BRNCH, AD_CMPNY);
                 apPurchaseOrder.setApVoucherBatch(apVoucherBatch);
 
-            } catch (FinderException ex) {
+            }
+            catch (FinderException ex) {
 
             }
 
@@ -1180,7 +3007,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
                         invItemLocation = invItemLocationHome.findByLocNameAndIiName(mPlDetails.getPlLocName(), mPlDetails.getPlIiName(), AD_CMPNY);
 
-                    } catch (FinderException ex) {
+                    }
+                    catch (FinderException ex) {
 
                         throw new GlobalInvItemLocationNotFoundException(String.valueOf(mPlDetails.getPlLine()));
                     }
@@ -1289,7 +3117,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
                                 this.setInvTbForItemForCurrentMonth(mdetails.getPlIiName(), apPurchaseRequisition.getPrCreatedBy(), apPurchaseRequisition.getPrDate(), mdetails.getPlQuantity(), AD_CMPNY);
                             }
-                        } catch (FinderException ex) {
+                        }
+                        catch (FinderException ex) {
 
                         }
                     }
@@ -1298,18 +3127,20 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
             return apPurchaseOrder.getPoCode();
 
-        } catch (GlobalRecordAlreadyDeletedException | GlobalRecordInvalidException |
-                 GlobalSupplierItemInvalidException | GlobalNoApprovalApproverFoundException |
-                 GlobalNoApprovalRequesterFoundException | GlobalInvItemLocationNotFoundException |
-                 GlobalTransactionAlreadyVoidException | GlobalTransactionAlreadyPostedException |
-                 GlobalTransactionAlreadyPendingException | GlobalTransactionAlreadyApprovedException |
-                 GlobalPaymentTermInvalidException | GlobalConversionDateNotExistException |
-                 GlobalDocumentNumberNotUniqueException ex) {
+        }
+        catch (GlobalRecordAlreadyDeletedException | GlobalRecordInvalidException |
+               GlobalSupplierItemInvalidException | GlobalNoApprovalApproverFoundException |
+               GlobalNoApprovalRequesterFoundException | GlobalInvItemLocationNotFoundException |
+               GlobalTransactionAlreadyVoidException | GlobalTransactionAlreadyPostedException |
+               GlobalTransactionAlreadyPendingException | GlobalTransactionAlreadyApprovedException |
+               GlobalPaymentTermInvalidException | GlobalConversionDateNotExistException |
+               GlobalDocumentNumberNotUniqueException ex) {
 
             getSessionContext().setRollbackOnly();
             throw ex;
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             getSessionContext().setRollbackOnly();
@@ -1341,12 +3172,14 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
             em.remove(apPurchaseOrder);
 
-        } catch (FinderException ex) {
+        }
+        catch (FinderException ex) {
 
             getSessionContext().setRollbackOnly();
             throw new GlobalRecordAlreadyDeletedException();
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             getSessionContext().setRollbackOnly();
@@ -1366,7 +3199,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
                 apSupplier = apSupplierHome.findBySplSupplierCode(SPL_SPPLR_CODE, AD_CMPNY);
 
-            } catch (FinderException ex) {
+            }
+            catch (FinderException ex) {
 
                 throw new GlobalNoRecordFoundException();
             }
@@ -1386,11 +3220,13 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
             return mdetails;
 
-        } catch (GlobalNoRecordFoundException ex) {
+        }
+        catch (GlobalNoRecordFoundException ex) {
 
             throw ex;
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
@@ -1430,7 +3266,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
             return list;
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
@@ -1450,7 +3287,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
             return EJBCommon.roundIt(invItem.getIiUnitCost() * invDefaultUomConversion.getUmcConversionFactor() / invUnitOfMeasureConversion.getUmcConversionFactor(), this.getInvGpCostPrecisionUnit(AD_CMPNY));
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
@@ -1467,7 +3305,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
             return adPreference.getPrfApUseSupplierPulldown();
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
@@ -1520,7 +3359,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
             return list;
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
@@ -1560,12 +3400,14 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
             return CONVERSION_RATE;
 
-        } catch (FinderException ex) {
+        }
+        catch (FinderException ex) {
 
             getSessionContext().setRollbackOnly();
             throw new GlobalConversionDateNotExistException();
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
@@ -1582,7 +3424,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
             return adPreference.getPrfEnableApPOBatch();
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
@@ -1615,7 +3458,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
             return list;
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
@@ -1632,13 +3476,15 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
             LocalApPurchaseRequisition apPurchaseRequisition = apPurchaseRequisitionHome.findByPrNumberAndBrCode(PR_NMBR, AD_BRNCH, AD_CMPNY);
 
             return apPurchaseRequisition.getPrCode();
-        } catch (FinderException ex) {
+        }
+        catch (FinderException ex) {
 
             //return null if pr not found using reference numbe from PO.
             return null;
 
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
@@ -1661,7 +3507,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
             adCompany = adCompanyHome.findByPrimaryKey(AD_CMPNY);
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             throw new EJBException(ex.getMessage());
         }
@@ -1720,7 +3567,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
                 }
             }
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
@@ -1740,7 +3588,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
 
             return EJBCommon.roundIt(QTY_RCVD * invDefaultUomConversion.getUmcConversionFactor() / invUnitOfMeasureConversion.getUmcConversionFactor(), adPreference.getPrfInvQuantityPrecisionUnit());
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             getSessionContext().setRollbackOnly();
@@ -1765,14 +3614,16 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
                     LocalAdUser adUser = null;
                     try {
                         adUser = adUserHome.findByUsrName(tgLstDetails.getTgCustodian(), AD_CMPNY);
-                    } catch (FinderException ex) {
+                    }
+                    catch (FinderException ex) {
 
                     }
                     invTag.setAdUser(adUser);
                 }
             }
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             throw ex;
         }
     }
@@ -1792,7 +3643,8 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
             try {
 
                 tgLstDetails.setTgCustodian(invTag.getAdUser().getUsrName());
-            } catch (Exception ex) {
+            }
+            catch (Exception ex) {
                 tgLstDetails.setTgCustodian("");
             }
 
@@ -1803,10 +3655,148 @@ public class ApPurchaseOrderEntryControllerBean extends EJBContextClass implemen
         return list;
     }
 
+    private LocalApPurchaseOrderLine addApPlEntry(ApModPurchaseOrderLineDetails mdetails, LocalApPurchaseOrder apPurchaseOrder,
+                                                  LocalInvItemLocation invItemLocation, boolean newPurchaseOrder, Integer AD_CMPNY) {
+
+        Debug.print("ApPurchaseOrderEntryControllerBean addApPlEntry");
+
+        try {
+
+            short precisionUnit = this.getGlFcPrecisionUnit(AD_CMPNY);
+
+            double VLI_AMNT = 0d;
+            double VLI_TAX_AMNT = 0d;
+
+            // calculate net amount
+
+            LocalApTaxCode apTaxCode = apPurchaseOrder.getApTaxCode();
+
+            if (apTaxCode.getTcType().equals("INCLUSIVE")) {
+
+                VLI_AMNT = EJBCommon.roundIt(mdetails.getPlAmount() / (1 + (apTaxCode.getTcRate() / 100)), precisionUnit);
+
+            } else {
+
+                // tax exclusive, none, zero rated or exempt
+
+                VLI_AMNT = mdetails.getPlAmount();
+
+            }
+
+            // calculate tax
+
+            if (!apTaxCode.getTcType().equals("NONE") &&
+                    !apTaxCode.getTcType().equals("EXEMPT")) {
+
+
+                if (apTaxCode.getTcType().equals("INCLUSIVE")) {
+
+                    VLI_TAX_AMNT = EJBCommon.roundIt(mdetails.getPlAmount() - VLI_AMNT, precisionUnit);
+
+                } else if (apTaxCode.getTcType().equals("EXCLUSIVE")) {
+
+                    VLI_TAX_AMNT = EJBCommon.roundIt(mdetails.getPlAmount() * apTaxCode.getTcRate() / 100, precisionUnit);
+
+                } else {
+
+                    // tax none zero-rated or exempt
+
+                }
+
+            }
+
+            LocalApPurchaseOrderLine apPurchaseOrderLine = null;
+
+            apPurchaseOrderLine = apPurchaseOrderLineHome.create(
+                    mdetails.getPlLine(), mdetails.getPlQuantity(), mdetails.getPlUnitCost(),
+                    VLI_AMNT, mdetails.getPlQcNumber(), mdetails.getPlQcExpiryDate(), mdetails.getPlConversionFactor(), VLI_TAX_AMNT, apPurchaseOrder.getPoType().equals("PO MATCHED") ? mdetails.getPlPlCode() : null,
+                    mdetails.getPlDiscount1(), mdetails.getPlDiscount2(), mdetails.getPlDiscount3(),
+                    mdetails.getPlDiscount4(), mdetails.getPlTotalDiscount(), AD_CMPNY);
+
+            //apPurchaseOrder.addApPurchaseOrderLine(apPurchaseOrderLine);
+            apPurchaseOrderLine.setApPurchaseOrder(apPurchaseOrder);
+
+            //invItemLocation.addApPurchaseOrderLine(apPurchaseOrderLine);
+            apPurchaseOrderLine.setInvItemLocation(invItemLocation);
+
+            LocalInvUnitOfMeasure invUnitOfMeasure = invUnitOfMeasureHome.findByUomName(mdetails.getPlUomName(), AD_CMPNY);
+            //invUnitOfMeasure.addApPurchaseOrderLine(apPurchaseOrderLine);
+            apPurchaseOrderLine.setInvUnitOfMeasure(invUnitOfMeasure);
+
+            return apPurchaseOrderLine;
+
+        }
+        catch (Exception ex) {
+
+            Debug.printStackTrace(ex);
+            ctx.setRollbackOnly();
+            throw new EJBException(ex.getMessage());
+
+        }
+
+    }
+
+    private void addApDrPlEntry(short DR_LN, String DR_CLSS, byte DR_DBT, double DR_AMNT, Integer COA_CODE,
+                                LocalApPurchaseOrder apPurchaseOrder, Integer AD_BRNCH, Integer AD_CMPNY) throws
+            GlobalBranchAccountNumberInvalidException {
+
+        Debug.print("ApPurchaseOrderEntryControllerBean addApDrPlEntry");
+
+        try {
+
+            // get company
+
+            LocalAdCompany adCompany = adCompanyHome.findByPrimaryKey(AD_CMPNY);
+
+            LocalGlChartOfAccount glChartOfAccount = null;
+
+            try {
+
+                glChartOfAccount = glChartOfAccountHome.findByCoaCodeAndBranchCode(COA_CODE, AD_BRNCH, AD_CMPNY);
+
+                if (glChartOfAccount.getCoaEnable() == EJBCommon.FALSE) {
+                    throw new GlobalBranchAccountNumberInvalidException();
+                }
+
+            }
+            catch (FinderException ex) {
+
+                throw new GlobalBranchAccountNumberInvalidException();
+
+            }
+
+            // create distribution record
+
+            LocalApDistributionRecord apDistributionRecord = apDistributionRecordHome.create(
+                    DR_LN, DR_CLSS, EJBCommon.roundIt(DR_AMNT, adCompany.getGlFunctionalCurrency().getFcPrecision()),
+                    DR_DBT, EJBCommon.FALSE, EJBCommon.FALSE, AD_CMPNY);
+
+            //apPurchaseOrder.addApDistributionRecord(apDistributionRecord);
+            apDistributionRecord.setApPurchaseOrder(apPurchaseOrder);
+            //glChartOfAccount.addApDistributionRecord(apDistributionRecord);
+            apDistributionRecord.setGlChartOfAccount(glChartOfAccount);
+
+        }
+        catch (GlobalBranchAccountNumberInvalidException ex) {
+
+            throw ex;
+
+        }
+        catch (Exception ex) {
+
+            Debug.printStackTrace(ex);
+            ctx.setRollbackOnly();
+            throw new EJBException(ex.getMessage());
+
+        }
+
+    }
+
     // SessionBean methods
 
     public void ejbCreate() throws CreateException {
 
         Debug.print("ApPurchaseOrderEntryControllerBean ejbCreate");
     }
+
 }

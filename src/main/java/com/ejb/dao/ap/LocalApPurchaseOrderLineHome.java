@@ -3,7 +3,6 @@ package com.ejb.dao.ap;
 import com.ejb.PersistenceBeanClass;
 import com.ejb.entities.ap.LocalApPurchaseOrderLine;
 import com.util.Debug;
-
 import jakarta.ejb.CreateException;
 import jakarta.ejb.EJB;
 import jakarta.ejb.FinderException;
@@ -11,8 +10,11 @@ import jakarta.ejb.Stateless;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.ParameterMode;
 import jakarta.persistence.Query;
-import jakarta.persistence.StoredProcedureQuery;;
+import jakarta.persistence.StoredProcedureQuery;
+
 import java.util.Date;
+
+;
 
 @Stateless
 public class LocalApPurchaseOrderLineHome {
@@ -601,6 +603,40 @@ public class LocalApPurchaseOrderLineHome {
     }
 
     // CREATE METHODS
+
+    public LocalApPurchaseOrderLine create(short PL_LN, double PL_QTY, double PL_UNT_CST, double PL_AMNT,
+                                           String PL_QC_NUM, Date PL_QC_EXPRY_DT, double PL_CNVRSN_FCTR, double PL_TX_AMNT, Integer PL_PL_CODE,
+                                           double PL_DSCNT_1, double PL_DSCNT_2,  double PL_DSCNT_3, double PL_DSCNT_4, double TTL_PL_DSCNT,
+                                           Integer PL_AD_CMPNY) throws CreateException {
+
+        try {
+
+            LocalApPurchaseOrderLine entity = new LocalApPurchaseOrderLine();
+
+            Debug.print("ApPurchaseOrderLineBean create");
+            entity.setPlLine(PL_LN);
+            entity.setPlQuantity(PL_QTY);
+            entity.setPlUnitCost(PL_UNT_CST);
+            entity.setPlAmount(PL_AMNT);
+            entity.setPlQcNumber(PL_QC_NUM);
+            entity.setPlQcExpiryDate(PL_QC_EXPRY_DT);
+            entity.setPlConversionFactor(PL_CNVRSN_FCTR);
+            entity.setPlTaxAmount(PL_TX_AMNT);
+            entity.setPlPlCode(PL_PL_CODE);
+            entity.setPlDiscount1(PL_DSCNT_1);
+            entity.setPlDiscount2(PL_DSCNT_2);
+            entity.setPlDiscount3(PL_DSCNT_3);
+            entity.setPlDiscount4(PL_DSCNT_4);
+            entity.setPlTotalDiscount(TTL_PL_DSCNT);
+            entity.setPlAdCompany(PL_AD_CMPNY);
+
+            em.persist(entity);
+            return entity;
+        }
+        catch (Exception ex) {
+            throw new CreateException(ex.getMessage());
+        }
+    }
 
     public LocalApPurchaseOrderLine create(java.lang.Integer AP_PL_CODE, short PL_LN, double PL_QTY,
                                            double PL_UNT_CST, double PL_AMNT, String PL_QC_NUM, Date PL_QC_EXPRY_DT, String PL_RMRKS, double PL_CNVRSN_FCTR,

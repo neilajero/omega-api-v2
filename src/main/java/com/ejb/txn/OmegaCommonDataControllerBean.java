@@ -14,6 +14,7 @@ import com.ejb.entities.ar.LocalArTaxCode;
 import com.ejb.entities.gl.LocalGlFunctionalCurrency;
 import com.ejb.entities.gl.LocalGlFunctionalCurrencyRate;
 import com.ejb.entities.inv.LocalInvItem;
+import com.ejb.entities.inv.LocalInvUnitOfMeasure;
 import com.ejb.entities.inv.LocalInvUnitOfMeasureConversion;
 import com.ejb.exception.global.GlobalConversionDateNotExistException;
 import com.util.Debug;
@@ -182,6 +183,55 @@ public class OmegaCommonDataControllerBean extends EJBContextClass implements Om
 
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
+        }
+    }
+
+    @Override
+    public double convertByUomFromAndItemAndQuantity(LocalInvUnitOfMeasure invFromUnitOfMeasure, LocalInvItem invItem, double ADJST_QTY, Integer AD_CMPNY) {
+
+        Debug.print("OmegaCommonDataControllerBean convertByUomFromAndItemAndQuantity");
+
+        try {
+
+            LocalAdPreference adPreference = adPreferenceHome.findByPrfAdCompany(AD_CMPNY);
+            LocalInvUnitOfMeasureConversion invUnitOfMeasureConversion = invUnitOfMeasureConversionHome
+                    .findUmcByIiNameAndUomName(invItem.getIiName(), invFromUnitOfMeasure.getUomName(), AD_CMPNY);
+            LocalInvUnitOfMeasureConversion invDefaultUomConversion = invUnitOfMeasureConversionHome
+                    .findUmcByIiNameAndUomName(invItem.getIiName(), invItem.getInvUnitOfMeasure().getUomName(), AD_CMPNY);
+
+            return EJBCommon.roundIt(ADJST_QTY * invDefaultUomConversion.getUmcConversionFactor()
+                    / invUnitOfMeasureConversion.getUmcConversionFactor(), adPreference.getPrfInvQuantityPrecisionUnit());
+
+        } catch (Exception ex) {
+
+            Debug.printStackTrace(ex);
+
+            ctx.setRollbackOnly();
+            throw new EJBException(ex.getMessage());
+
+        }
+    }
+
+    @Override
+    public double convertByUomAndQuantity(LocalInvUnitOfMeasure invFromUnitOfMeasure, LocalInvItem invItem, double ADJST_QTY, Integer AD_CMPNY) {
+
+        Debug.print("OmegaCommonDataControllerBean convertByUomAndQuantity");
+
+        try {
+
+            LocalAdPreference adPreference = adPreferenceHome.findByPrfAdCompany(AD_CMPNY);
+
+            LocalInvUnitOfMeasureConversion invUnitOfMeasureConversion = invUnitOfMeasureConversionHome.findUmcByIiNameAndUomName(invItem.getIiName(), invFromUnitOfMeasure.getUomName(), AD_CMPNY);
+            LocalInvUnitOfMeasureConversion invDefaultUomConversion = invUnitOfMeasureConversionHome.findUmcByIiNameAndUomName(invItem.getIiName(), invItem.getInvUnitOfMeasure().getUomName(), AD_CMPNY);
+
+            return EJBCommon.roundIt(ADJST_QTY * invDefaultUomConversion.getUmcConversionFactor() / invUnitOfMeasureConversion.getUmcConversionFactor(), adPreference.getPrfInvQuantityPrecisionUnit());
+
+        } catch (Exception ex) {
+
+            Debug.printStackTrace(ex);
+            ctx.setRollbackOnly();
+            throw new EJBException(ex.getMessage());
+
         }
     }
 

@@ -22,6 +22,9 @@ import java.util.Date;
 @Local
 public interface ArInvoiceEntryController {
 
+    Integer saveArInvEntry(ArModInvoiceDetails details, String taxCode, int customerCode, double drTotalAmount, Integer branchCode, Integer companyCode)
+            throws GlobalDocumentNumberNotUniqueException;
+
     Integer saveArInvEntry(ArInvoiceDetails details, String paymentName, String taxCode, String withholdingTaxCode,
                            String currencyName, String customerCode, String invoiceBatchName, ArrayList invoiceLines, boolean isDraft,
                            String salesPersonCode, String projectCode, String projectTypeCode, String projectPhaseName,

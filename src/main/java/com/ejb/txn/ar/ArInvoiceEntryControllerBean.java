@@ -32,8 +32,8 @@ import com.util.mod.ar.*;
 import com.util.mod.inv.InvModLineItemDetails;
 import com.util.mod.inv.InvModTagListDetails;
 import com.util.mod.inv.InvModUnitOfMeasureDetails;
-
 import jakarta.ejb.*;
+
 import java.util.*;
 
 @Stateless(name = "ArInvoiceEntryControllerEJB")
@@ -181,6 +181,259 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
     private LocalArAppliedInvoiceHome arAppliedInvoiceHome;
 
 
+    @Override
+    public Integer saveArInvEntry(
+            ArModInvoiceDetails details, String taxCode, int customerCode, double drTotalAmount,
+            Integer branchCode, Integer companyCode)
+            throws GlobalDocumentNumberNotUniqueException {
+
+        Debug.print("ArInvoiceEntryControllerBean saveArInvEntry");
+        LocalArInvoice arInvoice;
+
+        try {
+
+            // validate if document number is unique document number is automatic then set next sequence
+            LocalArInvoice arExistingInvoice = null;
+            try {
+                arExistingInvoice = arInvoiceHome.findByInvNumberAndInvCreditMemoAndBrCode(
+                        details.getInvNumber(), EJBCommon.FALSE, branchCode, companyCode);
+            }
+            catch (FinderException ex) {
+            }
+
+            // create invoice
+            details.setInvConversionDate(null);
+            details.setInvConversionRate(1);
+
+            arInvoice = arInvoiceHome.create("ITEMS", EJBCommon.FALSE,
+                    details.getInvDescription(), details.getInvDate(),
+                    details.getInvNumber(), details.getInvReferenceNumber(), details.getInvUploadNumber(), null, null,
+                    0d, 0d, 0d, 0d, 0d, 0d, details.getInvConversionDate(), details.getInvConversionRate(), details.getInvMemo(),
+                    0d, 0d, details.getInvBillToAddress(), details.getInvBillToContact(), details.getInvBillToAltContact(),
+                    details.getInvBillToPhone(), details.getInvBillingHeader(), details.getInvBillingFooter(),
+                    details.getInvBillingHeader2(), details.getInvBillingFooter2(), details.getInvBillingHeader3(),
+                    details.getInvBillingFooter3(), details.getInvBillingSignatory(), details.getInvSignatoryTitle(),
+                    details.getInvShipToAddress(), details.getInvShipToContact(), details.getInvShipToAltContact(),
+                    details.getInvShipToPhone(), details.getInvShipDate(), details.getInvLvFreight(),
+                    null, null,
+                    EJBCommon.FALSE,
+                    null, EJBCommon.FALSE, EJBCommon.FALSE,
+                    EJBCommon.FALSE, EJBCommon.FALSE,
+                    EJBCommon.FALSE, null, 0d, null, null, null, null,
+                    details.getInvCreatedBy(), details.getInvDateCreated(),
+                    details.getInvLastModifiedBy(), details.getInvDateLastModified(),
+                    null, null, null, null, EJBCommon.FALSE, null, null, null, details.getInvDebitMemo(),
+                    details.getInvSubjectToCommission(), null, details.getInvDate(), branchCode, companyCode);
+
+            LocalAdCompany adCompany = adCompanyHome.findByPrimaryKey(companyCode);
+
+            LocalArCustomer arCustomer = arCustomerHome.findByPrimaryKey(customerCode);
+            arInvoice.setArCustomer(arCustomer);
+
+            LocalAdPaymentTerm adPaymentTerm = arCustomer.getAdPaymentTerm();
+            arInvoice.setAdPaymentTerm(adPaymentTerm);
+
+            LocalGlFunctionalCurrency glFunctionalCurrency = adCompany.getGlFunctionalCurrency();
+            arInvoice.setGlFunctionalCurrency(glFunctionalCurrency);
+
+            LocalArTaxCode arTaxCode = arTaxCodeHome.findByTcName(taxCode, companyCode);
+            arInvoice.setArTaxCode(arTaxCode);
+
+            LocalArWithholdingTaxCode arWithholdingTaxCode = arCustomer.getArCustomerClass().getArWithholdingTaxCode();
+            arInvoice.setArWithholdingTaxCode(arWithholdingTaxCode);
+
+            double amountDue = 0;
+
+            // add new invoice lines and distribution record
+            double TOTAL_TAX = 0d;
+            double TOTAL_LINE = 0d;
+            double TOTAL_UNTAXABLE = 0d;
+
+            Iterator i = details.getInvIlList().iterator();
+            while (i.hasNext()) {
+
+                ArModInvoiceLineDetails mInvDetails = (ArModInvoiceLineDetails) i.next();
+                LocalArInvoiceLine arInvoiceLine = this.addArIlEntry(mInvDetails, arInvoice, companyCode);
+
+                // add revenue/credit distributions
+                this.addArDrEntry(arInvoice.getArDrNextLine(),
+                        "REVENUE", EJBCommon.FALSE, arInvoiceLine.getIlAmount(),
+                        this.getArGlCoaRevenueAccount(arInvoiceLine, branchCode, companyCode), null, arInvoice, branchCode, companyCode);
+
+                TOTAL_LINE += arInvoiceLine.getIlAmount();
+                TOTAL_TAX += arInvoiceLine.getIlTaxAmount();
+
+                if (arInvoiceLine.getIlTax() == EJBCommon.FALSE) {
+                    TOTAL_UNTAXABLE += arInvoiceLine.getIlAmount();
+                }
+            }
+
+            // add tax distribution if necessary
+            if (!arTaxCode.getTcType().equals("NONE") &&
+                    !arTaxCode.getTcType().equals("EXEMPT")) {
+
+                if (arTaxCode.getTcInterimAccount() == null) {
+                    this.addArDrEntry(arInvoice.getArDrNextLine(),
+                            "TAX", EJBCommon.FALSE, TOTAL_TAX, arTaxCode.getGlChartOfAccount().getCoaCode(),
+                            null, arInvoice, branchCode, companyCode);
+                } else {
+                    this.addArDrEntry(arInvoice.getArDrNextLine(),
+                            "DEFERRED TAX", EJBCommon.FALSE, TOTAL_TAX, arTaxCode.getTcInterimAccount(),
+                            null, arInvoice, branchCode, companyCode);
+                }
+            }
+
+            // add wtax distribution if necessary
+            LocalAdPreference adPreference = adPreferenceHome.findByPrfAdCompany(companyCode);
+            double W_TAX_AMOUNT = 0d;
+            if (arWithholdingTaxCode.getWtcRate() != 0 && adPreference.getPrfArWTaxRealization().equals("INVOICE")) {
+                W_TAX_AMOUNT = EJBCommon.roundIt((TOTAL_LINE - TOTAL_UNTAXABLE) * (arWithholdingTaxCode.getWtcRate() / 100), commonData.getGlFcPrecisionUnit(companyCode));
+                this.addArDrEntry(arInvoice.getArDrNextLine(), "W-TAX",
+                        EJBCommon.TRUE, W_TAX_AMOUNT, arWithholdingTaxCode.getGlChartOfAccount().getCoaCode(),
+                        null, arInvoice, branchCode, companyCode);
+
+            }
+
+            // add payment discount if necessary
+            double DISCOUNT_AMT = 0d;
+
+            if (adPaymentTerm.getPytDiscountOnInvoice() == EJBCommon.TRUE) {
+
+                Collection adPaymentSchedules = adPaymentScheduleHome.findByPytCode(adPaymentTerm.getPytCode(), companyCode);
+                ArrayList adPaymentScheduleList = new ArrayList(adPaymentSchedules);
+                LocalAdPaymentSchedule adPaymentSchedule = (LocalAdPaymentSchedule) adPaymentScheduleList.get(0);
+
+                Collection adDiscounts = adDiscountHome.findByPsCode(adPaymentSchedule.getPsCode(), companyCode);
+                ArrayList adDiscountList = new ArrayList(adDiscounts);
+                LocalAdDiscount adDiscount = (LocalAdDiscount) adDiscountList.get(0);
+
+                double rate = adDiscount.getDscDiscountPercent();
+                DISCOUNT_AMT = (TOTAL_LINE + TOTAL_TAX) * (rate / 100d);
+
+                this.addArDrIliEntry(arInvoice.getArDrNextLine(), "DISCOUNT",
+                        EJBCommon.TRUE, DISCOUNT_AMT,
+                        adPaymentTerm.getGlChartOfAccount().getCoaCode(),
+                        arInvoice, branchCode, companyCode);
+
+            }
+
+            // add receivable distribution
+            try {
+
+                LocalAdBranchCustomer adBranchCustomer = adBranchCustomerHome.findBcstByCstCodeAndBrCode(arInvoice.getArCustomer().getCstCode(), branchCode, companyCode);
+
+                this.addArDrEntry(arInvoice.getArDrNextLine(), "RECEIVABLE",
+                        EJBCommon.TRUE, drTotalAmount + TOTAL_LINE + TOTAL_TAX - W_TAX_AMOUNT - DISCOUNT_AMT,
+                        adBranchCustomer.getBcstGlCoaReceivableAccount(),
+                        null, arInvoice, branchCode, companyCode);
+
+                this.addArDrEntry(arInvoice.getArDrNextLine(), "REVENUE",
+                        EJBCommon.FALSE, drTotalAmount, adBranchCustomer.getBcstGlCoaReceivableAccount(),
+                        null, arInvoice, branchCode, companyCode);
+
+            }
+            catch (FinderException ex) {
+
+            }
+
+            // compute invoice amount due
+            amountDue = TOTAL_LINE + TOTAL_TAX - W_TAX_AMOUNT - DISCOUNT_AMT;
+
+            //set invoice amount due
+            arInvoice.setInvAmountDue(amountDue);
+
+            // remove all payment schedule
+            Collection arInvoicePaymentSchedules = arInvoice.getArInvoicePaymentSchedules();
+            i = arInvoicePaymentSchedules.iterator();
+            while (i.hasNext()) {
+                LocalArInvoicePaymentSchedule arInvoicePaymentSchedule = (LocalArInvoicePaymentSchedule) i.next();
+                i.remove();
+                em.remove(arInvoicePaymentSchedule);
+            }
+
+            // create invoice payment schedule
+            short precisionUnit = commonData.getGlFcPrecisionUnit(companyCode);
+            double TOTAL_PAYMENT_SCHEDULE = 0d;
+
+            GregorianCalendar gcPrevDateDue = new GregorianCalendar();
+            GregorianCalendar gcDateDue = new GregorianCalendar();
+            gcPrevDateDue.setTime(arInvoice.getInvEffectivityDate());
+
+            Collection adPaymentSchedules = adPaymentTerm.getAdPaymentSchedules();
+            i = adPaymentSchedules.iterator();
+            while (i.hasNext()) {
+                LocalAdPaymentSchedule adPaymentSchedule = (LocalAdPaymentSchedule) i.next();
+                // get date due
+                switch (arInvoice.getAdPaymentTerm().getPytScheduleBasis()) {
+                    case "DEFAULT" -> {
+                        gcDateDue.setTime(arInvoice.getInvEffectivityDate());
+                        gcDateDue.add(Calendar.DATE, adPaymentSchedule.getPsDueDay());
+                    }
+                    case "MONTHLY" -> {
+                        gcDateDue = gcPrevDateDue;
+                        gcDateDue.add(Calendar.MONTH, 1);
+                        gcPrevDateDue = gcDateDue;
+                    }
+                    case "BI-MONTHLY" -> {
+                        gcDateDue = gcPrevDateDue;
+                        if (gcPrevDateDue.get(Calendar.MONTH) != 1) {
+                            if (gcPrevDateDue.getActualMaximum(Calendar.DATE) == 31
+                                    && gcPrevDateDue.get(Calendar.DATE) > 15 && gcPrevDateDue.get(Calendar.DATE) < 31) {
+                                gcDateDue.add(Calendar.DATE, 16);
+                            } else {
+                                gcDateDue.add(Calendar.DATE, 15);
+                            }
+                        } else if (gcPrevDateDue.get(Calendar.MONTH) == 1) {
+                            if (gcPrevDateDue.getActualMaximum(Calendar.DATE) == 28
+                                    && gcPrevDateDue.get(Calendar.DATE) == 14) {
+                                gcDateDue.add(Calendar.DATE, 14);
+                            } else if (gcPrevDateDue.getActualMaximum(Calendar.DATE) == 28
+                                    && gcPrevDateDue.get(Calendar.DATE) >= 15 && gcPrevDateDue.get(Calendar.DATE) < 28) {
+                                gcDateDue.add(Calendar.DATE, 13);
+                            } else if (gcPrevDateDue.getActualMaximum(Calendar.DATE) == 29
+                                    && gcPrevDateDue.get(Calendar.DATE) >= 15 && gcPrevDateDue.get(Calendar.DATE) < 29) {
+                                gcDateDue.add(Calendar.DATE, 14);
+                            } else {
+                                gcDateDue.add(Calendar.DATE, 15);
+                            }
+                        }
+                        gcPrevDateDue = gcDateDue;
+                    }
+                }
+
+                // create a payment schedule
+                double PAYMENT_SCHEDULE_AMOUNT = 0;
+
+                // if last payment schedule subtract to avoid rounding difference error
+                if (i.hasNext()) {
+                    PAYMENT_SCHEDULE_AMOUNT = EJBCommon.roundIt(
+                            (adPaymentSchedule.getPsRelativeAmount() / adPaymentTerm.getPytBaseAmount()) * arInvoice.getInvAmountDue(), precisionUnit);
+                } else {
+                    PAYMENT_SCHEDULE_AMOUNT = arInvoice.getInvAmountDue() - TOTAL_PAYMENT_SCHEDULE;
+
+                }
+
+                LocalArInvoicePaymentSchedule arInvoicePaymentSchedule =
+                        arInvoicePaymentScheduleHome.create(gcDateDue.getTime(),
+                                adPaymentSchedule.getPsLineNumber(),
+                                PAYMENT_SCHEDULE_AMOUNT,
+                                0d, EJBCommon.FALSE,
+                                (short) 0, gcDateDue.getTime(), 0d, 0d,
+                                companyCode);
+
+                arInvoicePaymentSchedule.setArInvoice(arInvoice);
+                TOTAL_PAYMENT_SCHEDULE += PAYMENT_SCHEDULE_AMOUNT;
+            }
+            arInvoice.setInvApprovalStatus(null);
+            return 1;
+        }
+        catch (Exception ex) {
+            Debug.printStackTrace(ex);
+            ctx.setRollbackOnly();
+            throw new EJBException(ex.getMessage());
+        }
+    }
+
     public Integer saveArInvEntry(ArInvoiceDetails details, String paymentName, String taxCode, String withholdingTaxCode,
                                   String currencyName, String customerCode, String invoiceBatchName, ArrayList invoiceLines,
                                   boolean isDraft, String salesPersonCode, String projectCode, String projectTypeCode,
@@ -217,18 +470,21 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                     } else {
                         documentType = EJBCommon.AR_INVOICE;
                     }
-                } catch (FinderException ex) {
+                }
+                catch (FinderException ex) {
                     documentType = EJBCommon.AR_INVOICE;
                 }
 
                 try {
                     adDocumentSequenceAssignment = adDocumentSequenceAssignmentHome.findByDcName(documentType, companyCode);
-                } catch (FinderException ex) {
+                }
+                catch (FinderException ex) {
                 }
 
                 try {
                     adBranchDocumentSequenceAssignment = adBranchDocumentSequenceAssignmentHome.findBdsByDsaCodeAndBrCode(adDocumentSequenceAssignment.getDsaCode(), branchCode, companyCode);
-                } catch (FinderException ex) {
+                }
+                catch (FinderException ex) {
                 }
 
                 try {
@@ -236,7 +492,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                     if (arExistingInvoice != null) {
                         throw new GlobalDocumentNumberNotUniqueException();
                     }
-                } catch (FinderException ex) {
+                }
+                catch (FinderException ex) {
                 }
 
                 if (adDocumentSequenceAssignment.getAdDocumentSequence().getDsNumberingType() == 'A' && (details.getInvNumber() == null || details.getInvNumber().trim().length() == 0)) {
@@ -249,7 +506,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                             arInvoiceHome.findByUploadNumberAndCompanyCode(details.getInvUploadNumber(), companyCode);
                             // throw exception if found duplicate upload number
                             throw new ArInvDuplicateUploadNumberException();
-                        } catch (FinderException ex) {
+                        }
+                        catch (FinderException ex) {
 
                         }
                     }
@@ -257,7 +515,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             } else {
                 try {
                     arExistingInvoice = arInvoiceHome.findByInvNumberAndInvCreditMemoAndBrCode(details.getInvNumber(), EJBCommon.FALSE, branchCode, companyCode);
-                } catch (FinderException ex) {
+                }
+                catch (FinderException ex) {
                 }
                 if (arExistingInvoice != null && !arExistingInvoice.getInvCode().equals(details.getInvCode())) {
                     throw new GlobalDocumentNumberNotUniqueException();
@@ -441,7 +700,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                 try {
                     LocalAdBranchCustomer adBranchCustomer = adBranchCustomerHome.findBcstByCstCodeAndBrCode(arInvoice.getArCustomer().getCstCode(), branchCode, companyCode);
                     this.addArDrEntry(arInvoice.getArDrNextLine(), EJBCommon.RECEIVABLE, EJBCommon.TRUE, convertedAmountDue, adBranchCustomer.getBcstGlCoaReceivableAccount(), null, arInvoice, branchCode, companyCode);
-                } catch (FinderException ex) {
+                }
+                catch (FinderException ex) {
                     this.addArDrEntry(arInvoice.getArDrNextLine(), EJBCommon.RECEIVABLE, EJBCommon.TRUE, convertedAmountDue, arCustomer.getCstGlCoaReceivableAccount(), null, arInvoice, branchCode, companyCode);
                 }
 
@@ -578,19 +838,21 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             arInvoice.setInvApprovalStatus(invoiceApprovalStatus);
             return arInvoice.getInvCode();
 
-        } catch (GlobalRecordAlreadyDeletedException | ArInvDuplicateUploadNumberException |
-                 GlobalBranchAccountNumberInvalidException | GlobalJournalNotBalanceException |
-                 GlJREffectiveDatePeriodClosedException | GlJREffectiveDateNoPeriodExistException |
-                 GlobalNoApprovalApproverFoundException | GlobalNoApprovalRequesterFoundException |
-                 GlobalTransactionAlreadyVoidException | GlobalTransactionAlreadyPostedException |
-                 GlobalTransactionAlreadyPendingException | GlobalTransactionAlreadyApprovedException |
-                 ArINVAmountExceedsCreditLimitException | GlobalPaymentTermInvalidException |
-                 GlobalConversionDateNotExistException | GlobalDocumentNumberNotUniqueException ex) {
+        }
+        catch (GlobalRecordAlreadyDeletedException | ArInvDuplicateUploadNumberException |
+               GlobalBranchAccountNumberInvalidException | GlobalJournalNotBalanceException |
+               GlJREffectiveDatePeriodClosedException | GlJREffectiveDateNoPeriodExistException |
+               GlobalNoApprovalApproverFoundException | GlobalNoApprovalRequesterFoundException |
+               GlobalTransactionAlreadyVoidException | GlobalTransactionAlreadyPostedException |
+               GlobalTransactionAlreadyPendingException | GlobalTransactionAlreadyApprovedException |
+               ArINVAmountExceedsCreditLimitException | GlobalPaymentTermInvalidException |
+               GlobalConversionDateNotExistException | GlobalDocumentNumberNotUniqueException ex) {
 
             getSessionContext().setRollbackOnly();
             throw ex;
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             getSessionContext().setRollbackOnly();
@@ -628,7 +890,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                     adDocumentSequenceAssignment = adDocumentSequenceAssignmentHome.findByDcName(EJBCommon.AR_INVOICE, companyCode);
                     adBranchDocumentSequenceAssignment = adBranchDocumentSequenceAssignmentHome.findBdsByDsaCodeAndBrCode(adDocumentSequenceAssignment.getDsaCode(), branchCode, companyCode);
                     arExistingInvoice = arInvoiceHome.findByInvNumberAndInvCreditMemoAndBrCode(invoiceDetails.getInvNumber(), EJBCommon.FALSE, branchCode, companyCode);
-                } catch (FinderException ex) {
+                }
+                catch (FinderException ex) {
                 }
 
                 if (arExistingInvoice != null) {
@@ -645,7 +908,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             } else {
                 try {
                     arExistingInvoice = arInvoiceHome.findByInvNumberAndInvCreditMemoAndBrCode(invoiceDetails.getInvNumber(), EJBCommon.FALSE, branchCode, companyCode);
-                } catch (FinderException ex) {
+                }
+                catch (FinderException ex) {
                 }
 
                 if (arExistingInvoice != null && !arExistingInvoice.getInvCode().equals(invoiceDetails.getInvCode())) {
@@ -662,7 +926,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                         arInvoiceHome.findByUploadNumberAndCompanyCode(invoiceDetails.getInvUploadNumber(), companyCode);
                         // throw exception if found duplicate upload number
                         throw new ArInvDuplicateUploadNumberException();
-                    } catch (FinderException ex) {
+                    }
+                    catch (FinderException ex) {
                     }
                 }
             }
@@ -853,7 +1118,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                         } else if (invCosting.getInvItemLocation().getInvItem().getIiCostMethod().equals(EJBCommon.Standard)) {
                             unitCost = invItemLocation.getInvItem().getIiUnitCost();
                         }
-                    } catch (FinderException ex) {
+                    }
+                    catch (FinderException ex) {
                         unitCost = arInvoiceLineItem.getInvItemLocation().getInvItem().getIiUnitCost();
                     }
 
@@ -862,7 +1128,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                     try {
                         lineNumberError = arInvoiceLineItem.getIliLine();
                         adBranchItemLocation = adBranchItemLocationHome.findBilByIlCodeAndBrCode(arInvoiceLineItem.getInvItemLocation().getIlCode(), branchCode, companyCode);
-                    } catch (FinderException ex) {
+                    }
+                    catch (FinderException ex) {
                     }
 
                     if (adPreference.getPrfArAutoComputeCogs() == EJBCommon.TRUE && arInvoiceLineItem.getInvItemLocation().getInvItem().getIiNonInventoriable() == EJBCommon.FALSE) {
@@ -926,7 +1193,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                         LocalAdBranchArTaxCode adBranchTaxCode = null;
                         try {
                             adBranchTaxCode = adBranchArTaxCodeHome.findBtcByTcCodeAndBrCode(arInvoice.getArTaxCode().getTcCode(), branchCode, companyCode);
-                        } catch (FinderException ex) {
+                        }
+                        catch (FinderException ex) {
                         }
                         if (adBranchTaxCode != null) {
                             this.addArDrEntry(arInvoice.getArDrNextLine(), EJBCommon.TAX, EJBCommon.FALSE, convertedTotalTax, adBranchTaxCode.getBtcGlCoaTaxCode(), null, arInvoice, branchCode, companyCode);
@@ -970,7 +1238,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                     LocalAdBranchCustomer adBranchCustomer = adBranchCustomerHome.findBcstByCstCodeAndBrCode(arInvoice.getArCustomer().getCstCode(), branchCode, companyCode);
                     double convertedAmountDue = this.convertForeignToFunctionalCurrency(arInvoice.getGlFunctionalCurrency().getFcCode(), arInvoice.getGlFunctionalCurrency().getFcName(), arInvoice.getInvConversionDate(), arInvoice.getInvConversionRate(), amountDue, companyCode);
                     this.addArDrIliEntry(arInvoice.getArDrNextLine(), EJBCommon.RECEIVABLE, EJBCommon.TRUE, convertedAmountDue, adBranchCustomer.getBcstGlCoaReceivableAccount(), arInvoice, branchCode, companyCode);
-                } catch (FinderException ex) {
+                }
+                catch (FinderException ex) {
                 }
 
                 if (totalNetDiscountAmount > 0) {
@@ -984,7 +1253,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                                 discountCoa = chartOfAccount.getCoaCode();
                             }
                         }
-                    } catch (FinderException ex) {
+                    }
+                    catch (FinderException ex) {
                         throw new GlobalBranchAccountNumberInvalidException();
                     }
 
@@ -999,7 +1269,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                     LocalAdBranchArTaxCode adBranchTaxCode = null;
                     try {
                         adBranchTaxCode = adBranchArTaxCodeHome.findBtcByTcCodeAndBrCode(arInvoice.getArTaxCode().getTcCode(), branchCode, companyCode);
-                    } catch (FinderException ex) {
+                    }
+                    catch (FinderException ex) {
                     }
 
                     if (adBranchTaxCode != null) {
@@ -1127,7 +1398,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
 
                     try {
                         invCosting = invCostingHome.getByMaxCstDateToLongAndMaxCstLineNumberAndLessThanEqualCstDateAndIiNameAndLocName(arInvoice.getInvDate(), arInvoiceLineItem.getInvItemLocation().getInvItem().getIiName(), arInvoiceLineItem.getInvItemLocation().getInvLocation().getLocName(), branchCode, companyCode);
-                    } catch (FinderException ex) {
+                    }
+                    catch (FinderException ex) {
                     }
 
                     double lowestQuantity = this.convertByUomAndQuantity(arInvoiceLineItem.getInvUnitOfMeasure(), arInvoiceLineItem.getInvItemLocation().getInvItem(), 1, companyCode);
@@ -1176,24 +1448,27 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             arInvoice.setInvApprovalStatus(invoiceApprovalStatus);
             return arInvoice.getInvCode();
 
-        } catch (GlobalRecordAlreadyDeletedException | ArInvDuplicateUploadNumberException |
-                 GlobalMiscInfoIsRequiredException | GlobalExpiryDateNotFoundException | GlobalRecordInvalidException |
-                 AdPRFCoaGlVarianceAccountNotFoundException | GlobalInventoryDateException |
-                 GlobalJournalNotBalanceException | GlJREffectiveDatePeriodClosedException |
-                 GlJREffectiveDateNoPeriodExistException | GlobalInvItemLocationNotFoundException |
-                 GlobalNoApprovalApproverFoundException | GlobalNoApprovalRequesterFoundException |
-                 GlobalTransactionAlreadyVoidException | GlobalTransactionAlreadyPostedException |
-                 GlobalTransactionAlreadyPendingException | GlobalTransactionAlreadyApprovedException |
-                 ArINVAmountExceedsCreditLimitException | GlobalPaymentTermInvalidException |
-                 GlobalConversionDateNotExistException | GlobalDocumentNumberNotUniqueException ex) {
+        }
+        catch (GlobalRecordAlreadyDeletedException | ArInvDuplicateUploadNumberException |
+               GlobalMiscInfoIsRequiredException | GlobalExpiryDateNotFoundException | GlobalRecordInvalidException |
+               AdPRFCoaGlVarianceAccountNotFoundException | GlobalInventoryDateException |
+               GlobalJournalNotBalanceException | GlJREffectiveDatePeriodClosedException |
+               GlJREffectiveDateNoPeriodExistException | GlobalInvItemLocationNotFoundException |
+               GlobalNoApprovalApproverFoundException | GlobalNoApprovalRequesterFoundException |
+               GlobalTransactionAlreadyVoidException | GlobalTransactionAlreadyPostedException |
+               GlobalTransactionAlreadyPendingException | GlobalTransactionAlreadyApprovedException |
+               ArINVAmountExceedsCreditLimitException | GlobalPaymentTermInvalidException |
+               GlobalConversionDateNotExistException | GlobalDocumentNumberNotUniqueException ex) {
             getSessionContext().setRollbackOnly();
             throw ex;
-        } catch (GlobalBranchAccountNumberInvalidException ex) {
+        }
+        catch (GlobalBranchAccountNumberInvalidException ex) {
             // Retrieve Error a Line Number
             ex.setLineNumberError(lineNumberError);
             getSessionContext().setRollbackOnly();
             throw ex;
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             getSessionContext().setRollbackOnly();
             throw new EJBException(ex.getMessage());
@@ -1233,24 +1508,28 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                     } else {
                         documentType = EJBCommon.AR_INVOICE;
                     }
-                } catch (FinderException ex) {
+                }
+                catch (FinderException ex) {
                     documentType = EJBCommon.AR_INVOICE;
                 }
 
                 try {
                     adDocumentSequenceAssignment = adDocumentSequenceAssignmentHome.findByDcName(documentType, companyCode);
-                } catch (FinderException ex) {
+                }
+                catch (FinderException ex) {
                 }
                 try {
                     adBranchDocumentSequenceAssignment = adBranchDocumentSequenceAssignmentHome.findBdsByDsaCodeAndBrCode(adDocumentSequenceAssignment.getDsaCode(), branchCode, companyCode);
-                } catch (FinderException ex) {
+                }
+                catch (FinderException ex) {
 
                 }
 
                 LocalArInvoice arExistingInvoice = null;
                 try {
                     arExistingInvoice = arInvoiceHome.findByInvNumberAndInvCreditMemoAndBrCode(details.getInvNumber(), EJBCommon.FALSE, branchCode, companyCode);
-                } catch (FinderException ex) {
+                }
+                catch (FinderException ex) {
                 }
 
                 if (arExistingInvoice != null) {
@@ -1267,7 +1546,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                 LocalArInvoice arExistingInvoice = null;
                 try {
                     arExistingInvoice = arInvoiceHome.findByInvNumberAndInvCreditMemoAndBrCode(details.getInvNumber(), EJBCommon.FALSE, branchCode, companyCode);
-                } catch (FinderException ex) {
+                }
+                catch (FinderException ex) {
                 }
 
                 if (arExistingInvoice != null && !arExistingInvoice.getInvCode().equals(details.getInvCode())) {
@@ -1300,7 +1580,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                     }
                     arExistingSalesOrder.setSoLock(EJBCommon.TRUE);
                 }
-            } catch (FinderException ex) {
+            }
+            catch (FinderException ex) {
             }
 
             // used in checking if invoice should re-generate distribution records and re-calculate taxes
@@ -1434,7 +1715,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                     ArModSalesOrderLineDetails mSolDetails = (ArModSalesOrderLineDetails) i.next();
                     try {
                         invItemLocation = invItemLocationHome.findByLocNameAndIiName(mSolDetails.getSolLocName(), mSolDetails.getSolIiName(), companyCode);
-                    } catch (FinderException ex) {
+                    }
+                    catch (FinderException ex) {
                         throw new GlobalInvItemLocationNotFoundException(String.valueOf(mSolDetails.getSolLine()));
                     }
                     // start date validation
@@ -1479,7 +1761,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                             unitCost = invItemLocation.getInvItem().getIiUnitCost();
                         }
 
-                    } catch (FinderException ex) {
+                    }
+                    catch (FinderException ex) {
 
                         unitCost = arSalesOrderLine.getInvItemLocation().getInvItem().getIiUnitCost();
                     }
@@ -1493,7 +1776,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                         lineNumberError = arSalesOrderLine.getSolLine();
                         adBranchItemLocation = adBranchItemLocationHome.findBilByIlCodeAndBrCode(arSalesOrderLine.getInvItemLocation().getIlCode(), branchCode, companyCode);
 
-                    } catch (FinderException ex) {
+                    }
+                    catch (FinderException ex) {
 
                     }
 
@@ -1556,7 +1840,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                         LocalAdBranchArTaxCode adBranchTaxCode = null;
                         try {
                             adBranchTaxCode = adBranchArTaxCodeHome.findBtcByTcCodeAndBrCode(arInvoice.getArTaxCode().getTcCode(), branchCode, companyCode);
-                        } catch (FinderException ex) {
+                        }
+                        catch (FinderException ex) {
                         }
 
                         if (adBranchTaxCode != null) {
@@ -1582,7 +1867,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                         this.addArDrEntry(arInvoice.getArDrNextLine(), "UNINTEREST", EJBCommon.FALSE, convertedUnearnedInterestAmount, adBranchCustomer.getBcstGlCoaUnEarnedInterestAccount(), null, arInvoice, branchCode, companyCode);
 
                         this.addArDrIliEntry(arInvoice.getArDrNextLine(), "RECEIVABLE INTEREST", EJBCommon.TRUE, convertedUnearnedInterestAmount, adBranchCustomer.getBcstGlCoaReceivableAccount(), arInvoice, branchCode, companyCode);
-                    } catch (FinderException ex) {
+                    }
+                    catch (FinderException ex) {
                     }
                 }
                 arInvoice.setInvAmountUnearnedInterest(unearnedInterestAmount);
@@ -1620,7 +1906,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                     LocalAdBranchCustomer adBranchCustomer = adBranchCustomerHome.findBcstByCstCodeAndBrCode(arInvoice.getArCustomer().getCstCode(), branchCode, companyCode);
                     double convertedAmountDue = this.convertForeignToFunctionalCurrency(arInvoice.getGlFunctionalCurrency().getFcCode(), arInvoice.getGlFunctionalCurrency().getFcName(), arInvoice.getInvConversionDate(), arInvoice.getInvConversionRate(), amountDue, companyCode);
                     this.addArDrIliEntry(arInvoice.getArDrNextLine(), "RECEIVABLE", EJBCommon.TRUE, convertedAmountDue, adBranchCustomer.getBcstGlCoaReceivableAccount(), arInvoice, branchCode, companyCode);
-                } catch (FinderException ex) {
+                }
+                catch (FinderException ex) {
                 }
 
                 // compute invoice amount due
@@ -1779,24 +2066,27 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             arInvoice.setInvApprovalStatus(invoiceApprovalStatus);
             return arInvoice.getInvCode();
 
-        } catch (GlobalRecordAlreadyDeletedException | ArInvDuplicateUploadNumberException |
-                 GlobalExpiryDateNotFoundException | AdPRFCoaGlVarianceAccountNotFoundException |
-                 ArINVAmountExceedsCreditLimitException | GlobalInventoryDateException |
-                 GlobalTransactionAlreadyLockedException | GlobalJournalNotBalanceException |
-                 GlJREffectiveDatePeriodClosedException | GlJREffectiveDateNoPeriodExistException |
-                 GlobalInvItemLocationNotFoundException | GlobalNoApprovalApproverFoundException |
-                 GlobalNoApprovalRequesterFoundException | GlobalTransactionAlreadyVoidException |
-                 GlobalTransactionAlreadyPostedException | GlobalTransactionAlreadyPendingException |
-                 GlobalTransactionAlreadyApprovedException | GlobalPaymentTermInvalidException |
-                 GlobalConversionDateNotExistException | GlobalDocumentNumberNotUniqueException ex) {
+        }
+        catch (GlobalRecordAlreadyDeletedException | ArInvDuplicateUploadNumberException |
+               GlobalExpiryDateNotFoundException | AdPRFCoaGlVarianceAccountNotFoundException |
+               ArINVAmountExceedsCreditLimitException | GlobalInventoryDateException |
+               GlobalTransactionAlreadyLockedException | GlobalJournalNotBalanceException |
+               GlJREffectiveDatePeriodClosedException | GlJREffectiveDateNoPeriodExistException |
+               GlobalInvItemLocationNotFoundException | GlobalNoApprovalApproverFoundException |
+               GlobalNoApprovalRequesterFoundException | GlobalTransactionAlreadyVoidException |
+               GlobalTransactionAlreadyPostedException | GlobalTransactionAlreadyPendingException |
+               GlobalTransactionAlreadyApprovedException | GlobalPaymentTermInvalidException |
+               GlobalConversionDateNotExistException | GlobalDocumentNumberNotUniqueException ex) {
             getSessionContext().setRollbackOnly();
             throw ex;
-        } catch (GlobalBranchAccountNumberInvalidException ex) {
+        }
+        catch (GlobalBranchAccountNumberInvalidException ex) {
             // Retrive Error a Line Number
             ex.setLineNumberError(lineNumberError);
             getSessionContext().setRollbackOnly();
             throw ex;
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             getSessionContext().setRollbackOnly();
             throw new EJBException(ex.getMessage());
@@ -1830,25 +2120,29 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                     } else {
                         documentType = EJBCommon.AR_INVOICE;
                     }
-                } catch (FinderException ex) {
+                }
+                catch (FinderException ex) {
                     documentType = EJBCommon.AR_INVOICE;
                 }
 
                 try {
                     adDocumentSequenceAssignment = adDocumentSequenceAssignmentHome.findByDcName(documentType, companyCode);
-                } catch (FinderException ex) {
+                }
+                catch (FinderException ex) {
                 }
 
                 try {
                     adBranchDocumentSequenceAssignment = adBranchDocumentSequenceAssignmentHome.findBdsByDsaCodeAndBrCode(adDocumentSequenceAssignment.getDsaCode(), branchCode, companyCode);
-                } catch (FinderException ex) {
+                }
+                catch (FinderException ex) {
                 }
 
                 LocalArInvoice arExistingInvoice = null;
                 try {
 
                     arExistingInvoice = arInvoiceHome.findByInvNumberAndInvCreditMemoAndBrCode(details.getInvNumber(), EJBCommon.FALSE, branchCode, companyCode);
-                } catch (FinderException ex) {
+                }
+                catch (FinderException ex) {
                 }
 
                 if (arExistingInvoice != null) {
@@ -1871,7 +2165,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
 
                     arExistingInvoice = arInvoiceHome.findByInvNumberAndInvCreditMemoAndBrCode(details.getInvNumber(), EJBCommon.FALSE, branchCode, companyCode);
 
-                } catch (FinderException ex) {
+                }
+                catch (FinderException ex) {
                 }
 
                 if (arExistingInvoice != null && !arExistingInvoice.getInvCode().equals(details.getInvCode())) {
@@ -1891,7 +2186,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                         arInvoiceHome.findByUploadNumberAndCompanyCode(details.getInvUploadNumber(), companyCode);
                         // throw exception if found duplicate upload number
                         throw new ArInvDuplicateUploadNumberException();
-                    } catch (FinderException ex) {
+                    }
+                    catch (FinderException ex) {
 
                     }
                 }
@@ -1916,7 +2212,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                     }
                     arExistingJobOrder.setJoLock(EJBCommon.TRUE);
                 }
-            } catch (FinderException ex) {
+            }
+            catch (FinderException ex) {
             }
 
             // used in checking if invoice should re-generate distribution records and re-calculate taxes
@@ -2073,7 +2370,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                     ArModJobOrderLineDetails mjolDetails = (ArModJobOrderLineDetails) i.next();
                     try {
                         invItemLocation = invItemLocationHome.findByLocNameAndIiName(mjolDetails.getJolLocName(), mjolDetails.getJolIiName(), companyCode);
-                    } catch (FinderException ex) {
+                    }
+                    catch (FinderException ex) {
                         throw new GlobalInvItemLocationNotFoundException(String.valueOf(mjolDetails.getJolLine()));
                     }
                     // start date validation
@@ -2120,7 +2418,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                             unitCost = invItemLocation.getInvItem().getIiUnitCost();
                         }
 
-                    } catch (FinderException ex) {
+                    }
+                    catch (FinderException ex) {
 
                         unitCost = arJobOrderLine.getInvItemLocation().getInvItem().getIiUnitCost();
                     }
@@ -2134,7 +2433,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                         lineNumberError = arJobOrderLine.getJolLine();
                         adBranchItemLocation = adBranchItemLocationHome.findBilByIlCodeAndBrCode(arJobOrderLine.getInvItemLocation().getIlCode(), branchCode, companyCode);
 
-                    } catch (FinderException ex) {
+                    }
+                    catch (FinderException ex) {
 
                     }
 
@@ -2210,7 +2510,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                         LocalAdBranchArTaxCode adBranchTaxCode = null;
                         try {
                             adBranchTaxCode = adBranchArTaxCodeHome.findBtcByTcCodeAndBrCode(arInvoice.getArTaxCode().getTcCode(), branchCode, companyCode);
-                        } catch (FinderException ex) {
+                        }
+                        catch (FinderException ex) {
                         }
                         if (adBranchTaxCode != null) {
                             this.addArDrEntry(arInvoice.getArDrNextLine(), EJBCommon.TAX, EJBCommon.FALSE, convertedTotalTax, adBranchTaxCode.getBtcGlCoaTaxCode(), null, arInvoice, branchCode, companyCode);
@@ -2239,7 +2540,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
 
                         this.addArDrIliEntry(arInvoice.getArDrNextLine(), "RECEIVABLE INTEREST", EJBCommon.TRUE, convertedUnearnedInterestAmount, adBranchCustomer.getBcstGlCoaReceivableAccount(), arInvoice, branchCode, companyCode);
 
-                    } catch (FinderException ex) {
+                    }
+                    catch (FinderException ex) {
 
                     }
                 }
@@ -2285,7 +2587,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                     double convertedAmountDue = this.convertForeignToFunctionalCurrency(arInvoice.getGlFunctionalCurrency().getFcCode(), arInvoice.getGlFunctionalCurrency().getFcName(), arInvoice.getInvConversionDate(), arInvoice.getInvConversionRate(), totalLine + totalTax - withholdingTaxAmount - discountAmount - totalSalesOrderDebitAmount, companyCode);
                     this.addArDrIliEntry(arInvoice.getArDrNextLine(), "RECEIVABLE", EJBCommon.TRUE, convertedAmountDue, adBranchCustomer.getBcstGlCoaReceivableAccount(), arInvoice, branchCode, companyCode);
 
-                } catch (FinderException ex) {
+                }
+                catch (FinderException ex) {
 
                 }
 
@@ -2497,27 +2800,30 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
 
             return arInvoice.getInvCode();
 
-        } catch (GlobalRecordAlreadyDeletedException | ArInvDuplicateUploadNumberException |
-                 GlobalExpiryDateNotFoundException | AdPRFCoaGlVarianceAccountNotFoundException |
-                 ArINVAmountExceedsCreditLimitException | GlobalInventoryDateException |
-                 GlobalTransactionAlreadyLockedException | GlobalJournalNotBalanceException |
-                 GlJREffectiveDatePeriodClosedException | GlJREffectiveDateNoPeriodExistException |
-                 GlobalInvItemLocationNotFoundException | GlobalNoApprovalApproverFoundException |
-                 GlobalNoApprovalRequesterFoundException | GlobalTransactionAlreadyVoidException |
-                 GlobalTransactionAlreadyPostedException | GlobalTransactionAlreadyPendingException |
-                 GlobalTransactionAlreadyApprovedException | GlobalPaymentTermInvalidException |
-                 GlobalConversionDateNotExistException | GlobalDocumentNumberNotUniqueException ex) {
+        }
+        catch (GlobalRecordAlreadyDeletedException | ArInvDuplicateUploadNumberException |
+               GlobalExpiryDateNotFoundException | AdPRFCoaGlVarianceAccountNotFoundException |
+               ArINVAmountExceedsCreditLimitException | GlobalInventoryDateException |
+               GlobalTransactionAlreadyLockedException | GlobalJournalNotBalanceException |
+               GlJREffectiveDatePeriodClosedException | GlJREffectiveDateNoPeriodExistException |
+               GlobalInvItemLocationNotFoundException | GlobalNoApprovalApproverFoundException |
+               GlobalNoApprovalRequesterFoundException | GlobalTransactionAlreadyVoidException |
+               GlobalTransactionAlreadyPostedException | GlobalTransactionAlreadyPendingException |
+               GlobalTransactionAlreadyApprovedException | GlobalPaymentTermInvalidException |
+               GlobalConversionDateNotExistException | GlobalDocumentNumberNotUniqueException ex) {
             getSessionContext().setRollbackOnly();
             throw ex;
 
-        } catch (GlobalBranchAccountNumberInvalidException ex) {
+        }
+        catch (GlobalBranchAccountNumberInvalidException ex) {
 
             // Retrive Error a Line Number
             ex.setLineNumberError(lineNumberError);
             getSessionContext().setRollbackOnly();
             throw ex;
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             getSessionContext().setRollbackOnly();
@@ -2532,7 +2838,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
         try {
             LocalAdPreference adPreference = adPreferenceHome.findByPrfAdCompany(companyCode);
             return adPreference.getPrfInvQuantityPrecisionUnit();
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
         }
@@ -2544,7 +2851,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
         try {
             LocalAdPreference adPreference = adPreferenceHome.findByPrfAdCompany(companyCode);
             return adPreference.getPrfInvCostPrecisionUnit();
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
         }
@@ -2556,7 +2864,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
         try {
             LocalAdPreference adPreference = adPreferenceHome.findByPrfAdCompany(companyCode);
             return adPreference.getPrfArInvoiceLineNumber();
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
         }
@@ -2568,7 +2877,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
         try {
             LocalAdPreference adPreference = adPreferenceHome.findByPrfAdCompany(companyCode);
             return adPreference.getPrfEnableArInvoiceBatch();
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
         }
@@ -2580,7 +2890,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
         try {
             LocalAdPreference adPreference = adPreferenceHome.findByPrfAdCompany(companyCode);
             return adPreference.getPrfArInvcSalespersonRequired();
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
         }
@@ -2592,7 +2903,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
         try {
             LocalAdPreference adPreference = adPreferenceHome.findByPrfAdCompany(companyCode);
             return adPreference.getPrfInvEnableShift();
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
         }
@@ -2604,7 +2916,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
         try {
             LocalAdPreference adPreference = adPreferenceHome.findByPrfAdCompany(companyCode);
             return adPreference.getPrfArUseCustomerPulldown();
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
         }
@@ -2616,7 +2929,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
         try {
             LocalAdPreference adPreference = adPreferenceHome.findByPrfAdCompany(companyCode);
             return adPreference.getPrfArDisableSalesPrice();
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
         }
@@ -2628,7 +2942,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
         try {
             LocalAdPreference adPreference = adPreferenceHome.findByPrfAdCompany(companyCode);
             return adPreference.getPrfArEnablePaymentTerm();
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
         }
@@ -2652,10 +2967,12 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                 conversionRate = conversionRate / glCompanyFunctionalCurrencyRate.getFrXToUsd();
             }
             return conversionRate;
-        } catch (FinderException ex) {
+        }
+        catch (FinderException ex) {
             getSessionContext().setRollbackOnly();
             throw new GlobalConversionDateNotExistException();
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
         }
@@ -2668,7 +2985,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             LocalArCustomer arCustomer;
             try {
                 arCustomer = arCustomerHome.findByCstCustomerCode(customerCode, companyCode);
-            } catch (FinderException ex) {
+            }
+            catch (FinderException ex) {
                 return 0d;
             }
             double unitPrice;
@@ -2681,13 +2999,15 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                 } else {
                     unitPrice = invPriceLevel.getPlAmount();
                 }
-            } catch (FinderException ex) {
+            }
+            catch (FinderException ex) {
                 unitPrice = invItem.getIiSalesPrice();
             }
             LocalInvUnitOfMeasureConversion invUnitOfMeasureConversion = invUnitOfMeasureConversionHome.findUmcByIiNameAndUomName(EJBCommon.itemName, unitOfMeasure, companyCode);
             LocalInvUnitOfMeasureConversion invDefaultUomConversion = invUnitOfMeasureConversionHome.findUmcByIiNameAndUomName(EJBCommon.itemName, invItem.getInvUnitOfMeasure().getUomName(), companyCode);
             return EJBCommon.roundIt(unitPrice * invDefaultUomConversion.getUmcConversionFactor() / invUnitOfMeasureConversion.getUmcConversionFactor(), commonData.getGlFcPrecisionUnit(companyCode));
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
         }
@@ -2703,7 +3023,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                 isTraceMisc = true;
             }
             return isTraceMisc;
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
@@ -2717,10 +3038,12 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             try {
                 LocalInvItem invItem = invItemHome.findByIiName(EJBCommon.itemName, companyCode);
                 return invItem.getIiNonInventoriable() != 1;
-            } catch (FinderException ex) {
+            }
+            catch (FinderException ex) {
                 throw new GlobalNoRecordFoundException();
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
         }
@@ -2734,7 +3057,9 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             LocalArInvoice arInvoice = arInvoiceHome.findByPrimaryKey(invoiceCode);
 
             Collection arAppliedInvoices = arAppliedInvoiceHome.findAiByInvCode(invoiceCode, companyCode);
-            if (arAppliedInvoices.size() > 0) throw new ArINVInvoiceHasReceipt();
+            if (arAppliedInvoices.size() > 0) {
+                throw new ArINVInvoiceHasReceipt();
+            }
 
 
             Collection arInvoiceLineItems = arInvoice.getArInvoiceLineItems();
@@ -2776,13 +3101,16 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
 
             adDeleteAuditTrailHome.create(EJBCommon.AR_INVOICE, arInvoice.getInvDate(), arInvoice.getInvNumber(), arInvoice.getInvReferenceNumber(), arInvoice.getInvAmountDue(), userCode, new Date(), companyCode);
             em.remove(arInvoice);
-        } catch (FinderException ex) {
+        }
+        catch (FinderException ex) {
             getSessionContext().setRollbackOnly();
             throw new GlobalRecordAlreadyDeletedException();
-        } catch (ArINVInvoiceHasReceipt ex) {
+        }
+        catch (ArINVInvoiceHasReceipt ex) {
             getSessionContext().setRollbackOnly();
             throw new ArINVInvoiceHasReceipt();
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             getSessionContext().setRollbackOnly();
             throw new EJBException(ex.getMessage());
@@ -2850,7 +3178,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                                 unitCost = invCosting.getInvItemLocation().getInvItem().getIiUnitCost();
                                 break;
                         }
-                    } catch (FinderException ex) {
+                    }
+                    catch (FinderException ex) {
 
                         unitCost = arInvoiceLineItem.getInvItemLocation().getInvItem().getIiUnitCost();
                     }
@@ -2859,7 +3188,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                     LocalAdBranchItemLocation adBranchItemLocation = null;
                     try {
                         adBranchItemLocation = adBranchItemLocationHome.findBilByIlCodeAndBrCode(arInvoiceLineItem.getInvItemLocation().getIlCode(), branchCode, companyCode);
-                    } catch (FinderException ex) {
+                    }
+                    catch (FinderException ex) {
 
                     }
 
@@ -2912,7 +3242,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                     LocalArSalesOrderInvoiceLine arSalesOrderInvoiceLine = (LocalArSalesOrderInvoiceLine) iSol.next();
                     try {
                         invItemLocation = invItemLocationHome.findByLocNameAndIiName(arSalesOrderInvoiceLine.getArSalesOrderLine().getInvItemLocation().getInvLocation().getLocName(), arSalesOrderInvoiceLine.getArSalesOrderLine().getInvItemLocation().getInvItem().getIiName(), companyCode);
-                    } catch (FinderException ex) {
+                    }
+                    catch (FinderException ex) {
                         throw new GlobalInvItemLocationNotFoundException(String.valueOf(arSalesOrderInvoiceLine.getArSalesOrderLine().getSolLine()));
                     }
 
@@ -2953,7 +3284,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                             unitCost = invItemLocation.getInvItem().getIiUnitCost();
                         }
 
-                    } catch (FinderException ex) {
+                    }
+                    catch (FinderException ex) {
 
                         unitCost = arSalesOrderInvoiceLine.getArSalesOrderLine().getInvItemLocation().getInvItem().getIiUnitCost();
                     }
@@ -2966,7 +3298,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
 
                         adBranchItemLocation = adBranchItemLocationHome.findBilByIlCodeAndBrCode(arSalesOrderInvoiceLine.getArSalesOrderLine().getInvItemLocation().getIlCode(), branchCode, companyCode);
 
-                    } catch (FinderException ex) {
+                    }
+                    catch (FinderException ex) {
 
                     }
 
@@ -2999,7 +3332,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
 
                         invItemLocation = invItemLocationHome.findByLocNameAndIiName(arInvoiceLineItem.getInvItemLocation().getInvLocation().getLocName(), arInvoiceLineItem.getInvItemLocation().getInvItem().getIiName(), companyCode);
 
-                    } catch (FinderException ex) {
+                    }
+                    catch (FinderException ex) {
 
                         throw new GlobalInvItemLocationNotFoundException(String.valueOf(arInvoiceLineItem.getIliLine()));
                     }
@@ -3061,7 +3395,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                             unitCost = invItemLocation.getInvItem().getIiUnitCost();
                         }
 
-                    } catch (FinderException ex) {
+                    }
+                    catch (FinderException ex) {
 
                         unitCost = arInvoiceLineItem.getInvItemLocation().getInvItem().getIiUnitCost();
                     }
@@ -3074,7 +3409,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
 
                         adBranchItemLocation = adBranchItemLocationHome.findBilByIlCodeAndBrCode(arInvoiceLineItem.getInvItemLocation().getIlCode(), branchCode, companyCode);
 
-                    } catch (FinderException ex) {
+                    }
+                    catch (FinderException ex) {
 
                     }
 
@@ -3107,7 +3443,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
 
                         invItemLocation = invItemLocationHome.findByLocNameAndIiName(arJobOrderInvoiceLine.getArJobOrderLine().getInvItemLocation().getInvLocation().getLocName(), arJobOrderInvoiceLine.getArJobOrderLine().getInvItemLocation().getInvItem().getIiName(), companyCode);
 
-                    } catch (FinderException ex) {
+                    }
+                    catch (FinderException ex) {
 
                         throw new GlobalInvItemLocationNotFoundException(String.valueOf(arJobOrderInvoiceLine.getArJobOrderLine().getJolLine()));
                     }
@@ -3159,7 +3496,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                             unitCost = invItemLocation.getInvItem().getIiUnitCost();
                         }
 
-                    } catch (FinderException ex) {
+                    }
+                    catch (FinderException ex) {
 
                         unitCost = arJobOrderInvoiceLine.getArJobOrderLine().getInvItemLocation().getInvItem().getIiUnitCost();
                     }
@@ -3172,7 +3510,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
 
                         adBranchItemLocation = adBranchItemLocationHome.findBilByIlCodeAndBrCode(arJobOrderInvoiceLine.getArJobOrderLine().getInvItemLocation().getIlCode(), branchCode, companyCode);
 
-                    } catch (FinderException ex) {
+                    }
+                    catch (FinderException ex) {
 
                     }
 
@@ -3233,7 +3572,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                         arDistributionRecord.setDrImported(EJBCommon.TRUE);
                     }
 
-                } catch (FinderException ex) {
+                }
+                catch (FinderException ex) {
                     continue;
                 }
 
@@ -3241,7 +3581,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
 
             }
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             getSessionContext().setRollbackOnly();
             Debug.printStackTrace(ex);
@@ -3258,7 +3599,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             arInvoice = arInvoiceHome.findByPrimaryKey(details.getInvCode());
             arInvoice.setInvReceiveDate(details.getInvReceiveDate());
 
-        } catch (FinderException ex) {
+        }
+        catch (FinderException ex) {
         }
     }
 
@@ -3271,7 +3613,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             arInvoice = arInvoiceHome.findByPrimaryKey(details.getInvCode());
             arInvoice.setInvDisableInterest(details.getInvDisableInterest());
 
-        } catch (FinderException ex) {
+        }
+        catch (FinderException ex) {
         }
     }
 
@@ -3300,7 +3643,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
 
             return list;
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
@@ -3318,7 +3662,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
 
                 arSalesOrder = arSalesOrderHome.findBySoDocumentNumberAndCstCustomerCode(soDocumentNumber, customerCode, companyCode);
 
-            } catch (FinderException ex) {
+            }
+            catch (FinderException ex) {
 
                 throw new GlobalNoRecordFoundException();
             }
@@ -3378,12 +3723,14 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
 
             return solList;
 
-        } catch (GlobalNoRecordFoundException ex) {
+        }
+        catch (GlobalNoRecordFoundException ex) {
 
             Debug.printStackTrace(ex);
             throw ex;
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
@@ -3401,7 +3748,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
 
                 arJobOrder = arJobOrderHome.findByJoDocumentNumberAndCstCustomerCode(joDocumentNumber, customerCode, companyCode);
 
-            } catch (FinderException ex) {
+            }
+            catch (FinderException ex) {
 
                 throw new GlobalNoRecordFoundException();
             }
@@ -3461,12 +3809,14 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
 
             return jolList;
 
-        } catch (GlobalNoRecordFoundException ex) {
+        }
+        catch (GlobalNoRecordFoundException ex) {
 
             Debug.printStackTrace(ex);
             throw ex;
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
@@ -3484,7 +3834,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
 
                 invLineItemTemplate = invLineItemTemplateHome.findByLitName(lineItemTemplateName, companyCode);
 
-            } catch (FinderException ex) {
+            }
+            catch (FinderException ex) {
 
                 throw new GlobalNoRecordFoundException();
             }
@@ -3516,11 +3867,13 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
 
             return list;
 
-        } catch (GlobalNoRecordFoundException ex) {
+        }
+        catch (GlobalNoRecordFoundException ex) {
 
             throw ex;
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
@@ -3541,7 +3894,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                 }
             }
             return list;
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
         }
@@ -3558,7 +3912,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                 list.add(adLookUpValue.getLvName());
             }
             return list;
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
         }
@@ -3578,7 +3933,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                 }
             }
             return list;
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
         }
@@ -3603,7 +3959,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                 list.add(details);
             }
             return list;
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
         }
@@ -3615,7 +3972,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
         try {
             LocalInvItem invItem = invItemHome.findByIiName(itemName, companyCode);
             return invItem.getIiClass();
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
         }
@@ -3630,7 +3988,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             try {
                 arInvoice = arInvoiceHome.findByPrimaryKey(invoiceCode);
                 arTaxCode = arInvoice.getArTaxCode();
-            } catch (FinderException ex) {
+            }
+            catch (FinderException ex) {
                 throw new GlobalNoRecordFoundException();
             }
 
@@ -3679,9 +4038,11 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             }
             return invoiceDetails;
 
-        } catch (GlobalNoRecordFoundException ex) {
+        }
+        catch (GlobalNoRecordFoundException ex) {
             throw ex;
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
         }
@@ -3694,7 +4055,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             LocalArCustomer arCustomer;
             try {
                 arCustomer = arCustomerHome.findByCstCustomerCode(customerCode, companyCode);
-            } catch (FinderException ex) {
+            }
+            catch (FinderException ex) {
                 throw new GlobalNoRecordFoundException();
             }
 
@@ -3753,9 +4115,11 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             }
             return mdetails;
 
-        } catch (GlobalNoRecordFoundException ex) {
+        }
+        catch (GlobalNoRecordFoundException ex) {
             throw ex;
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
         }
@@ -3774,7 +4138,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                 details.setSmlDescription(arStandardMemoLine.getSmlDescription());
                 details.setSmlUnitPrice(arStandardMemoLine.getSmlUnitPrice());
                 details.setSmlTax(arStandardMemoLine.getSmlTax());
-            } catch (FinderException ex) {
+            }
+            catch (FinderException ex) {
                 throw new GlobalNoRecordFoundException();
             }
 
@@ -3787,20 +4152,24 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                         arStandardMemoLineClass = arStandardMemoLineClassHome.findSmcByCcNameSmlNameCstCstmrCodeAdBrnch(customerClass, standardMemoLineName, customerCode, branchCode, companyCode);
                         details.setSmlDescription(arStandardMemoLineClass.getSmcStandardMemoLineDescription());
                         details.setSmlUnitPrice(arStandardMemoLineClass.getSmcUnitPrice());
-                    } catch (FinderException ex) {
+                    }
+                    catch (FinderException ex) {
                         // find memo line class in not null customre code
                         arStandardMemoLineClass = arStandardMemoLineClassHome.findSmcByCcNameSmlNameAdBrnch(customerClass, standardMemoLineName, branchCode, companyCode);
                         details.setSmlDescription(arStandardMemoLineClass.getSmcStandardMemoLineDescription());
                         details.setSmlUnitPrice(arStandardMemoLineClass.getSmcUnitPrice());
                     }
                 }
-            } catch (FinderException ex) {
+            }
+            catch (FinderException ex) {
             }
             return details;
 
-        } catch (GlobalNoRecordFoundException ex) {
+        }
+        catch (GlobalNoRecordFoundException ex) {
             throw ex;
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
         }
@@ -3813,7 +4182,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             LocalArStandardMemoLine arStandardMemoLine;
             try {
                 arStandardMemoLine = arStandardMemoLineHome.findBySmlName(standardMemoLineName, companyCode);
-            } catch (FinderException ex) {
+            }
+            catch (FinderException ex) {
                 throw new GlobalNoRecordFoundException();
             }
             ArStandardMemoLineDetails details = new ArStandardMemoLineDetails();
@@ -3822,9 +4192,11 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             details.setSmlTax(arStandardMemoLine.getSmlTax());
             return details;
 
-        } catch (GlobalNoRecordFoundException ex) {
+        }
+        catch (GlobalNoRecordFoundException ex) {
             throw ex;
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
         }
@@ -3928,12 +4300,15 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             mdetails.setSoSolList(list);
             mdetails.setReportParameter(arSalesOrder.getReportParameter());
             return mdetails;
-        } catch (FinderException ex) {
+        }
+        catch (FinderException ex) {
             throw new GlobalNoRecordFoundException();
-        } catch (GlobalNoRecordFoundException | ArINVNoSalesOrderLinesFoundException ex) {
+        }
+        catch (GlobalNoRecordFoundException | ArINVNoSalesOrderLinesFoundException ex) {
             getSessionContext().setRollbackOnly();
             throw ex;
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
         }
@@ -4041,12 +4416,15 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             mdetails.setJoJolList(list);
             return mdetails;
 
-        } catch (FinderException ex) {
+        }
+        catch (FinderException ex) {
             throw new GlobalNoRecordFoundException();
-        } catch (GlobalNoRecordFoundException | ArINVNoSalesOrderLinesFoundException ex) {
+        }
+        catch (GlobalNoRecordFoundException | ArINVNoSalesOrderLinesFoundException ex) {
             getSessionContext().setRollbackOnly();
             throw ex;
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
         }
@@ -4090,7 +4468,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                     miscList2 = "Error";
                 }
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
         }
         if (miscList2 == "") {
             miscList.append("$");
@@ -4128,7 +4507,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                 }
             }
             miscList.append("$");
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             miscList = new StringBuilder();
         }
         return (miscList.toString());
@@ -4147,7 +4527,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             int nextIndex = qntty.indexOf(separator, start);
             int length = nextIndex - start;
             y = (qntty.substring(start, start + length));
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             y = "0";
         }
         return y;
@@ -4172,12 +4553,14 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                 length = nextIndex - start;
                 try {
                     miscList.append("$").append(misc.substring(start, start + length));
-                } catch (Exception ex) {
+                }
+                catch (Exception ex) {
                     throw ex;
                 }
             }
             miscList.append("$");
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             miscList = new StringBuilder();
         }
         return (miscList.toString());
@@ -4191,7 +4574,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
         try {
             glSalesCoa = glChartOfAccountHome.findByCoaCode(adBranchItemLocation.getBilCoaGlSalesAccount(), companyCode);
             genValueSetValue = getValueSetValueHome.findByVsvValue(glSalesCoa.getCoaSegment2(), companyCode);
-        } catch (FinderException ex) {
+        }
+        catch (FinderException ex) {
         }
 
         String distributionRecordClass = EJBCommon.REVENUE;
@@ -4255,7 +4639,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                 try {
                     arInvoiceHome.findByInvNumberAndInvCreditMemoAndBrCode(adDocumentSequenceAssignment.getDsaNextSequence(), EJBCommon.FALSE, branchCode, companyCode);
                     adDocumentSequenceAssignment.setDsaNextSequence(EJBCommon.incrementStringNumber(adDocumentSequenceAssignment.getDsaNextSequence()));
-                } catch (FinderException ex) {
+                }
+                catch (FinderException ex) {
                     invoiceDetails.setInvNumber(adDocumentSequenceAssignment.getDsaNextSequence());
                     adDocumentSequenceAssignment.setDsaNextSequence(EJBCommon.incrementStringNumber(adDocumentSequenceAssignment.getDsaNextSequence()));
                     break;
@@ -4264,7 +4649,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                 try {
                     arInvoiceHome.findByInvNumberAndInvCreditMemoAndBrCode(adBranchDocumentSequenceAssignment.getBdsNextSequence(), EJBCommon.FALSE, branchCode, companyCode);
                     adBranchDocumentSequenceAssignment.setBdsNextSequence(EJBCommon.incrementStringNumber(adBranchDocumentSequenceAssignment.getBdsNextSequence()));
-                } catch (FinderException ex) {
+                }
+                catch (FinderException ex) {
                     invoiceDetails.setInvNumber(adBranchDocumentSequenceAssignment.getBdsNextSequence());
                     adBranchDocumentSequenceAssignment.setBdsNextSequence(EJBCommon.incrementStringNumber(adBranchDocumentSequenceAssignment.getBdsNextSequence()));
                     break;
@@ -4282,7 +4668,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                     arInvoiceHome.findByUploadNumberAndCompanyCode(invoiceDetails.getInvUploadNumber(), companyCode);
                     // throw exception if found duplicate upload number
                     throw new ArInvDuplicateUploadNumberException();
-                } catch (FinderException ex) {
+                }
+                catch (FinderException ex) {
                 }
             }
         }
@@ -4295,7 +4682,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             if (invoiceDetails.getInvCode() != null) {
                 arInvoice = arInvoiceHome.findByPrimaryKey(invoiceDetails.getInvCode());
             }
-        } catch (FinderException ex) {
+        }
+        catch (FinderException ex) {
             throw new GlobalRecordAlreadyDeletedException();
         }
         return arInvoice;
@@ -4339,7 +4727,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
 
                 this.addArDrIliEntry(arInvoice.getArDrNextLine(), EJBCommon.RECEIVABLE_INTEREST, EJBCommon.TRUE, convertedUnearnedInterestAmount, adBranchCustomer.getBcstGlCoaReceivableAccount(), arInvoice, branchCode, companyCode);
 
-            } catch (FinderException ex) {
+            }
+            catch (FinderException ex) {
             }
         }
         arInvoice.setInvAmountUnearnedInterest(unearnedInterestAmount);
@@ -4362,7 +4751,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
         LocalInvItemLocation invItemLocation;
         try {
             invItemLocation = invItemLocationHome.findByLocNameAndIiName(mIliDetails.getIliLocName(), mIliDetails.getIliIiName(), companyCode);
-        } catch (FinderException ex) {
+        }
+        catch (FinderException ex) {
             throw new GlobalInvItemLocationNotFoundException(String.valueOf(mIliDetails.getIliLine()));
         }
         return invItemLocation;
@@ -4374,7 +4764,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
         try {
             LocalArInvoiceBatch arInvoiceBatch = arInvoiceBatchHome.findByIbName(invoiceBatchName, branchCode, companyCode);
             arInvoice.setArInvoiceBatch(arInvoiceBatch);
-        } catch (FinderException ex) {
+        }
+        catch (FinderException ex) {
         }
     }
 
@@ -4388,7 +4779,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                         arInvoiceHome.findByUploadNumberAndCompanyCode(details.getInvUploadNumber(), companyCode);
                         // throw exception if found duplicate upload number
                         throw new ArInvDuplicateUploadNumberException();
-                    } catch (FinderException ex) {
+                    }
+                    catch (FinderException ex) {
                     }
                 }
             }
@@ -4430,7 +4822,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                 try {
                     LocalAdBranchArTaxCode adBranchTaxCode = adBranchArTaxCodeHome.findBtcByTcCodeAndBrCode(arInvoice.getArTaxCode().getTcCode(), branchCode, companyCode);
                     this.addArDrEntry(arInvoice.getArDrNextLine(), EJBCommon.TAX, EJBCommon.FALSE, convertedTotalTax, adBranchTaxCode.getBtcGlCoaTaxCode(), null, arInvoice, branchCode, companyCode);
-                } catch (FinderException ex) {
+                }
+                catch (FinderException ex) {
                     this.addArDrEntry(arInvoice.getArDrNextLine(), EJBCommon.TAX, EJBCommon.FALSE, convertedTotalTax, arTaxCode.getGlChartOfAccount().getCoaCode(), null, arInvoice, branchCode, companyCode);
                 }
             } else {
@@ -4465,7 +4858,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                     glFunctionalCurrencyRateHome.findByFcCodeAndDate(adCompany.getGlFunctionalCurrency().getFcCode(), details.getInvConversionDate(), companyCode);
                 }
             }
-        } catch (FinderException ex) {
+        }
+        catch (FinderException ex) {
             throw new GlobalConversionDateNotExistException();
         }
     }
@@ -4478,7 +4872,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                 LocalGlFunctionalCurrency glValidateFunctionalCurrency = glFunctionalCurrencyHome.findByFcName(currencyName, companyCode);
                 glFunctionalCurrencyRateHome.findByFcCodeAndDate(glValidateFunctionalCurrency.getFcCode(), invoiceDetails.getInvConversionDate(), companyCode);
             }
-        } catch (FinderException ex) {
+        }
+        catch (FinderException ex) {
             throw new GlobalConversionDateNotExistException();
         }
     }
@@ -4589,7 +4984,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                 LocalInvItemLocation invItemLocation = invItemLocationHome.findByPrimaryKey(itemLineCode);
                 return invItemLocation.getInvItem().getIiUnitCost();
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
         }
@@ -4605,7 +5001,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             LocalInvUnitOfMeasureConversion invDefaultUomConversion = invUnitOfMeasureConversionHome.findUmcByIiNameAndUomName(invItem.getIiName(), invItem.getInvUnitOfMeasure().getUomName(), companyCode);
             Debug.print("ArInvoiceEntryControllerBean convertByUomFromAndItemAndQuantity B");
             return EJBCommon.roundIt(quantitySold * invDefaultUomConversion.getUmcConversionFactor() / invUnitOfMeasureConversion.getUmcConversionFactor(), adPreference.getPrfInvQuantityPrecisionUnit());
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             getSessionContext().setRollbackOnly();
             throw new EJBException(ex.getMessage());
@@ -4647,7 +5044,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                 LocalArPdc arPdc = (LocalArPdc) pdc;
                 customerBalance = customerBalance - arPdc.getPdcAmount();
             }
-        } catch (FinderException ex) {
+        }
+        catch (FinderException ex) {
         }
         return customerBalance;
     }
@@ -4664,7 +5062,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             } else {
                 return unitCost * invUnitOfMeasureConversion.getUmcConversionFactor() / invDefaultUomConversion.getUmcConversionFactor();
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             getSessionContext().setRollbackOnly();
             throw new EJBException(ex.getMessage());
@@ -4679,7 +5078,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             LocalInvUnitOfMeasureConversion invUnitOfMeasureConversion = invUnitOfMeasureConversionHome.findUmcByIiNameAndUomName(invItem.getIiName(), invFromUnitOfMeasure.getUomName(), companyCode);
             LocalInvUnitOfMeasureConversion invDefaultUomConversion = invUnitOfMeasureConversionHome.findUmcByIiNameAndUomName(invItem.getIiName(), invItem.getInvUnitOfMeasure().getUomName(), companyCode);
             return EJBCommon.roundIt(adjustQuantity * invDefaultUomConversion.getUmcConversionFactor() / invUnitOfMeasureConversion.getUmcConversionFactor(), adPreference.getPrfInvQuantityPrecisionUnit());
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             getSessionContext().setRollbackOnly();
             throw new EJBException(ex.getMessage());
@@ -4693,7 +5093,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
         // get company and extended precision
         try {
             adCompany = adCompanyHome.findByPrimaryKey(companyCode);
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             throw new EJBException(ex.getMessage());
         }
         // Convert to functional currency if necessary
@@ -4739,7 +5140,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             LocalAdBranchStandardMemoLine adBranchStandardMemoLine = null;
             try {
                 adBranchStandardMemoLine = adBranchStandardMemoLineHome.findBSMLBySMLCodeAndBrCode(arInvoiceLine.getArStandardMemoLine().getSmlCode(), branchCode, companyCode);
-            } catch (FinderException ex) {
+            }
+            catch (FinderException ex) {
             }
 
             Collection arAutoAccountingSegments = arAutoAccountingSegmentHome.findByAaAccountType(EJBCommon.REVENUE, companyCode);
@@ -4763,7 +5165,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                     if (adBranchStandardMemoLine != null) {
                         try {
                             glChartOfAccount = glChartOfAccountHome.findByPrimaryKey(adBranchStandardMemoLine.getBsmlGlCoaRevenueAccount());
-                        } catch (FinderException ex) {
+                        }
+                        catch (FinderException ex) {
                         }
                     } else {
                         glChartOfAccount = glChartOfAccountHome.findByPrimaryKey(arInvoiceLine.getArStandardMemoLine().getSmlGlCoaReceivableAccount());
@@ -4786,19 +5189,22 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             try {
                 LocalGlChartOfAccount glGeneratedChartOfAccount = glChartOfAccountHome.findByCoaAccountNumber(chartOfAccount.toString(), companyCode);
                 return glGeneratedChartOfAccount.getCoaCode();
-            } catch (FinderException ex) {
+            }
+            catch (FinderException ex) {
                 if (adBranchStandardMemoLine != null) {
                     LocalGlChartOfAccount glChartOfAccount = null;
                     try {
                         glChartOfAccount = glChartOfAccountHome.findByPrimaryKey(adBranchStandardMemoLine.getBsmlGlCoaRevenueAccount());
-                    } catch (FinderException e) {
+                    }
+                    catch (FinderException e) {
                     }
                     return glChartOfAccount.getCoaCode();
                 } else {
                     return arInvoiceLine.getArStandardMemoLine().getSmlGlCoaRevenueAccount();
                 }
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
         }
@@ -4839,10 +5245,12 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                 arInvoiceLineItem.setIliMisc(mdetails.getIliMisc());
             }
             return arInvoiceLineItem;
-        } catch (GlobalMiscInfoIsRequiredException ex) {
+        }
+        catch (GlobalMiscInfoIsRequiredException ex) {
             getSessionContext().setRollbackOnly();
             throw ex;
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             getSessionContext().setRollbackOnly();
             throw new EJBException(ex.getMessage());
@@ -4875,7 +5283,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                 this.createInvTagList(arSalesOrderInvoiceLine, tagList, companyCode);
             }
             return arSalesOrderInvoiceLine;
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             getSessionContext().setRollbackOnly();
             throw new EJBException(ex.getMessage());
@@ -4934,7 +5343,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                 this.createInvTagList(arJobOrderInvoiceLine, tagList, companyCode);
             }
             return arJobOrderInvoiceLine;
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             getSessionContext().setRollbackOnly();
             throw new EJBException(ex.getMessage());
@@ -4962,7 +5372,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             LocalArStandardMemoLine arStandardMemoLine = arStandardMemoLineHome.findBySmlName(mdetails.getIlSmlName(), companyCode);
             arInvoiceLine.setArStandardMemoLine(arStandardMemoLine);
             return arInvoiceLine;
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             getSessionContext().setRollbackOnly();
             throw new EJBException(ex.getMessage());
@@ -5033,7 +5444,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             invAdjustmentLine.setInvItemLocation(invItemLocation);
             invAdjustmentLine.setInvItemLocation(invItemLocation);
             return invAdjustmentLine;
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             getSessionContext().setRollbackOnly();
             throw new EJBException(ex.getMessage());
@@ -5134,9 +5546,11 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             LocalArDistributionRecord arDistributionRecord = arDistributionRecordHome.create(distributionRecordLine, distributionRecordClass, isDebit, EJBCommon.roundIt(distributionRecordAmount, adCompany.getGlFunctionalCurrency().getFcPrecision()), EJBCommon.FALSE, EJBCommon.FALSE, companyCode);
             arDistributionRecord.setArInvoice(arInvoice);
             arDistributionRecord.setGlChartOfAccount(glChartOfAccount);
-        } catch (FinderException ex) {
+        }
+        catch (FinderException ex) {
             throw new GlobalBranchAccountNumberInvalidException();
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             getSessionContext().setRollbackOnly();
             throw new EJBException(ex.getMessage());
@@ -5154,9 +5568,11 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             LocalArDistributionRecord arDistributionRecord = arDistributionRecordHome.create(distributionRecordLine, distributionRecordClass, isDebit, EJBCommon.roundIt(distributionRecordAmount, adCompany.getGlFunctionalCurrency().getFcPrecision()), EJBCommon.FALSE, EJBCommon.FALSE, companyCode);
             arDistributionRecord.setArReceipt(arReceipt);
             arDistributionRecord.setGlChartOfAccount(glChartOfAccount);
-        } catch (FinderException ex) {
+        }
+        catch (FinderException ex) {
             throw new GlobalBranchAccountNumberInvalidException("" + distributionRecordLine);
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             getSessionContext().setRollbackOnly();
             throw new EJBException(ex.getMessage());
@@ -5189,7 +5605,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                     glChartOfAccountBalance.setCoabTotalCredit(EJBCommon.roundIt(glChartOfAccountBalance.getCoabTotalCredit() + journalLineAmount, FC_EXTNDD_PRCSN));
                 }
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             throw new EJBException(ex.getMessage());
         }
@@ -5215,7 +5632,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                 // generate line number
                 LocalInvCosting invCurrentCosting = invCostingHome.getByMaxCstLineNumberAndCstDateToLongAndIiNameAndLocName(costDate.getTime(), invItemLocation.getInvItem().getIiName(), invItemLocation.getInvLocation().getLocName(), branchCode, companyCode);
                 costLineNumber = invCurrentCosting.getCstLineNumber() + 1;
-            } catch (FinderException ex) {
+            }
+            catch (FinderException ex) {
                 costLineNumber = 1;
             }
 
@@ -5241,7 +5659,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                     prevExpiryDates = "";
                 }
 
-            } catch (Exception ex) {
+            }
+            catch (Exception ex) {
                 prevExpiryDates = "";
             }
 
@@ -5367,9 +5786,11 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                     }
                 }
             }
-        } catch (AdPRFCoaGlVarianceAccountNotFoundException | GlobalExpiryDateNotFoundException ex) {
+        }
+        catch (AdPRFCoaGlVarianceAccountNotFoundException | GlobalExpiryDateNotFoundException ex) {
             throw ex;
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             getSessionContext().setRollbackOnly();
             throw new EJBException(ex.getMessage());
@@ -5399,7 +5820,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                 LocalInvCosting invCurrentCosting = invCostingHome.getByMaxCstLineNumberAndCstDateToLongAndIiNameAndLocName(costDate.getTime(), invItemLocation.getInvItem().getIiName(), invItemLocation.getInvLocation().getLocName(), branchCode, companyCode);
                 costLineNumber = invCurrentCosting.getCstLineNumber() + 1;
 
-            } catch (FinderException ex) {
+            }
+            catch (FinderException ex) {
 
                 costLineNumber = 1;
             }
@@ -5431,7 +5853,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                 invPropagatedCosting.setCstRemainingQuantity(invPropagatedCosting.getCstRemainingQuantity() + costQuantitySold);
                 invPropagatedCosting.setCstRemainingValue(invPropagatedCosting.getCstRemainingValue() + costOfSales);
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             getSessionContext().setRollbackOnly();
             throw new EJBException(ex.getMessage());
@@ -5461,7 +5884,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                 LocalInvCosting invCurrentCosting = invCostingHome.getByMaxCstLineNumberAndCstDateToLongAndIiNameAndLocName(costDate.getTime(), invItemLocation.getInvItem().getIiName(), invItemLocation.getInvLocation().getLocName(), branchCode, companyCode);
                 costLineNumber = invCurrentCosting.getCstLineNumber() + 1;
 
-            } catch (FinderException ex) {
+            }
+            catch (FinderException ex) {
 
                 costLineNumber = 1;
             }
@@ -5492,7 +5916,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                 invPropagatedCosting.setCstRemainingQuantity(invPropagatedCosting.getCstRemainingQuantity() + costQuantitySold);
                 invPropagatedCosting.setCstRemainingValue(invPropagatedCosting.getCstRemainingValue() + costOfSales);
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             getSessionContext().setRollbackOnly();
             throw new EJBException(ex.getMessage());
@@ -5525,9 +5950,11 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                     arDistributionRecord.setDrScAccount(serviceChargeCoa);
                 }
             }
-        } catch (FinderException ex) {
+        }
+        catch (FinderException ex) {
             throw new GlobalBranchAccountNumberInvalidException();
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             getSessionContext().setRollbackOnly();
             throw new EJBException(ex.getMessage());
@@ -5562,7 +5989,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                 LocalArCustomerBalance arCustomerBalance = (LocalArCustomerBalance) customerBalance;
                 arCustomerBalance.setCbBalance(arCustomerBalance.getCbBalance() + INV_AMNT);
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             getSessionContext().setRollbackOnly();
             throw new EJBException(ex.getMessage());
@@ -5590,7 +6018,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                 // generate line number
                 LocalInvCosting invCurrentCosting = invCostingHome.getByMaxCstLineNumberAndCstDateToLongAndIiNameAndLocName(costDate.getTime(), invItemLocation.getInvItem().getIiName(), invItemLocation.getInvLocation().getLocName(), branchCode, companyCode);
                 costLineNumber = invCurrentCosting.getCstLineNumber() + 1;
-            } catch (FinderException ex) {
+            }
+            catch (FinderException ex) {
                 costLineNumber = 1;
             }
 
@@ -5606,7 +6035,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                 invPropagatedCosting.setCstRemainingQuantity(invPropagatedCosting.getCstRemainingQuantity() + cstAdjustQuantity);
                 invPropagatedCosting.setCstRemainingValue(invPropagatedCosting.getCstRemainingValue() + cstAdjustCosting);
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             getSessionContext().setRollbackOnly();
             throw new EJBException(ex.getMessage());
@@ -5628,12 +6058,14 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                     LocalAdUser adUser = null;
                     try {
                         adUser = adUserHome.findByUsrName(tgLstDetails.getTgCustodian(), companyCode);
-                    } catch (FinderException ex) {
+                    }
+                    catch (FinderException ex) {
                     }
                     invTag.setAdUser(adUser);
                 }
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             throw ex;
         }
     }
@@ -5650,7 +6082,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             try {
                 arInvoice = arInvoiceHome.findByPrimaryKey(invoiceCode);
                 arCreditedInvoice = arInvoiceHome.findByPrimaryKey(invoiceCode);
-            } catch (FinderException ex) {
+            }
+            catch (FinderException ex) {
                 throw new GlobalRecordAlreadyDeletedException();
             }
             // validate if invoice/credit memo is already posted or void
@@ -5676,7 +6109,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                         LocalInvCosting invCosting = null;
                         try {
                             invCosting = invCostingHome.getByMaxCstDateToLongAndMaxCstLineNumberAndLessThanEqualCstDateAndIiNameAndLocName(arInvoice.getInvDate(), itemName, locationName, branchCode, companyCode);
-                        } catch (FinderException ex) {
+                        }
+                        catch (FinderException ex) {
                         }
 
                         double unitCost = arInvoiceLineItem.getInvItemLocation().getInvItem().getIiUnitCost();
@@ -5716,7 +6150,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
 
                             invCosting = invCostingHome.getByMaxCstDateToLongAndMaxCstLineNumberAndLessThanEqualCstDateAndIiNameAndLocName(arInvoice.getInvDate(), itemName, locationName, branchCode, companyCode);
 
-                        } catch (FinderException ex) {
+                        }
+                        catch (FinderException ex) {
 
                         }
 
@@ -5767,7 +6202,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
 
                         try {
                             invCosting = invCostingHome.getByMaxCstDateToLongAndMaxCstLineNumberAndLessThanEqualCstDateAndIiNameAndLocName(arInvoice.getInvDate(), itemName, locationName, branchCode, companyCode);
-                        } catch (FinderException ex) {
+                        }
+                        catch (FinderException ex) {
                         }
 
                         double unitCost = arJobOrderLine.getInvItemLocation().getInvItem().getIiUnitCost();
@@ -5804,7 +6240,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                 LocalGlSetOfBook glJournalSetOfBook = null;
                 try {
                     glJournalSetOfBook = glSetOfBookHome.findByDate(arInvoice.getInvDate(), companyCode);
-                } catch (FinderException ex) {
+                }
+                catch (FinderException ex) {
                     throw new GlJREffectiveDateNoPeriodExistException();
                 }
 
@@ -5851,7 +6288,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
 
                         glSuspenseAccount = glSuspenseAccountHome.findByJsNameAndJcName("ACCOUNTS RECEIVABLES", arInvoice.getInvCreditMemo() == EJBCommon.FALSE ? "SALES INVOICES" : "CREDIT MEMOS", companyCode);
 
-                    } catch (FinderException ex) {
+                    }
+                    catch (FinderException ex) {
 
                         throw new GlobalJournalNotBalanceException();
                     }
@@ -5943,7 +6381,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
 
                             glForexLedgers = glForexLedgerHome.findLatestGlFrlByFrlDateAndByCoaCode(arInvoiceTemp.getInvDate(), glJournalLine.getGlChartOfAccount().getCoaCode(), companyCode);
 
-                        } catch (FinderException ex) {
+                        }
+                        catch (FinderException ex) {
 
                         }
 
@@ -5973,7 +6412,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
 
                             glForexLedgers = glForexLedgerHome.findByGreaterThanFrlDateAndCoaCode(glForexLedger.getFrlDate(), glForexLedger.getGlChartOfAccount().getCoaCode(), glForexLedger.getFrlAdCompany());
 
-                        } catch (FinderException ex) {
+                        }
+                        catch (FinderException ex) {
 
                         }
 
@@ -6061,10 +6501,11 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                 }
             }
 
-        } catch (GlJREffectiveDateNoPeriodExistException | GlobalExpiryDateNotFoundException |
-                 AdPRFCoaGlVarianceAccountNotFoundException | GlobalTransactionAlreadyVoidException |
-                 GlobalTransactionAlreadyPostedException | GlobalRecordAlreadyDeletedException |
-                 GlobalJournalNotBalanceException | GlJREffectiveDatePeriodClosedException ex) {
+        }
+        catch (GlJREffectiveDateNoPeriodExistException | GlobalExpiryDateNotFoundException |
+               AdPRFCoaGlVarianceAccountNotFoundException | GlobalTransactionAlreadyVoidException |
+               GlobalTransactionAlreadyPostedException | GlobalRecordAlreadyDeletedException |
+               GlobalJournalNotBalanceException | GlJREffectiveDatePeriodClosedException ex) {
 
             getSessionContext().setRollbackOnly();
             throw ex;
@@ -6073,7 +6514,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
          * } catch (GlobalBranchAccountNumberInvalidException ex) {
          *
          * getSessionContext().setRollbackOnly(); throw ex;
-         */ catch (Exception ex) {
+         */
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             getSessionContext().setRollbackOnly();
@@ -6089,7 +6531,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
         String journalBatchName = String.format("JOURNAL IMPORT %s %s", formatter.format(new Date()), invoiceBatchName);
         try {
             glJournalBatch = glJournalBatchHome.findByJbName(journalBatchName, branchCode, companyCode);
-        } catch (FinderException ex) {
+        }
+        catch (FinderException ex) {
         }
         if (adPreference.getPrfEnableGlJournalBatch() == EJBCommon.TRUE && glJournalBatch == null) {
             glJournalBatch = glJournalBatchHome.create(journalBatchName, EJBCommon.JOURNAL_IMPORT, EJBCommon.CLOSED, EJBCommon.getGcCurrentDateWoTime().getTime(), userName, branchCode, companyCode);
@@ -6147,7 +6590,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
 
             this.executeInvAdjPost(invAdjustment.getAdjCode(), invAdjustment.getAdjLastModifiedBy(), branchCode, companyCode);
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             Debug.printStackTrace(ex);
             getSessionContext().setRollbackOnly();
@@ -6165,16 +6609,19 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             LocalGlChartOfAccount glChartOfAccount;
             try {
                 glChartOfAccount = glChartOfAccountHome.findByCoaCodeAndBranchCode(chartOfAccountCode, branchCode, companyCode);
-            } catch (FinderException ex) {
+            }
+            catch (FinderException ex) {
                 throw new GlobalBranchAccountNumberInvalidException();
             }
             // create distribution record
             LocalInvDistributionRecord invDistributionRecord = invDistributionRecordHome.create(distributionRecordLine, distributionRecordClass, isDebit, EJBCommon.roundIt(distributionRecordAmount, adCompany.getGlFunctionalCurrency().getFcPrecision()), isDistributionRecordReversal, EJBCommon.FALSE, companyCode);
             invDistributionRecord.setInvAdjustment(invAdjustment);
             invDistributionRecord.setInvChartOfAccount(glChartOfAccount);
-        } catch (GlobalBranchAccountNumberInvalidException ex) {
+        }
+        catch (GlobalBranchAccountNumberInvalidException ex) {
             throw new GlobalBranchAccountNumberInvalidException();
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             getSessionContext().setRollbackOnly();
             throw new EJBException(ex.getMessage());
@@ -6189,7 +6636,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             LocalInvAdjustment invAdjustment;
             try {
                 invAdjustment = invAdjustmentHome.findByPrimaryKey(adjustmentCode);
-            } catch (FinderException ex) {
+            }
+            catch (FinderException ex) {
                 throw new GlobalRecordAlreadyDeletedException();
             }
 
@@ -6222,7 +6670,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             LocalGlSetOfBook glJournalSetOfBook;
             try {
                 glJournalSetOfBook = glSetOfBookHome.findByDate(invAdjustment.getAdjDate(), companyCode);
-            } catch (FinderException ex) {
+            }
+            catch (FinderException ex) {
                 throw new GlJREffectiveDateNoPeriodExistException();
             }
 
@@ -6259,7 +6708,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                 LocalGlSuspenseAccount glSuspenseAccount;
                 try {
                     glSuspenseAccount = glSuspenseAccountHome.findByJsNameAndJcName(EJBCommon.INVENTORY, "INVENTORY ADJUSTMENTS", companyCode);
-                } catch (FinderException ex) {
+                }
+                catch (FinderException ex) {
                     throw new GlobalJournalNotBalanceException();
                 }
                 if (totalDebit - totalCredit < 0) {
@@ -6278,7 +6728,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             java.text.SimpleDateFormat formatter = new java.text.SimpleDateFormat("MM/dd/yyyy");
             try {
                 glJournalBatch = glJournalBatchHome.findByJbName("JOURNAL IMPORT " + formatter.format(new Date()) + " INVENTORY ADJUSTMENTS", branchCode, companyCode);
-            } catch (FinderException ex) {
+            }
+            catch (FinderException ex) {
             }
 
             if (glJournalBatch == null) {
@@ -6355,12 +6806,14 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                 }
             }
             invAdjustment.setAdjPosted(EJBCommon.TRUE);
-        } catch (GlJREffectiveDateNoPeriodExistException | GlobalTransactionAlreadyPostedException |
-                 GlobalRecordAlreadyDeletedException | GlobalJournalNotBalanceException |
-                 GlJREffectiveDatePeriodClosedException ex) {
+        }
+        catch (GlJREffectiveDateNoPeriodExistException | GlobalTransactionAlreadyPostedException |
+               GlobalRecordAlreadyDeletedException | GlobalJournalNotBalanceException |
+               GlJREffectiveDatePeriodClosedException ex) {
             getSessionContext().setRollbackOnly();
             throw ex;
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Debug.printStackTrace(ex);
             getSessionContext().setRollbackOnly();
             throw new EJBException(ex.getMessage());
@@ -6495,13 +6948,15 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                     LocalAdUser adUser = null;
                     try {
                         adUser = adUserHome.findByUsrName(tgLstDetails.getTgCustodian(), companyCode);
-                    } catch (FinderException ex) {
+                    }
+                    catch (FinderException ex) {
 
                     }
                     invTag.setAdUser(adUser);
                 }
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
         }
     }
 
@@ -6520,13 +6975,15 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                     LocalAdUser adUser = null;
                     try {
                         adUser = adUserHome.findByUsrName(tgLstDetails.getTgCustodian(), companyCode);
-                    } catch (FinderException ex) {
+                    }
+                    catch (FinderException ex) {
 
                     }
                     invTag.setAdUser(adUser);
                 }
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             throw ex;
         }
     }
@@ -6714,7 +7171,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
                     miscList.add("null");
                 }
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
         }
         return miscList;
     }
@@ -6733,7 +7191,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             tgLstDetails.setTgSerialNumber(invTag.getTgSerialNumber());
             try {
                 tgLstDetails.setTgCustodian(invTag.getAdUser().getUsrName());
-            } catch (Exception ex) {
+            }
+            catch (Exception ex) {
                 tgLstDetails.setTgCustodian("");
             }
             list.add(tgLstDetails);
@@ -6756,7 +7215,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             try {
 
                 tgLstDetails.setTgCustodian(invTag.getAdUser().getUsrName());
-            } catch (Exception ex) {
+            }
+            catch (Exception ex) {
                 tgLstDetails.setTgCustodian("");
             }
 
@@ -6780,7 +7240,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             try {
 
                 tgLstDetails.setTgCustodian(invTag.getAdUser().getUsrName());
-            } catch (Exception ex) {
+            }
+            catch (Exception ex) {
                 tgLstDetails.setTgCustodian("");
             }
 
@@ -6804,7 +7265,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             try {
 
                 tgLstDetails.setTgCustodian(invTag.getAdUser().getUsrName());
-            } catch (Exception ex) {
+            }
+            catch (Exception ex) {
                 tgLstDetails.setTgCustodian("");
             }
 
@@ -6828,7 +7290,8 @@ public class ArInvoiceEntryControllerBean extends EJBContextClass implements ArI
             try {
 
                 tgLstDetails.setTgCustodian(invTag.getAdUser().getUsrName());
-            } catch (Exception ex) {
+            }
+            catch (Exception ex) {
                 tgLstDetails.setTgCustodian("");
             }
 

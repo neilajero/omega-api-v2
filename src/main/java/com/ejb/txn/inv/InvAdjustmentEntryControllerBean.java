@@ -31,8 +31,8 @@ import com.util.mod.inv.InvModAdjustmentDetails;
 import com.util.mod.inv.InvModAdjustmentLineDetails;
 import com.util.mod.inv.InvModTagListDetails;
 import com.util.mod.inv.InvModUnitOfMeasureDetails;
-
 import jakarta.ejb.*;
+
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
@@ -796,8 +796,8 @@ public class InvAdjustmentEntryControllerBean extends EJBContextClass implements
         }
     }
 
-    public Integer saveInvAdjEntryMobile(InvModAdjustmentDetails details, ArrayList alList, boolean isDraft,
-                                         Integer branchCode, Integer companyCode)
+    public Integer saveInvAdjEntryMobile(
+            InvModAdjustmentDetails details, ArrayList alList, boolean isDraft, Integer branchCode, Integer companyCode)
             throws GlobalRecordAlreadyDeletedException, GlobalBranchAccountNumberInvalidException,
             GlobalTransactionAlreadyApprovedException, GlobalTransactionAlreadyPendingException,
             GlobalTransactionAlreadyPostedException, GlobalNoApprovalRequesterFoundException,
@@ -808,91 +808,65 @@ public class InvAdjustmentEntryControllerBean extends EJBContextClass implements
             GlobalExpiryDateNotFoundException, GlobalMiscInfoIsRequiredException, GlobalRecordInvalidException {
 
         Debug.print("InvAdjustmentEntryControllerBean saveInvAdjEntryMobile");
+
         try {
 
             LocalInvAdjustment invAdjustment = null;
 
             // validate if Adjustment is already deleted
-
             try {
-
                 if (details.getAdjCode() != null) {
-
                     invAdjustment = invAdjustmentHome.findByPrimaryKey(details.getAdjCode());
                 }
-
             }
             catch (FinderException ex) {
-
                 throw new GlobalRecordAlreadyDeletedException();
             }
 
             // validate if adjustment is already posted, void, approved or pending
-
             if (details.getAdjCode() != null) {
-
                 if (invAdjustment.getAdjApprovalStatus() != null) {
-
                     if (invAdjustment.getAdjApprovalStatus().equals("APPROVED")
                             || invAdjustment.getAdjApprovalStatus().equals("N/A")) {
-
                         throw new GlobalTransactionAlreadyApprovedException();
-
                     } else if (invAdjustment.getAdjApprovalStatus().equals("PENDING")) {
-
                         throw new GlobalTransactionAlreadyPendingException();
                     }
                 }
-
                 if (invAdjustment.getAdjPosted() == EJBCommon.TRUE) {
-
                     throw new GlobalTransactionAlreadyPostedException();
                 }
             }
 
             LocalInvAdjustment invExistingAdjustment = null;
-
             try {
-
-                invExistingAdjustment = invAdjustmentHome
-                        .findByAdjDocumentNumberAndBrCode(details.getAdjDocumentNumber(), branchCode, companyCode);
-
+                invExistingAdjustment = invAdjustmentHome.findByAdjDocumentNumberAndBrCode(details.getAdjDocumentNumber(), branchCode, companyCode);
             }
             catch (FinderException ex) {
-
+                Debug.print("Finder Exception : " + ex.getMessage());
             }
 
-            // validate if document number is unique document number is automatic then set
-            // next sequence
-
+            // validate if document number is unique document number is automatic then set next sequence
             if (details.getAdjCode() == null) {
-
                 LocalAdBranchDocumentSequenceAssignment adBranchDocumentSequenceAssignment = null;
                 LocalAdDocumentSequenceAssignment adDocumentSequenceAssignment = null;
-
                 if (invExistingAdjustment != null) {
-
                     throw new GlobalDocumentNumberNotUniqueException();
                 }
 
                 try {
-
-                    adDocumentSequenceAssignment = adDocumentSequenceAssignmentHome.findByDcName("INV ADJUSTMENT",
-                            companyCode);
-
+                    adDocumentSequenceAssignment = adDocumentSequenceAssignmentHome.findByDcName("INV ADJUSTMENT", companyCode);
                 }
                 catch (FinderException ex) {
-
+                    Debug.print("Finder Exception : " + ex.getMessage());
                 }
 
                 try {
-
                     adBranchDocumentSequenceAssignment = adBranchDocumentSequenceAssignmentHome
                             .findBdsByDsaCodeAndBrCode(adDocumentSequenceAssignment.getDsaCode(), branchCode, companyCode);
-
                 }
                 catch (FinderException ex) {
-
+                    Debug.print("Finder Exception : " + ex.getMessage());
                 }
 
                 if (adDocumentSequenceAssignment.getAdDocumentSequence().getDsNumberingType() == 'A'
@@ -900,38 +874,28 @@ public class InvAdjustmentEntryControllerBean extends EJBContextClass implements
                         || details.getAdjDocumentNumber().trim().length() == 0)) {
 
                     while (true) {
-
                         if (adBranchDocumentSequenceAssignment == null
                                 || adBranchDocumentSequenceAssignment.getBdsNextSequence() == null) {
-
                             try {
-
                                 invAdjustmentHome.findByAdjDocumentNumberAndBrCode(
                                         adDocumentSequenceAssignment.getDsaNextSequence(), branchCode, companyCode);
                                 adDocumentSequenceAssignment.setDsaNextSequence(EJBCommon
                                         .incrementStringNumber(adDocumentSequenceAssignment.getDsaNextSequence()));
-
                             }
                             catch (FinderException ex) {
-
                                 details.setAdjDocumentNumber(adDocumentSequenceAssignment.getDsaNextSequence());
                                 adDocumentSequenceAssignment.setDsaNextSequence(EJBCommon
                                         .incrementStringNumber(adDocumentSequenceAssignment.getDsaNextSequence()));
                                 break;
                             }
-
                         } else {
-
                             try {
-
                                 invAdjustmentHome.findByAdjDocumentNumberAndBrCode(
                                         adBranchDocumentSequenceAssignment.getBdsNextSequence(), branchCode, companyCode);
                                 adBranchDocumentSequenceAssignment.setBdsNextSequence(EJBCommon.incrementStringNumber(
                                         adBranchDocumentSequenceAssignment.getBdsNextSequence()));
-
                             }
                             catch (FinderException ex) {
-
                                 details.setAdjDocumentNumber(adBranchDocumentSequenceAssignment.getBdsNextSequence());
                                 adBranchDocumentSequenceAssignment.setBdsNextSequence(EJBCommon.incrementStringNumber(
                                         adBranchDocumentSequenceAssignment.getBdsNextSequence()));
@@ -944,80 +908,61 @@ public class InvAdjustmentEntryControllerBean extends EJBContextClass implements
             } else {
 
                 if (invExistingAdjustment != null && !invExistingAdjustment.getAdjCode().equals(details.getAdjCode())) {
-
                     throw new GlobalDocumentNumberNotUniqueException();
                 }
 
-                if (invAdjustment.getAdjDocumentNumber() != details.getAdjDocumentNumber()
+                assert invAdjustment != null;
+                if (!Objects.equals(invAdjustment.getAdjDocumentNumber(), details.getAdjDocumentNumber())
                         && (details.getAdjDocumentNumber() == null
                         || details.getAdjDocumentNumber().trim().length() == 0)) {
-
                     details.setAdjDocumentNumber(invAdjustment.getAdjDocumentNumber());
                 }
             }
 
-            // used in checking if invoice should re-generate distribution records and
-            // re-calculate taxes
-            boolean isRecalculate = true;
-
+            // used in checking if invoice should re-generate distribution records and re-calculate taxes
+            boolean isRecalculate = false;
             LocalAdPreference adPreference = adPreferenceHome.findByPrfAdCompany(companyCode);
-
             LocalGlChartOfAccount glChartOfAccount = null;
-
             try {
-
                 switch (details.getAdjType()) {
-                    case "GENERAL":
-                        glChartOfAccount = glChartOfAccountHome
-                                .findByPrimaryKey(adPreference.getPrfInvGeneralAdjustmentAccount());
-                        break;
-                    case "ISSUANCE":
-                        glChartOfAccount = glChartOfAccountHome
-                                .findByPrimaryKey(adPreference.getPrfInvIssuanceAdjustmentAccount());
-                        break;
-                    case "PRODUCTION":
-                        glChartOfAccount = glChartOfAccountHome
-                                .findByPrimaryKey(adPreference.getPrfInvProductionAdjustmentAccount());
-                        break;
+                    case "GENERAL" -> glChartOfAccount = glChartOfAccountHome
+                            .findByPrimaryKey(adPreference.getPrfInvGeneralAdjustmentAccount());
+                    case "ISSUANCE" -> glChartOfAccount = glChartOfAccountHome
+                            .findByPrimaryKey(adPreference.getPrfInvIssuanceAdjustmentAccount());
+                    case "PRODUCTION" -> glChartOfAccount = glChartOfAccountHome
+                            .findByPrimaryKey(adPreference.getPrfInvProductionAdjustmentAccount());
                 }
-
             }
             catch (FinderException ex) {
                 throw new GlobalAccountNumberInvalidException();
             }
 
             // create adjustment
-
             if (details.getAdjCode() == null) {
-
                 invAdjustment = invAdjustmentHome.create(details.getAdjDocumentNumber(),
                         details.getAdjReferenceNumber(), details.getAdjDescription(), details.getAdjDate(),
                         details.getAdjType(), details.getAdjApprovalStatus(), EJBCommon.FALSE,
                         details.getAdjCreatedBy(), details.getAdjDateCreated(), details.getAdjLastModifiedBy(),
-                        details.getAdjDateLastModified(), null, null, null, null, null, null, EJBCommon.FALSE,
+                        details.getAdjDateLastModified(), null, null,
+                        null, null, null, null, EJBCommon.FALSE,
                         EJBCommon.FALSE, branchCode, companyCode);
 
             } else {
 
                 // check if critical fields are changed
-
                 if (!invAdjustment.getGlChartOfAccount().getCoaAccountNumber()
                         .equals(glChartOfAccount.getCoaAccountNumber())
                         || alList.size() != invAdjustment.getInvAdjustmentLines().size()
                         || !(invAdjustment.getAdjDate().equals(details.getAdjDate()))) {
-
                     isRecalculate = true;
 
                 } else if (alList.size() == invAdjustment.getInvAdjustmentLines().size()) {
 
                     Iterator alIter = invAdjustment.getInvAdjustmentLines().iterator();
                     Iterator alListIter = alList.iterator();
-
                     while (alIter.hasNext()) {
-
                         LocalInvAdjustmentLine invAdjustmentLine = (LocalInvAdjustmentLine) alIter.next();
                         InvModAdjustmentLineDetails mdetails = (InvModAdjustmentLineDetails) alListIter.next();
-
                         if (!invAdjustmentLine.getInvItemLocation().getInvItem().getIiName()
                                 .equals(mdetails.getAlIiName())
                                 || !invAdjustmentLine.getInvItemLocation().getInvLocation().getLocName()
@@ -1025,20 +970,11 @@ public class InvAdjustmentEntryControllerBean extends EJBContextClass implements
                                 || !invAdjustmentLine.getInvUnitOfMeasure().getUomName().equals(mdetails.getAlUomName())
                                 || invAdjustmentLine.getAlAdjustQuantity() != mdetails.getAlAdjustQuantity()
                                 || invAdjustmentLine.getAlUnitCost() != mdetails.getAlUnitCost()
-                                || invAdjustmentLine.getAlMisc() != mdetails.getAlMisc()) {
-
+                                || !Objects.equals(invAdjustmentLine.getAlMisc(), mdetails.getAlMisc())) {
                             isRecalculate = true;
                             break;
                         }
-
-                        // isRecalculate = false;
-
                     }
-
-                } else {
-
-                    // isRecalculate = false;
-
                 }
 
                 invAdjustment.setAdjDocumentNumber(details.getAdjDocumentNumber());
@@ -1059,63 +995,39 @@ public class InvAdjustmentEntryControllerBean extends EJBContextClass implements
             if (isRecalculate) {
 
                 // remove all adjustment lines
-
                 Collection invAdjustmentLines = invAdjustment.getInvAdjustmentLines();
-
                 Iterator i = invAdjustmentLines.iterator();
-
                 while (i.hasNext()) {
-
                     LocalInvAdjustmentLine invAdjustmentLine = (LocalInvAdjustmentLine) i.next();
-
                     if (invAdjustmentLine.getAlAdjustQuantity() < 0) {
-
                         double convertedQuantity = this.convertByUomFromAndItemAndQuantity(
                                 invAdjustmentLine.getInvUnitOfMeasure(),
                                 invAdjustmentLine.getInvItemLocation().getInvItem(),
                                 Math.abs(invAdjustmentLine.getAlAdjustQuantity()), companyCode);
-
                         invAdjustmentLine.getInvItemLocation().setIlCommittedQuantity(
                                 invAdjustmentLine.getInvItemLocation().getIlCommittedQuantity() - convertedQuantity);
                     }
-
                     i.remove();
-
-                    // invAdjustmentLine.entityRemove();
                     em.remove(invAdjustmentLine);
                 }
 
                 // remove all distribution records
-
                 Collection arDistributionRecords = invAdjustment.getInvDistributionRecords();
-
                 i = arDistributionRecords.iterator();
-
                 while (i.hasNext()) {
-
                     LocalInvDistributionRecord arDistributionRecord = (LocalInvDistributionRecord) i.next();
-
                     i.remove();
-
-                    // arDistributionRecord.entityRemove();
                     em.remove(arDistributionRecord);
                 }
 
                 // add new adjustment lines and distribution record
-
                 double TOTAL_AMOUNT = 0d;
-
-                byte DEBIT = 0;
-
+                byte DEBIT;
                 i = alList.iterator();
-
                 while (i.hasNext()) {
-
                     InvModAdjustmentLineDetails mdetails = (InvModAdjustmentLineDetails) i.next();
-
-                    LocalInvItemLocation invItemLocation = null;
-                    LocalInvItem invItem = null;
-
+                    LocalInvItemLocation invItemLocation;
+                    LocalInvItem invItem;
                     try {
 
                         invItem = invItemHome.findByPartNumber(mdetails.getAlPartNumber(), companyCode);
@@ -1124,7 +1036,7 @@ public class InvAdjustmentEntryControllerBean extends EJBContextClass implements
                                 invItem.getIiName(), companyCode);
                         mdetails.setAlIiName(invItem.getIiName());
 
-                        if (details.getAdjPurchaseUnit() == true) {
+                        if (details.getAdjPurchaseUnit()) {
                             Iterator iter = null;
                             try {
                                 iter = invUnitOfMeasureHome
@@ -1132,10 +1044,14 @@ public class InvAdjustmentEntryControllerBean extends EJBContextClass implements
                                         .iterator();
                             }
                             catch (FinderException ex) {
+                                Debug.print("Finder Exception : " + ex.getMessage());
                             }
-                            while (iter.hasNext()) {
+                            while (true) {
+                                assert iter != null;
+                                if (!iter.hasNext()) {
+                                    break;
+                                }
                                 LocalInvUnitOfMeasure invUnitOfMeasure = (LocalInvUnitOfMeasure) iter.next();
-
                                 LocalInvUnitOfMeasureConversion invUnitOfMeasureConversion = invUnitOfMeasureConversionHome
                                         .findUmcByIiNameAndUomName(invItem.getIiName(), invUnitOfMeasure.getUomName(),
                                                 companyCode);
@@ -1147,10 +1063,8 @@ public class InvAdjustmentEntryControllerBean extends EJBContextClass implements
                         } else {
                             mdetails.setAlUomName(invItem.getInvUnitOfMeasure().getUomName());
                         }
-
                         mdetails.setAlUnitCost(invItem.getIiUnitCost());
                         mdetails.setAlLocName(invLocation.getLocName());
-
                     }
                     catch (FinderException ex) {
                         throw new GlobalInvItemLocationNotFoundException(String.valueOf(mdetails.getAlLineNumber()));
@@ -1170,22 +1084,16 @@ public class InvAdjustmentEntryControllerBean extends EJBContextClass implements
                             EJBCommon.FALSE, companyCode);
 
                     // add physical inventory distribution
-
-                    double AMOUNT = 0d;
-
+                    double AMOUNT;
                     if (invAdjustmentLine.getAlAdjustQuantity() > 0) {
-
                         AMOUNT = EJBCommon.roundIt(
                                 invAdjustmentLine.getAlAdjustQuantity() * invAdjustmentLine.getAlUnitCost(),
                                 this.getGlFcPrecisionUnit(companyCode));
                         DEBIT = EJBCommon.TRUE;
-
                     } else {
                         // TODO: CHECK WHY GETTING COST IF ADJUST BY IS NEGATIVE
                         double COST = 0d;
-
                         try {
-
                             LocalInvCosting invCosting = invCostingHome
                                     .getByMaxCstDateToLongAndMaxCstLineNumberAndLessThanEqualCstDateAndIiNameAndLocName(
                                             details.getAdjDate(),
@@ -1195,12 +1103,11 @@ public class InvAdjustmentEntryControllerBean extends EJBContextClass implements
 
                             if (invCosting.getCstRemainingQuantity() <= 0 && invCosting.getCstRemainingValue() <= 0) {
 
-                                HashMap criteria = new HashMap();
+                                HashMap<String, Object> criteria = new HashMap<>();
                                 criteria.put("itemName", invItemLocation.getInvItem().getIiName());
                                 criteria.put("location", invItemLocation.getInvLocation().getLocName());
 
                                 ArrayList branchList = new ArrayList();
-
                                 AdBranchDetails mdetailsb = new AdBranchDetails();
                                 mdetailsb.setBrCode(branchCode);
                                 branchList.add(mdetailsb);
@@ -1215,10 +1122,9 @@ public class InvAdjustmentEntryControllerBean extends EJBContextClass implements
                                                 branchCode, companyCode);
                             }
 
-                            // test if AVERAGE or FIFO
+                            // Validate if AVERAGE or FIFO
                             switch (invCosting.getInvItemLocation().getInvItem().getIiCostMethod()) {
-                                case "Average":
-
+                                case "Average" -> {
                                     if (invCosting.getCstRemainingQuantity() <= 0) {
                                         COST = invItemLocation.getInvItem().getIiUnitCost();
                                     } else {
@@ -1231,21 +1137,16 @@ public class InvAdjustmentEntryControllerBean extends EJBContextClass implements
                                             COST = invItemLocation.getInvItem().getIiUnitCost();
                                         }
                                     }
-
-                                    break;
-                                case "FIFO":
-                                    COST = this.getInvFifoCost(invAdjustment.getAdjDate(), invItemLocation.getIlCode(),
-                                            invAdjustmentLine.getAlAdjustQuantity(), invCosting.getCstAdjustCost(), false,
-                                            branchCode, companyCode);
-                                    break;
-                                case "Standard":
-                                    COST = invItemLocation.getInvItem().getIiUnitCost();
-                                    break;
+                                }
+                                case "FIFO" ->
+                                        COST = this.getInvFifoCost(invAdjustment.getAdjDate(), invItemLocation.getIlCode(),
+                                                invAdjustmentLine.getAlAdjustQuantity(), invCosting.getCstAdjustCost(), false,
+                                                branchCode, companyCode);
+                                case "Standard" -> COST = invItemLocation.getInvItem().getIiUnitCost();
                             }
 
                         }
                         catch (FinderException ex) {
-
                             COST = invAdjustmentLine.getInvItemLocation().getInvItem().getIiUnitCost();
                         }
 
@@ -1253,29 +1154,22 @@ public class InvAdjustmentEntryControllerBean extends EJBContextClass implements
                                 invAdjustmentLine.getInvUnitOfMeasure().getUomName(), COST, true, companyCode);
 
                         invAdjustmentLine.setAlUnitCost(COST);
-
                         AMOUNT = EJBCommon.roundIt(invAdjustmentLine.getAlAdjustQuantity() * COST,
                                 adPreference.getPrfInvCostPrecisionUnit());
-                        // AMOUNT = invAdjustmentLine.getAlAdjustQuantity() * COST;
-                        Debug.print("AMOUNT>>: " + AMOUNT);
                         DEBIT = EJBCommon.FALSE;
                     }
 
                     // check for branch mapping
-
                     LocalAdBranchItemLocation adBranchItemLocation = null;
-
                     try {
                         adBranchItemLocation = adBranchItemLocationHome.findBilByIlCodeAndBrCode(
                                 invAdjustmentLine.getInvItemLocation().getIlCode(), branchCode, companyCode);
-
                     }
                     catch (FinderException ex) {
-
+                        Debug.print("Finder Exception : " + ex.getMessage());
                     }
 
-                    LocalGlChartOfAccount glInventoryChartOfAccount = null;
-
+                    LocalGlChartOfAccount glInventoryChartOfAccount;
                     if (adBranchItemLocation == null) {
                         glInventoryChartOfAccount = glChartOfAccountHome
                                 .findByPrimaryKey(invAdjustmentLine.getInvItemLocation().getIlGlCoaInventoryAccount());
@@ -1283,7 +1177,7 @@ public class InvAdjustmentEntryControllerBean extends EJBContextClass implements
                         glInventoryChartOfAccount = glChartOfAccountHome
                                 .findByPrimaryKey(adBranchItemLocation.getBilCoaGlInventoryAccount());
                     }
-                    // TO DO: IF ADJUST BY IS NEGATIVE. INVENTORY CLASS MUST BE CREDIT
+                    // TODO: IF ADJUST BY IS NEGATIVE. INVENTORY CLASS MUST BE CREDIT
                     this.addInvDrEntry(invAdjustment.getInvDrNextLine(), "INVENTORY", DEBIT, Math.abs(AMOUNT),
                             EJBCommon.FALSE, glInventoryChartOfAccount.getCoaCode(), invAdjustment, branchCode, companyCode);
 
@@ -1291,63 +1185,46 @@ public class InvAdjustmentEntryControllerBean extends EJBContextClass implements
                     ABS_TOTAL_AMOUNT += Math.abs(AMOUNT);
 
                     // add adjust quantity to item location committed quantity if negative
-
                     if (invAdjustmentLine.getAlAdjustQuantity() < 0) {
-
                         double convertedQuantity = this.convertByUomFromAndItemAndQuantity(
                                 invAdjustmentLine.getInvUnitOfMeasure(),
                                 invAdjustmentLine.getInvItemLocation().getInvItem(),
                                 Math.abs(invAdjustmentLine.getAlAdjustQuantity()), companyCode);
-
                         invItemLocation = invAdjustmentLine.getInvItemLocation();
-
-                        invItemLocation
-                                .setIlCommittedQuantity(invItemLocation.getIlCommittedQuantity() + convertedQuantity);
+                        invItemLocation.setIlCommittedQuantity(invItemLocation.getIlCommittedQuantity() + convertedQuantity);
                     }
 
                     try {
-
-                        // Iterator t = apPurchaseOrderLine.getInvTag().iterator();
                         Iterator t = mdetails.getAlTagList().iterator();
-
-                        LocalInvTag invTag = null;
-
+                        LocalInvTag invTag;
                         if (invItem.getIiPartNumber().charAt(2) == '1') {
-
                             while (t.hasNext()) {
                                 InvModTagListDetails tgLstDetails = (InvModTagListDetails) t.next();
-
                                 if (tgLstDetails.getTgCode() == null) {
-                                    Debug.print("ngcreate ba?");
                                     invTag = invTagHome.create(tgLstDetails.getTgPropertyCode(),
                                             tgLstDetails.getTgSerialNumber(), null, tgLstDetails.getTgExpiryDate(),
                                             tgLstDetails.getTgSpecs(), companyCode, tgLstDetails.getTgTransactionDate(),
                                             tgLstDetails.getTgType());
-
                                     invTag.setInvAdjustmentLine(invAdjustmentLine);
                                     LocalAdUser adUser = null;
                                     try {
                                         adUser = adUserHome.findByUsrName(tgLstDetails.getTgCustodian(), companyCode);
                                     }
                                     catch (FinderException ex) {
-
+                                        Debug.print("Finder Exception : " + ex.getMessage());
                                     }
                                     invTag.setAdUser(adUser);
-
                                 }
                             }
                         }
-
                     }
                     catch (Exception ex) {
-
+                        Debug.print("Exception : " + ex.getMessage());
                     }
                 }
 
                 // add variance or transfer/debit distribution
-
                 DEBIT = TOTAL_AMOUNT > 0 ? EJBCommon.FALSE : EJBCommon.TRUE;
-
                 this.addInvDrEntry(invAdjustment.getInvDrNextLine(), "ADJUSTMENT", DEBIT, Math.abs(TOTAL_AMOUNT),
                         EJBCommon.FALSE, invAdjustment.getGlChartOfAccount().getCoaCode(), invAdjustment, branchCode,
                         companyCode);
@@ -1355,26 +1232,18 @@ public class InvAdjustmentEntryControllerBean extends EJBContextClass implements
             } else {
 
                 Iterator i = alList.iterator();
-
                 while (i.hasNext()) {
-
                     InvModAdjustmentLineDetails mdetails = (InvModAdjustmentLineDetails) i.next();
-
-                    LocalInvItemLocation invItemLocation = null;
-
+                    LocalInvItemLocation invItemLocation;
                     try {
-
                         invItemLocation = invItemLocationHome.findByLocNameAndIiName(mdetails.getAlLocName(),
                                 mdetails.getAlIiName(), companyCode);
-
                     }
                     catch (FinderException ex) {
-
                         throw new GlobalInvItemLocationNotFoundException(String.valueOf(mdetails.getAlLineNumber()));
                     }
 
                     // start date validation
-
                     if (adPreference.getPrfArAllowPriorDate() == EJBCommon.FALSE) {
                         Collection invNegTxnCosting = invCostingHome.findNegTxnByGreaterThanCstDateAndIiNameAndLocName(
                                 invAdjustment.getAdjDate(), invItemLocation.getInvItem().getIiName(),
@@ -1386,15 +1255,10 @@ public class InvAdjustmentEntryControllerBean extends EJBContextClass implements
                 }
 
                 Collection invAdjDistributionRecords = invAdjustment.getInvDistributionRecords();
-
                 i = invAdjDistributionRecords.iterator();
-
                 while (i.hasNext()) {
-
                     LocalInvDistributionRecord distributionRecord = (LocalInvDistributionRecord) i.next();
-
                     if (distributionRecord.getDrDebit() == 1) {
-
                         ABS_TOTAL_AMOUNT += distributionRecord.getDrAmount();
                     }
                 }
@@ -1402,16 +1266,12 @@ public class InvAdjustmentEntryControllerBean extends EJBContextClass implements
 
             // Insufficient Stocks
             if (adPreference.getPrfArCheckInsufficientStock() == EJBCommon.TRUE && !isDraft) {
-                Debug.print("CHECK A");
                 boolean hasInsufficientItems = false;
                 StringBuilder insufficientItems = new StringBuilder();
 
                 Collection invAdjustmentLines = invAdjustment.getInvAdjustmentLines();
-
                 Iterator i = invAdjustmentLines.iterator();
-
-                HashMap cstMap = new HashMap();
-
+                HashMap<String, Object> cstMap = new HashMap<>();
                 while (i.hasNext()) {
 
                     LocalInvAdjustmentLine invAdjustmentLine = (LocalInvAdjustmentLine) i.next();
@@ -1427,15 +1287,12 @@ public class InvAdjustmentEntryControllerBean extends EJBContextClass implements
                                 Math.abs(invAdjustmentLine.getAlAdjustQuantity()), companyCode);
 
                         if (cstMap.containsKey(invAdjustmentLine.getInvItemLocation().getIlCode().toString())) {
-
                             isIlFound = true;
                             CURR_QTY = (Double) cstMap
                                     .get(invAdjustmentLine.getInvItemLocation().getIlCode().toString());
-
                         } else {
 
                             try {
-
                                 invCosting = invCostingHome
                                         .getByMaxCstDateToLongAndMaxCstLineNumberAndLessThanEqualCstDateAndIiNameAndLocName(
                                                 invAdjustment.getAdjDate(),
@@ -1443,15 +1300,13 @@ public class InvAdjustmentEntryControllerBean extends EJBContextClass implements
                                                 invAdjustmentLine.getInvItemLocation().getInvLocation().getLocName(),
                                                 branchCode, companyCode);
                                 CURR_QTY = invCosting.getCstRemainingQuantity();
-
                             }
                             catch (FinderException ex) {
-
+                                Debug.print("Finder Exception : " + ex.getMessage());
                             }
                         }
 
                         if (invCosting != null) {
-
                             CURR_QTY = this.convertByUomAndQuantity(invAdjustmentLine.getInvUnitOfMeasure(),
                                     invAdjustmentLine.getInvItemLocation().getInvItem(),
                                     Math.abs(invCosting.getCstRemainingQuantity()), companyCode);
@@ -1460,87 +1315,66 @@ public class InvAdjustmentEntryControllerBean extends EJBContextClass implements
                         double LOWEST_QTY = this.convertByUomAndQuantity(invAdjustmentLine.getInvUnitOfMeasure(),
                                 invAdjustmentLine.getInvItemLocation().getInvItem(), 1, companyCode);
 
-                        if ((invCosting == null && isIlFound == false) || CURR_QTY == 0
-                                || CURR_QTY - ILI_QTY <= -LOWEST_QTY) {
-
+                        if ((invCosting == null && !isIlFound) || CURR_QTY == 0 || CURR_QTY - ILI_QTY <= -LOWEST_QTY) {
                             hasInsufficientItems = true;
                             insufficientItems.append(invAdjustmentLine.getInvItemLocation().getInvItem().getIiName()).append(", ");
                         }
 
                         CURR_QTY -= ILI_QTY;
-
                         if (isIlFound) {
                             cstMap.remove(invAdjustmentLine.getInvItemLocation().getIlCode().toString());
                         }
-
                         cstMap.put(invAdjustmentLine.getInvItemLocation().getIlCode().toString(), CURR_QTY);
                     }
                 }
                 if (hasInsufficientItems) {
-
                     throw new GlobalRecordInvalidException(
                             insufficientItems.substring(0, insufficientItems.lastIndexOf(",")));
                 }
             }
+
             // generate approval status
-
             String INV_APPRVL_STATUS = null;
-
             if (!isDraft) {
 
                 LocalAdApproval adApproval = adApprovalHome.findByAprAdCompany(companyCode);
 
                 // check if ar invoice approval is enabled
-
                 if (adApproval.getAprEnableInvAdjustment() == EJBCommon.FALSE) {
-
                     INV_APPRVL_STATUS = "N/A";
-
                 } else {
-
                     // check if invoice is self approved
-
-                    LocalAdAmountLimit adAmountLimit = null;
-
+                    LocalAdAmountLimit adAmountLimit;
                     try {
-
                         adAmountLimit = adAmountLimitHome.findByAdcTypeAndAuTypeAndUsrName("INV ADJUSTMENT",
                                 "REQUESTER", details.getAdjLastModifiedBy(), companyCode);
-
                     }
                     catch (FinderException ex) {
-
                         throw new GlobalNoApprovalRequesterFoundException();
                     }
 
                     if (ABS_TOTAL_AMOUNT <= adAmountLimit.getCalAmountLimit()) {
-                        System.out.print("ABS_TOTAL_AMOUNT=" + ABS_TOTAL_AMOUNT);
+                        Debug.print("ABS_TOTAL_AMOUNT=" + ABS_TOTAL_AMOUNT);
                         INV_APPRVL_STATUS = "N/A";
 
                     } else {
 
                         // for approval, create approval queue
-
                         Collection adAmountLimits = adAmountLimitHome.findByAdcTypeAndGreaterThanCalAmountLimit(
                                 "INV ADJUSTMENT", adAmountLimit.getCalAmountLimit(), companyCode);
 
                         if (adAmountLimits.isEmpty()) {
-
                             Collection adApprovalUsers = adApprovalUserHome.findByAuTypeAndCalCode("APPROVER",
                                     adAmountLimit.getCalCode(), companyCode);
 
                             if (adApprovalUsers.isEmpty()) {
-
                                 throw new GlobalNoApprovalApproverFoundException();
                             }
 
                             for (Object approvalUser : adApprovalUsers) {
-
                                 LocalAdApprovalUser adApprovalUser = (LocalAdApprovalUser) approvalUser;
-
                                 LocalAdApprovalQueue adApprovalQueue = createApprovalQueue(branchCode, companyCode,
                                         adApprovalQueueHome, invAdjustment, adAmountLimit, adApprovalUser);
-
                                 adApprovalUser.getAdUser().addAdApprovalQueue(adApprovalQueue);
                             }
 
@@ -1548,59 +1382,40 @@ public class InvAdjustmentEntryControllerBean extends EJBContextClass implements
 
                             boolean isApprovalUsersFound = false;
                             Iterator i = adAmountLimits.iterator();
-
                             while (i.hasNext()) {
 
                                 LocalAdAmountLimit adNextAmountLimit = (LocalAdAmountLimit) i.next();
-
                                 if (ABS_TOTAL_AMOUNT <= adNextAmountLimit.getCalAmountLimit()) {
-
                                     Collection adApprovalUsers = adApprovalUserHome.findByAuTypeAndCalCode("APPROVER",
                                             adAmountLimit.getCalCode(), companyCode);
-
                                     for (Object approvalUser : adApprovalUsers) {
-
                                         isApprovalUsersFound = true;
-
                                         LocalAdApprovalUser adApprovalUser = (LocalAdApprovalUser) approvalUser;
-
                                         LocalAdApprovalQueue adApprovalQueue = createApprovalQueue(branchCode, companyCode,
                                                 adApprovalQueueHome, invAdjustment, adNextAmountLimit, adApprovalUser);
-
                                         adApprovalUser.getAdUser().addAdApprovalQueue(adApprovalQueue);
                                     }
-
                                     break;
 
                                 } else if (!i.hasNext()) {
-
                                     Collection adApprovalUsers = adApprovalUserHome.findByAuTypeAndCalCode("APPROVER",
                                             adNextAmountLimit.getCalCode(), companyCode);
-
                                     for (Object approvalUser : adApprovalUsers) {
-
                                         isApprovalUsersFound = true;
-
                                         LocalAdApprovalUser adApprovalUser = (LocalAdApprovalUser) approvalUser;
-
                                         LocalAdApprovalQueue adApprovalQueue = createApprovalQueue(branchCode, companyCode,
                                                 adApprovalQueueHome, invAdjustment, adNextAmountLimit, adApprovalUser);
-
                                         adApprovalUser.getAdUser().addAdApprovalQueue(adApprovalQueue);
                                     }
-
                                     break;
                                 }
-
                                 adAmountLimit = adNextAmountLimit;
                             }
 
                             if (!isApprovalUsersFound) {
-
                                 throw new GlobalNoApprovalApproverFoundException();
                             }
                         }
-
                         INV_APPRVL_STATUS = "PENDING";
                     }
                 }
@@ -1608,15 +1423,11 @@ public class InvAdjustmentEntryControllerBean extends EJBContextClass implements
 
             if (INV_APPRVL_STATUS != null && INV_APPRVL_STATUS.equals("N/A")
                     && adPreference.getPrfInvGlPostingType().equals("AUTO-POST UPON APPROVAL")) {
-
-                this.executeInvAdjPost(invAdjustment.getAdjCode(), invAdjustment.getAdjLastModifiedBy(), branchCode,
-                        companyCode);
+                this.executeInvAdjPost(invAdjustment.getAdjCode(), invAdjustment.getAdjLastModifiedBy(), branchCode, companyCode);
             }
 
             // set adjustment approval status
-
             invAdjustment.setAdjApprovalStatus(INV_APPRVL_STATUS);
-
             return invAdjustment.getAdjCode();
 
         }
@@ -1631,13 +1442,11 @@ public class InvAdjustmentEntryControllerBean extends EJBContextClass implements
                GlobalTransactionAlreadyPendingException
                | GlobalTransactionAlreadyApprovedException | GlobalDocumentNumberNotUniqueException |
                GlobalBranchAccountNumberInvalidException ex) {
-
             getSessionContext().setRollbackOnly();
             throw ex;
 
         }
         catch (Exception ex) {
-
             Debug.printStackTrace(ex);
             getSessionContext().setRollbackOnly();
             throw new EJBException(ex.getMessage());
@@ -1692,8 +1501,469 @@ public class InvAdjustmentEntryControllerBean extends EJBContextClass implements
         return COA_ACCNT_NMBR;
     }
 
-    public Integer saveInvAdjEntry(InvAdjustmentDetails details, String COA_ACCOUNT_NUMBER,
-                                   String SPL_SPPLR_CODE, ArrayList alList, boolean isDraft, Integer branchCode, Integer companyCode)
+    @Override
+    public Integer saveInvAdjEntry(
+            InvAdjustmentDetails details, String COA_ACCOUNT_NUMBER, ArrayList alList,
+            boolean isDraft, Integer AD_BRNCH, Integer AD_CMPNY)
+            throws GlobalRecordAlreadyDeletedException, GlobalBranchAccountNumberInvalidException,
+            GlobalTransactionAlreadyApprovedException, GlobalTransactionAlreadyPendingException,
+            GlobalTransactionAlreadyPostedException, GlobalNoApprovalRequesterFoundException,
+            GlobalNoApprovalApproverFoundException, GlobalInvItemLocationNotFoundException,
+            GlobalDocumentNumberNotUniqueException {
+
+        Debug.print("InvAdjustmentEntryControllerBean saveInvAdjEntry");
+
+        try {
+
+            LocalInvAdjustment invAdjustment = null;
+
+            // validate if Adjustment is already deleted
+            try {
+                if (details.getAdjCode() != null) {
+                    invAdjustment = invAdjustmentHome.findByPrimaryKey(details.getAdjCode());
+                }
+            }
+            catch (FinderException ex) {
+                throw new GlobalRecordAlreadyDeletedException();
+            }
+
+            // validate if adjustment is already posted, void, approved or pending
+            if (details.getAdjCode() != null) {
+                if (invAdjustment.getAdjApprovalStatus() != null) {
+                    if (invAdjustment.getAdjApprovalStatus().equals("APPROVED") ||
+                            invAdjustment.getAdjApprovalStatus().equals("N/A")) {
+                        throw new GlobalTransactionAlreadyApprovedException();
+                    } else if (invAdjustment.getAdjApprovalStatus().equals("PENDING")) {
+                        throw new GlobalTransactionAlreadyPendingException();
+                    }
+                }
+                if (invAdjustment.getAdjPosted() == EJBCommon.TRUE) {
+                    throw new GlobalTransactionAlreadyPostedException();
+                }
+            }
+
+            LocalInvAdjustment invExistingAdjustment = null;
+            try {
+                invExistingAdjustment = invAdjustmentHome
+                        .findByAdjDocumentNumberAndBrCode(details.getAdjDocumentNumber(), AD_BRNCH, AD_CMPNY);
+            }
+            catch (FinderException ex) {
+
+            }
+
+            // 	validate if document number is unique document number is automatic then set next sequence
+            if (details.getAdjCode() == null) {
+                LocalAdBranchDocumentSequenceAssignment adBranchDocumentSequenceAssignment = null;
+                LocalAdDocumentSequenceAssignment adDocumentSequenceAssignment = null;
+                if (invExistingAdjustment != null) {
+                    throw new GlobalDocumentNumberNotUniqueException();
+                }
+
+                try {
+                    adDocumentSequenceAssignment = adDocumentSequenceAssignmentHome.findByDcName("INV ADJUSTMENT", AD_CMPNY);
+                }
+                catch (FinderException ex) {
+
+                }
+
+                try {
+                    adBranchDocumentSequenceAssignment = adBranchDocumentSequenceAssignmentHome
+                            .findBdsByDsaCodeAndBrCode(adDocumentSequenceAssignment.getDsaCode(), AD_BRNCH, AD_CMPNY);
+
+                }
+                catch (FinderException ex) {
+
+                }
+
+                if (adDocumentSequenceAssignment.getAdDocumentSequence().getDsNumberingType() == 'A' &&
+                        (details.getAdjDocumentNumber() == null || details.getAdjDocumentNumber().trim().length() == 0)) {
+
+                    while (true) {
+                        if (adBranchDocumentSequenceAssignment == null || adBranchDocumentSequenceAssignment.getBdsNextSequence() == null) {
+                            try {
+                                invAdjustmentHome.findByAdjDocumentNumberAndBrCode(adDocumentSequenceAssignment.getDsaNextSequence(), AD_BRNCH, AD_CMPNY);
+                                adDocumentSequenceAssignment.setDsaNextSequence(EJBCommon.incrementStringNumber(adDocumentSequenceAssignment.getDsaNextSequence()));
+                            }
+                            catch (FinderException ex) {
+                                details.setAdjDocumentNumber(adDocumentSequenceAssignment.getDsaNextSequence());
+                                adDocumentSequenceAssignment.setDsaNextSequence(EJBCommon.incrementStringNumber(adDocumentSequenceAssignment.getDsaNextSequence()));
+                                break;
+                            }
+
+                        } else {
+
+                            try {
+                                invAdjustmentHome.findByAdjDocumentNumberAndBrCode(adBranchDocumentSequenceAssignment.getBdsNextSequence(), AD_BRNCH, AD_CMPNY);
+                                adBranchDocumentSequenceAssignment.setBdsNextSequence(EJBCommon.incrementStringNumber(adBranchDocumentSequenceAssignment.getBdsNextSequence()));
+                            }
+                            catch (FinderException ex) {
+                                details.setAdjDocumentNumber(adBranchDocumentSequenceAssignment.getBdsNextSequence());
+                                adBranchDocumentSequenceAssignment.setBdsNextSequence(EJBCommon.incrementStringNumber(adBranchDocumentSequenceAssignment.getBdsNextSequence()));
+                                break;
+                            }
+                        }
+                    }
+                }
+
+            } else {
+
+                if (invExistingAdjustment != null &&
+                        !invExistingAdjustment.getAdjCode().equals(details.getAdjCode())) {
+                    throw new GlobalDocumentNumberNotUniqueException();
+                }
+
+                assert invAdjustment != null;
+                if (!Objects.equals(invAdjustment.getAdjDocumentNumber(), details.getAdjDocumentNumber()) &&
+                        (details.getAdjDocumentNumber() == null || details.getAdjDocumentNumber().trim().length() == 0)) {
+                    details.setAdjDocumentNumber(invAdjustment.getAdjDocumentNumber());
+                }
+            }
+
+            // used in checking if invoice should re-generate distribution records and re-calculate taxes
+            boolean isRecalculate = true;
+
+            // create adjustment
+            if (details.getAdjCode() == null) {
+
+                invAdjustment = invAdjustmentHome.create(details.getAdjDocumentNumber(), details.getAdjReferenceNumber(), details.getAdjDescription(),
+                        details.getAdjDate(), details.getAdjType(), details.getAdjApprovalStatus(),
+                        EJBCommon.FALSE, details.getAdjCreatedBy(), details.getAdjDateCreated(),
+                        details.getAdjLastModifiedBy(), details.getAdjDateLastModified(),
+                        null, null, null, null,
+                        null, null, EJBCommon.FALSE, EJBCommon.FALSE, AD_BRNCH, AD_CMPNY);
+
+            } else {
+
+                // check if critical fields are changed
+                assert invAdjustment != null;
+                if (!invAdjustment.getGlChartOfAccount().getCoaAccountNumber().equals(COA_ACCOUNT_NUMBER) ||
+                        alList.size() != invAdjustment.getInvAdjustmentLines().size() ||
+                        !(invAdjustment.getAdjDate().equals(details.getAdjDate()))) {
+                    isRecalculate = true;
+
+                } else if (alList.size() == invAdjustment.getInvAdjustmentLines().size()) {
+
+                    Iterator alIter = invAdjustment.getInvAdjustmentLines().iterator();
+                    Iterator alListIter = alList.iterator();
+
+                    while (alIter.hasNext()) {
+                        LocalInvAdjustmentLine invAdjustmentLine = (LocalInvAdjustmentLine) alIter.next();
+                        InvModAdjustmentLineDetails mdetails = (InvModAdjustmentLineDetails) alListIter.next();
+
+                        if (!invAdjustmentLine.getInvItemLocation().getInvItem().getIiName().equals(mdetails.getAlIiName()) ||
+                                !invAdjustmentLine.getInvItemLocation().getInvLocation().getLocName().equals(mdetails.getAlLocName()) ||
+                                !invAdjustmentLine.getInvUnitOfMeasure().getUomName().equals(mdetails.getAlUomName()) ||
+                                invAdjustmentLine.getAlAdjustQuantity() != mdetails.getAlAdjustQuantity() ||
+                                invAdjustmentLine.getAlUnitCost() != mdetails.getAlUnitCost()) {
+                            isRecalculate = true;
+                            break;
+
+                        }
+                        isRecalculate = false;
+                    }
+                } else {
+                    isRecalculate = false;
+                }
+
+                invAdjustment.setAdjDocumentNumber(details.getAdjDocumentNumber());
+                invAdjustment.setAdjReferenceNumber(details.getAdjReferenceNumber());
+                invAdjustment.setAdjDescription(details.getAdjDescription());
+                invAdjustment.setAdjDate(details.getAdjDate());
+                invAdjustment.setAdjType(details.getAdjType());
+                invAdjustment.setAdjApprovalStatus(details.getAdjApprovalStatus());
+                invAdjustment.setAdjLastModifiedBy(details.getAdjLastModifiedBy());
+                invAdjustment.setAdjDateLastModified(details.getAdjDateLastModified());
+                invAdjustment.setAdjReasonForRejection(null);
+            }
+
+            try {
+                LocalGlChartOfAccount glChartOfAccount = glChartOfAccountHome.findByCoaAccountNumberAndBranchCode(COA_ACCOUNT_NUMBER, AD_BRNCH, AD_CMPNY);
+                invAdjustment.setGlChartOfAccount(glChartOfAccount);
+            }
+            catch (FinderException ex) {
+                throw new GlobalAccountNumberInvalidException();
+            }
+
+            double ABS_TOTAL_AMOUNT = 0d;
+            LocalAdPreference adPreference = adPreferenceHome.findByPrfAdCompany(AD_CMPNY);
+            if (isRecalculate) {
+                // remove all adjustment lines
+                Collection invAdjustmentLines = invAdjustment.getInvAdjustmentLines();
+                Iterator i = invAdjustmentLines.iterator();
+                while (i.hasNext()) {
+                    LocalInvAdjustmentLine invAdjustmentLine = (LocalInvAdjustmentLine) i.next();
+                    if (invAdjustmentLine.getAlAdjustQuantity() < 0) {
+                        double convertedQuantity = this.convertByUomFromAndItemAndQuantity(invAdjustmentLine.getInvUnitOfMeasure(),
+                                invAdjustmentLine.getInvItemLocation().getInvItem(), Math.abs(invAdjustmentLine.getAlAdjustQuantity()), AD_CMPNY);
+                        invAdjustmentLine.getInvItemLocation().setIlCommittedQuantity(invAdjustmentLine.getInvItemLocation().getIlCommittedQuantity() - convertedQuantity);
+                    }
+                    i.remove();
+                    em.remove(invAdjustmentLine);
+                }
+
+                // remove all distribution records
+                Collection arDistributionRecords = invAdjustment.getInvDistributionRecords();
+                i = arDistributionRecords.iterator();
+                while (i.hasNext()) {
+                    LocalInvDistributionRecord arDistributionRecord = (LocalInvDistributionRecord) i.next();
+                    i.remove();
+                    em.remove(arDistributionRecord);
+                }
+
+                // add new adjustment lines and distribution record
+                double TOTAL_AMOUNT = 0d;
+                byte DEBIT;
+                i = alList.iterator();
+                while (i.hasNext()) {
+                    InvModAdjustmentLineDetails mdetails = (InvModAdjustmentLineDetails) i.next();
+                    LocalInvItemLocation invItemLocation;
+                    try {
+                        invItemLocation = invItemLocationHome.findByLocNameAndIiName(mdetails.getAlLocName(), mdetails.getAlIiName(), AD_CMPNY);
+                    }
+                    catch (FinderException ex) {
+                        throw new GlobalInvItemLocationNotFoundException(String.valueOf(mdetails.getAlLineNumber()));
+                    }
+
+                    //	start date validation
+                    if (adPreference.getPrfArAllowPriorDate() == EJBCommon.FALSE) {
+                        Collection invNegTxnCosting = invCostingHome.findNegTxnByGreaterThanCstDateAndIiNameAndLocName(
+                                invAdjustment.getAdjDate(), invItemLocation.getInvItem().getIiName(),
+                                invItemLocation.getInvLocation().getLocName(), AD_BRNCH, AD_CMPNY);
+                        if (!invNegTxnCosting.isEmpty()) {
+                            throw new GlobalInventoryDateException(invItemLocation.getInvItem().getIiName());
+                        }
+                    }
+
+                    LocalInvAdjustmentLine invAdjustmentLine = this.addInvAlEntry(mdetails, invAdjustment, EJBCommon.FALSE, AD_CMPNY);
+
+                    // add physical inventory distribution
+                    double AMOUNT;
+                    if (invAdjustmentLine.getAlAdjustQuantity() > 0) {
+                        AMOUNT = EJBCommon.roundIt(
+                                invAdjustmentLine.getAlAdjustQuantity() * invAdjustmentLine.getAlUnitCost(),
+                                this.getGlFcPrecisionUnit(AD_CMPNY));
+                        DEBIT = EJBCommon.TRUE;
+                    } else {
+                        double COST;
+                        try {
+                            if (invAdjustmentLine.getAlUnitCost() == 0 || invAdjustmentLine.getAlUnitCost() < 0) {
+                                LocalInvCosting invCosting = invCostingHome
+                                        .getByMaxCstDateToLongAndMaxCstLineNumberAndLessThanEqualCstDateAndIiNameAndLocName(
+                                                details.getAdjDate(), invAdjustmentLine.getInvItemLocation().getInvItem().getIiName(),
+                                        invAdjustmentLine.getInvItemLocation().getInvLocation().getLocName(), AD_BRNCH, AD_CMPNY);
+                                COST = Math.abs(invCosting.getCstRemainingValue() / invCosting.getCstRemainingQuantity());
+                            } else {
+                                COST = invAdjustmentLine.getAlUnitCost();
+                            }
+                        }
+                        catch (FinderException ex) {
+                            COST = invAdjustmentLine.getInvItemLocation().getInvItem().getIiUnitCost();
+                        }
+
+                        COST = this.convertCostByUom(invAdjustmentLine.getInvItemLocation().getInvItem().getIiName(),
+                                invAdjustmentLine.getInvUnitOfMeasure().getUomName(),
+                                COST, true, AD_CMPNY);
+                        invAdjustmentLine.setAlUnitCost(COST);
+
+                        AMOUNT = EJBCommon.roundIt(
+                                invAdjustmentLine.getAlAdjustQuantity() * COST,
+                                this.getGlFcPrecisionUnit(AD_CMPNY));
+                        DEBIT = EJBCommon.FALSE;
+
+                    }
+
+                    // check for branch mapping
+                    LocalAdBranchItemLocation adBranchItemLocation = null;
+                    try {
+                        adBranchItemLocation = adBranchItemLocationHome.findBilByIlCodeAndBrCode(
+                                invAdjustmentLine.getInvItemLocation().getIlCode(), AD_BRNCH, AD_CMPNY);
+                    }
+                    catch (FinderException ex) {
+
+                    }
+
+                    LocalGlChartOfAccount glInventoryChartOfAccount;
+                    if (adBranchItemLocation == null) {
+
+                        glInventoryChartOfAccount = glChartOfAccountHome.findByPrimaryKey(
+                                invAdjustmentLine.getInvItemLocation().getIlGlCoaInventoryAccount());
+                    } else {
+
+                        glInventoryChartOfAccount = glChartOfAccountHome.findByPrimaryKey(
+                                adBranchItemLocation.getBilCoaGlInventoryAccount());
+
+                    }
+
+                    this.addInvDrEntry(invAdjustment.getInvDrNextLine(), "INVENTORY", DEBIT, Math.abs(AMOUNT), EJBCommon.FALSE,
+                            glInventoryChartOfAccount.getCoaCode(), invAdjustment, AD_BRNCH, AD_CMPNY);
+
+                    TOTAL_AMOUNT += AMOUNT;
+                    ABS_TOTAL_AMOUNT += Math.abs(AMOUNT);
+
+                    // add adjust quantity to item location committed quantity if negative
+                    if (invAdjustmentLine.getAlAdjustQuantity() < 0) {
+                        double convertedQuantity = this.convertByUomFromAndItemAndQuantity(
+                                invAdjustmentLine.getInvUnitOfMeasure(), invAdjustmentLine.getInvItemLocation().getInvItem(),
+                                Math.abs(invAdjustmentLine.getAlAdjustQuantity()), AD_CMPNY);
+                        invItemLocation = invAdjustmentLine.getInvItemLocation();
+                        invItemLocation.setIlCommittedQuantity(invItemLocation.getIlCommittedQuantity() + convertedQuantity);
+                    }
+                }
+
+                // add variance or transfer/debit distribution
+                DEBIT = TOTAL_AMOUNT > 0 ? EJBCommon.FALSE : EJBCommon.TRUE;
+                this.addInvDrEntry(invAdjustment.getInvDrNextLine(), "ADJUSTMENT", DEBIT, Math.abs(TOTAL_AMOUNT), EJBCommon.FALSE,
+                        invAdjustment.getGlChartOfAccount().getCoaCode(), invAdjustment, AD_BRNCH, AD_CMPNY);
+
+            } else {
+
+                Iterator i = alList.iterator();
+                while (i.hasNext()) {
+                    InvModAdjustmentLineDetails mdetails = (InvModAdjustmentLineDetails) i.next();
+                    LocalInvItemLocation invItemLocation;
+                    try {
+                        invItemLocation = invItemLocationHome.findByLocNameAndIiName(mdetails.getAlLocName(), mdetails.getAlIiName(), AD_CMPNY);
+                    }
+                    catch (FinderException ex) {
+                        throw new GlobalInvItemLocationNotFoundException(String.valueOf(mdetails.getAlLineNumber()));
+                    }
+
+                    //	start date validation
+                    if (adPreference.getPrfArAllowPriorDate() == EJBCommon.FALSE) {
+                        Collection invNegTxnCosting = invCostingHome.findNegTxnByGreaterThanCstDateAndIiNameAndLocName(
+                                invAdjustment.getAdjDate(), invItemLocation.getInvItem().getIiName(),
+                                invItemLocation.getInvLocation().getLocName(), AD_BRNCH, AD_CMPNY);
+                        if (!invNegTxnCosting.isEmpty()) {
+                            throw new GlobalInventoryDateException(invItemLocation.getInvItem().getIiName());
+                        }
+                    }
+
+                }
+
+                Collection invAdjDistributionRecords = invAdjustment.getInvDistributionRecords();
+                i = invAdjDistributionRecords.iterator();
+                while (i.hasNext()) {
+                    LocalInvDistributionRecord distributionRecord = (LocalInvDistributionRecord) i.next();
+                    if (distributionRecord.getDrDebit() == 1) {
+                        ABS_TOTAL_AMOUNT += distributionRecord.getDrAmount();
+                    }
+                }
+            }
+
+            // generate approval status
+            String INV_APPRVL_STATUS = null;
+
+            if (!isDraft) {
+
+                LocalAdApproval adApproval = adApprovalHome.findByAprAdCompany(AD_CMPNY);
+
+                // check if ar invoice approval is enabled
+                if (adApproval.getAprEnableInvAdjustment() == EJBCommon.FALSE) {
+                    INV_APPRVL_STATUS = "N/A";
+                } else {
+                    // check if invoice is self approved
+                    LocalAdAmountLimit adAmountLimit;
+                    try {
+                        adAmountLimit = adAmountLimitHome.findByAdcTypeAndAuTypeAndUsrName(
+                                "INV ADJUSTMENT", "REQUESTER", details.getAdjLastModifiedBy(), AD_CMPNY);
+                    }
+                    catch (FinderException ex) {
+                        throw new GlobalNoApprovalRequesterFoundException();
+                    }
+
+                    if (ABS_TOTAL_AMOUNT <= adAmountLimit.getCalAmountLimit()) {
+                        INV_APPRVL_STATUS = "N/A";
+                    } else {
+
+                        // for approval, create approval queue
+                        Collection adAmountLimits = adAmountLimitHome
+                                .findByAdcTypeAndGreaterThanCalAmountLimit("INV ADJUSTMENT", adAmountLimit.getCalAmountLimit(), AD_CMPNY);
+
+                        if (adAmountLimits.isEmpty()) {
+                            Collection adApprovalUsers = adApprovalUserHome.findByAuTypeAndCalCode("APPROVER", adAmountLimit.getCalCode(), AD_CMPNY);
+                            if (adApprovalUsers.isEmpty()) {
+                                throw new GlobalNoApprovalApproverFoundException();
+                            }
+                            for (Object approvalUser : adApprovalUsers) {
+                                LocalAdApprovalUser adApprovalUser = (LocalAdApprovalUser) approvalUser;
+                                LocalAdApprovalQueue adApprovalQueue = adApprovalQueueHome.create(EJBCommon.TRUE, "INV ADJUSTMENT",
+                                        invAdjustment.getAdjCode(), invAdjustment.getAdjDocumentNumber(), invAdjustment.getAdjDate(),
+                                        adAmountLimit.getCalAndOr(), adApprovalUser.getAuOr(), AD_BRNCH, AD_CMPNY);
+                                adApprovalUser.getAdUser().addAdApprovalQueue(adApprovalQueue);
+                            }
+
+                        } else {
+
+                            boolean isApprovalUsersFound = false;
+                            Iterator i = adAmountLimits.iterator();
+                            while (i.hasNext()) {
+                                LocalAdAmountLimit adNextAmountLimit = (LocalAdAmountLimit) i.next();
+                                if (ABS_TOTAL_AMOUNT <= adNextAmountLimit.getCalAmountLimit()) {
+                                    Collection adApprovalUsers = adApprovalUserHome.findByAuTypeAndCalCode("APPROVER",
+                                            adAmountLimit.getCalCode(), AD_CMPNY);
+                                    for (Object approvalUser : adApprovalUsers) {
+                                        isApprovalUsersFound = true;
+                                        LocalAdApprovalUser adApprovalUser = (LocalAdApprovalUser) approvalUser;
+                                        LocalAdApprovalQueue adApprovalQueue = adApprovalQueueHome.create(EJBCommon.TRUE, "INV ADJUSTMENT",
+                                                invAdjustment.getAdjCode(), invAdjustment.getAdjDocumentNumber(), invAdjustment.getAdjDate(),
+                                                adAmountLimit.getCalAndOr(), adApprovalUser.getAuOr(), AD_BRNCH, AD_CMPNY);
+                                        adApprovalUser.getAdUser().addAdApprovalQueue(adApprovalQueue);
+                                    }
+                                    break;
+                                } else if (!i.hasNext()) {
+
+                                    Collection adApprovalUsers =
+                                            adApprovalUserHome.findByAuTypeAndCalCode("APPROVER", adNextAmountLimit.getCalCode(), AD_CMPNY);
+                                    for (Object approvalUser : adApprovalUsers) {
+                                        isApprovalUsersFound = true;
+                                        LocalAdApprovalUser adApprovalUser = (LocalAdApprovalUser) approvalUser;
+                                        LocalAdApprovalQueue adApprovalQueue = adApprovalQueueHome.create(EJBCommon.TRUE, "INV ADJUSTMENT",
+                                                invAdjustment.getAdjCode(), invAdjustment.getAdjDocumentNumber(), invAdjustment.getAdjDate(),
+                                                adNextAmountLimit.getCalAndOr(), adApprovalUser.getAuOr(), AD_BRNCH, AD_CMPNY);
+                                        adApprovalUser.getAdUser().addAdApprovalQueue(adApprovalQueue);
+                                    }
+                                    break;
+                                }
+                                adAmountLimit = adNextAmountLimit;
+
+                            }
+
+                            if (!isApprovalUsersFound) {
+                                throw new GlobalNoApprovalApproverFoundException();
+                            }
+                        }
+                        INV_APPRVL_STATUS = "PENDING";
+                    }
+                }
+            }
+
+            if (INV_APPRVL_STATUS != null && INV_APPRVL_STATUS.equals("N/A") && adPreference.getPrfInvGlPostingType().equals("AUTO-POST UPON APPROVAL")) {
+                //this.executeInvAdjPost(invAdjustment.getAdjCode(), invAdjustment.getAdjLastModifiedBy(), AD_BRNCH, AD_CMPNY);
+            }
+
+            // set adjustment approval status
+            invAdjustment.setAdjApprovalStatus(INV_APPRVL_STATUS);
+            return invAdjustment.getAdjCode();
+
+        }
+        catch (GlobalRecordAlreadyDeletedException | GlobalBranchAccountNumberInvalidException |
+               GlobalDocumentNumberNotUniqueException | GlobalTransactionAlreadyApprovedException |
+               GlobalTransactionAlreadyPendingException | GlobalTransactionAlreadyPostedException |
+               GlobalNoApprovalRequesterFoundException | GlobalNoApprovalApproverFoundException |
+               GlobalInvItemLocationNotFoundException ex) {
+            ctx.setRollbackOnly();
+            throw ex;
+        }
+        catch (Exception ex) {
+            Debug.printStackTrace(ex);
+            ctx.setRollbackOnly();
+            throw new EJBException(ex.getMessage());
+        }
+    }
+
+    public Integer saveInvAdjEntry(
+            InvAdjustmentDetails details, String COA_ACCOUNT_NUMBER, String SPL_SPPLR_CODE, ArrayList alList,
+            boolean isDraft, Integer branchCode, Integer companyCode)
             throws GlobalRecordAlreadyDeletedException, GlobalBranchAccountNumberInvalidException,
             GlobalTransactionAlreadyApprovedException, GlobalTransactionAlreadyPendingException,
             GlobalTransactionAlreadyPostedException, GlobalNoApprovalRequesterFoundException,
