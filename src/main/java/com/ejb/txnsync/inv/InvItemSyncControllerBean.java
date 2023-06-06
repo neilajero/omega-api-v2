@@ -1,21 +1,21 @@
 package com.ejb.txnsync.inv;
 
 import com.ejb.PersistenceBeanClass;
-import com.ejb.dao.ad.ILocalAdCompanyHome;
-import com.ejb.dao.ad.ILocalAdPreferenceHome;
-import com.ejb.dao.ad.LocalAdBranchHome;
-import com.ejb.dao.ad.LocalAdBranchItemLocationHome;
+import com.ejb.dao.ad.*;
+import com.ejb.dao.ap.LocalApPurchaseOrderHome;
 import com.ejb.dao.ap.LocalApPurchaseOrderLineHome;
+import com.ejb.dao.ap.LocalApTaxCodeHome;
 import com.ejb.dao.ar.LocalArInvoiceHome;
 import com.ejb.dao.ar.LocalArReceiptHome;
 import com.ejb.dao.ar.LocalArStandardMemoLineHome;
+import com.ejb.dao.gl.LocalGlFunctionalCurrencyHome;
 import com.ejb.dao.inv.*;
-import com.ejb.entities.ad.LocalAdBranch;
-import com.ejb.entities.ad.LocalAdBranchItemLocation;
-import com.ejb.entities.ad.LocalAdCompany;
-import com.ejb.entities.ad.LocalAdPreference;
+import com.ejb.entities.ad.*;
+import com.ejb.entities.ap.LocalApPurchaseOrder;
 import com.ejb.entities.ap.LocalApPurchaseOrderLine;
+import com.ejb.entities.ap.LocalApTaxCode;
 import com.ejb.entities.ar.*;
+import com.ejb.entities.gl.LocalGlFunctionalCurrency;
 import com.ejb.entities.inv.*;
 import com.ejb.exception.global.GlobalNoRecordFoundException;
 import com.ejb.exception.global.GlobalRecordAlreadyExistException;
@@ -81,6 +81,16 @@ public class InvItemSyncControllerBean extends EJBContextClass implements InvIte
     private LocalInvAdjustmentHome invAdjustmentHome;
     @EJB
     private LocalArReceiptHome arReceiptHome;
+    @EJB
+    private LocalInvBuildOrderHome invBuildOrderHome;
+    @EJB
+    private LocalApPurchaseOrderHome apPurchaseOrderHome;
+    @EJB
+    private LocalAdPaymentTermHome adPaymentTermHome;
+    @EJB
+    private LocalApTaxCodeHome apTaxCodeHome;
+    @EJB
+    private LocalGlFunctionalCurrencyHome glFunctionalCurrencyHome;
     @EJB
     private InvAdjustmentEntryController invAdjustmentEntryController;
     @EJB
@@ -2968,31 +2978,239 @@ public class InvItemSyncControllerBean extends EJBContextClass implements InvIte
     @Override
     public String[] getSoMatchedInvBOAllPosted(String DateFrom, String DateTo, String branchCodeName, Integer companyCode) {
 
-        return new String[0];
+        Debug.print("InvItemSyncControllerBean getSoMatchedInvBOAllPosted");
+
+        Integer AD_BRNCH;
+        try {
+            LocalAdBranch adBranch = adBranchHome.findByBrBranchCode(branchCodeName, companyCode);
+            AD_BRNCH = adBranch.getBrCode();
+        }
+        catch (Exception ex) {
+            throw new EJBException(ex.getMessage());
+        }
+
+        Object obj[] = new Object[2];
+
+        StringBuffer jbossQl = new StringBuffer();
+
+        jbossQl.append("SELECT OBJECT(bor) FROM InvBuildOrder bor WHERE ");
+        jbossQl.append("bor.borDate>=?1 AND ");
+        jbossQl.append("bor.borDate<=?2 AND ");
+        jbossQl.append("bor.borPosted=1 AND ");
+        jbossQl.append("bor.borAdBranch=" + AD_BRNCH + " AND bor.borAdCompany=" + companyCode + " ");
+
+        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+        sdf.setLenient(false);
+        try {
+            obj[0] = sdf.parse(DateFrom);
+            obj[1] = sdf.parse(DateTo);
+        }
+        catch (Exception ex) {
+            System.out.println("Error On BO Date: " + ex.getMessage());
+        }
+
+        String[] results = null;
+
+        try {
+
+            Collection invBuildOrders = invBuildOrderHome.getBorByCriteria(jbossQl.toString(), obj);
+
+            Iterator i = invBuildOrders.iterator();
+            results = new String[invBuildOrders.size()];
+            int ctr = 0;
+            while (i.hasNext()) {
+                LocalInvBuildOrder bo = (LocalInvBuildOrder) i.next();
+                results[ctr] = this.borRowEncode(bo);
+                System.out.println(results[ctr]);
+                ctr++;
+            }
+
+            System.out.println(invBuildOrders.size());
+
+
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        return results;
     }
 
     @Override
     public String[] getApPOAllPostedAndUnreceived(String branchCodeName, Integer companyCode) {
 
-        return new String[0];
+        Debug.print("InvItemSyncControllerBean getApPOAllPostedAndUnreceived");
+
+        ArrayList AllPoUnreceivedAndPosted = new ArrayList();
+
+        Integer AD_BRNCH;
+        try {
+            LocalAdBranch adBranch = adBranchHome.findByBrBranchCode(branchCodeName, companyCode);
+            AD_BRNCH = adBranch.getBrCode();
+        }
+        catch (Exception ex) {
+            throw new EJBException(ex.getMessage());
+        }
+
+        try {
+
+            Collection apPurchaseOrders = apPurchaseOrderHome.findPostedPoAll(AD_BRNCH, companyCode);
+            Iterator i = apPurchaseOrders.iterator();
+
+            int ctr = 1, size = apPurchaseOrders.size();
+
+            while (i.hasNext()) {
+                LocalApPurchaseOrder apPurchaseOrder = (LocalApPurchaseOrder) i.next();
+                try {
+                    ApModPurchaseOrderDetails receivingPo = this.getApPoByPoRcvPoNumberAndSplSupplierCodeAndAdBranch(
+                            apPurchaseOrder.getPoDocumentNumber(), apPurchaseOrder.getApSupplier().getSplSupplierCode(), AD_BRNCH, companyCode);
+                    AllPoUnreceivedAndPosted.add(apPurchaseOrder);
+                }
+                catch (Exception ex) {
+                }
+
+                System.out.println("Status: Processing " + (ctr++) + "/" + size);
+
+            }
+
+            System.out.println("Sending " + AllPoUnreceivedAndPosted.size() + "/" + apPurchaseOrders.size());
+
+        }
+        catch (Exception ex) {
+            throw new EJBException(ex.getMessage());
+        }
+
+        String[] results = new String[AllPoUnreceivedAndPosted.size()];
+        Iterator poIter = AllPoUnreceivedAndPosted.iterator();
+        int ctr = 0;
+
+        while (poIter.hasNext()) {
+
+            ApModPurchaseOrderDetails apModPurchaseOrderDetails = new ApModPurchaseOrderDetails();
+            LocalApPurchaseOrder apPurchaseOrder = (LocalApPurchaseOrder) poIter.next();
+
+            apModPurchaseOrderDetails.setPoCode(apPurchaseOrder.getPoCode());
+            apModPurchaseOrderDetails.setPoType(apPurchaseOrder.getPoType());
+            apModPurchaseOrderDetails.setPoFcName(apPurchaseOrder.getGlFunctionalCurrency().getFcName());
+            apModPurchaseOrderDetails.setPoTcName(apPurchaseOrder.getApTaxCode().getTcName());
+            apModPurchaseOrderDetails.setPoSplSupplierCode(apPurchaseOrder.getApSupplier().getSplSupplierCode());
+            apModPurchaseOrderDetails.setPoPytName(apPurchaseOrder.getAdPaymentTerm().getPytName());
+            apModPurchaseOrderDetails.setPoDocumentNumber(apPurchaseOrder.getPoDocumentNumber());
+            apModPurchaseOrderDetails.setPoReferenceNumber(apPurchaseOrder.getPoReferenceNumber());
+            apModPurchaseOrderDetails.setPoDate(apPurchaseOrder.getPoDate());
+            apModPurchaseOrderDetails.setPoDescription(apPurchaseOrder.getPoDescription());
+            apModPurchaseOrderDetails.setPoConversionRate(apPurchaseOrder.getPoConversionRate());
+            apModPurchaseOrderDetails.setPoConversionDate(apPurchaseOrder.getPoConversionDate());
+
+            apModPurchaseOrderDetails.setPoCreatedBy(apPurchaseOrder.getPoCreatedBy());
+            apModPurchaseOrderDetails.setPoDateCreated(apPurchaseOrder.getPoDateCreated());
+            apModPurchaseOrderDetails.setPoLastModifiedBy(apPurchaseOrder.getPoLastModifiedBy());
+            apModPurchaseOrderDetails.setPoDateLastModified(apPurchaseOrder.getPoDateLastModified());
+
+            // Add lines
+            Iterator lineIter = apPurchaseOrder.getApPurchaseOrderLines().iterator();
+            ArrayList lines = new ArrayList();
+
+            while (lineIter.hasNext()) {
+
+                ApModPurchaseOrderLineDetails apModPurchaseOrderLineDetails = new ApModPurchaseOrderLineDetails();
+                LocalApPurchaseOrderLine apPurchaseOrderLine = (LocalApPurchaseOrderLine) lineIter.next();
+
+                apModPurchaseOrderLineDetails.setPlCode(apPurchaseOrderLine.getPlCode());
+                apModPurchaseOrderLineDetails.setPlLine(apPurchaseOrderLine.getPlLine());
+                apModPurchaseOrderLineDetails.setPlIiName(apPurchaseOrderLine.getInvItemLocation().getInvItem().getIiName());
+                apModPurchaseOrderLineDetails.setPlLocName(apPurchaseOrderLine.getInvItemLocation().getInvLocation().getLocName());
+                apModPurchaseOrderLineDetails.setPlQuantity(apPurchaseOrderLine.getPlQuantity());
+                apModPurchaseOrderLineDetails.setPlUomName(apPurchaseOrderLine.getInvUnitOfMeasure().getUomName());
+                apModPurchaseOrderLineDetails.setPlUnitCost(apPurchaseOrderLine.getPlUnitCost());
+                apModPurchaseOrderLineDetails.setPlAmount(apPurchaseOrderLine.getPlAmount());
+                apModPurchaseOrderLineDetails.setPlPlCode(apPurchaseOrderLine.getPlPlCode());
+                apModPurchaseOrderLineDetails.setPlDiscount1(apPurchaseOrderLine.getPlDiscount1());
+                apModPurchaseOrderLineDetails.setPlDiscount2(apPurchaseOrderLine.getPlDiscount2());
+                apModPurchaseOrderLineDetails.setPlDiscount3(apPurchaseOrderLine.getPlDiscount3());
+                apModPurchaseOrderLineDetails.setPlDiscount4(apPurchaseOrderLine.getPlDiscount4());
+                apModPurchaseOrderLineDetails.setPlTotalDiscount(apPurchaseOrderLine.getPlTotalDiscount());
+
+                lines.add(apModPurchaseOrderLineDetails);
+
+            }
+
+            apModPurchaseOrderDetails.setPoPlList(lines);
+
+            results[ctr++] = poRowEncode(apModPurchaseOrderDetails);
+        }
+
+        return results;
     }
 
     @Override
     public String getPaymentTermsAll(Integer companyCode) {
 
-        return null;
+        Debug.print("InvItemSyncControllerBean getPaymentTermsAll");
+
+        char separator = EJBCommon.SEPARATOR;
+        StringBuilder paymentTermsStr = new StringBuilder();
+
+        try {
+            Collection paymentTerms = adPaymentTermHome.findPytAll(companyCode);
+            Iterator i = paymentTerms.iterator();
+            while (i.hasNext()) {
+                LocalAdPaymentTerm adPaymentTerm = (LocalAdPaymentTerm) i.next();
+                paymentTermsStr.append(separator);
+                paymentTermsStr.append(adPaymentTerm.getPytName());
+            }
+            paymentTermsStr.append(separator);
+            return paymentTermsStr.toString();
+        }
+        catch (Exception ex) {
+            return (ex.getMessage());
+        }
     }
 
     @Override
     public String getTaxCodesAll(Integer companyCode) {
 
-        return null;
+        Debug.print("InvItemSyncControllerBean getTaxCodesAll");
+
+        char separator = EJBCommon.SEPARATOR;
+        StringBuilder paymentTermsStr = new StringBuilder();
+
+        try {
+            Collection apTaxCodes = apTaxCodeHome.findTcAll(companyCode);
+            for (Object taxCode : apTaxCodes) {
+                LocalApTaxCode apTaxCode = (LocalApTaxCode) taxCode;
+                paymentTermsStr.append(separator);
+                paymentTermsStr.append(apTaxCode.getTcName());
+            }
+            paymentTermsStr.append(separator);
+            return paymentTermsStr.toString();
+        }
+        catch (Exception ex) {
+            return (ex.getMessage());
+        }
     }
 
     @Override
     public String getFunctionalCurrenciesAll(Integer companyCode) {
 
-        return null;
+        Debug.print("InvItemSyncControllerBean getFunctionalCurrenciesAll");
+
+        char separator = EJBCommon.SEPARATOR;
+        StringBuilder paymentTermsStr = new StringBuilder();
+
+        try {
+            Collection glFunctionalCurrencies = glFunctionalCurrencyHome.findFcAll(companyCode);
+            for (Object functionalCurrency : glFunctionalCurrencies) {
+                LocalGlFunctionalCurrency glFunctionalCurrency = (LocalGlFunctionalCurrency) functionalCurrency;
+                paymentTermsStr.append(separator);
+                paymentTermsStr.append(glFunctionalCurrency.getFcName());
+            }
+            paymentTermsStr.append(separator);
+            return paymentTermsStr.toString();
+        }
+        catch (Exception ex) {
+            return (ex.getMessage());
+        }
     }
 
 
@@ -5534,5 +5752,391 @@ public class InvItemSyncControllerBean extends EJBContextClass implements InvIte
         return encodedResult.toString();
 
     }
+
+
+    private String borRowEncode(LocalInvBuildOrder bo) {
+
+        Debug.print("InvItemSyncControllerBean borRowEncode");
+
+        char separator = EJBCommon.SEPARATOR;
+        StringBuilder encodedResult = new StringBuilder();
+        SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_OUTPUT);
+
+        // Start separator
+        encodedResult.append(separator);
+
+        // BOR Code
+        encodedResult.append(bo.getBorCode());
+        encodedResult.append(separator);
+
+        // BOR DATE
+        encodedResult.append(sdf.format(bo.getBorDate()));
+        encodedResult.append(separator);
+
+        // BOR Document Number
+        encodedResult.append(bo.getBorDocumentNumber());
+        encodedResult.append(separator);
+
+        // BOR Reference Number
+        encodedResult.append(bo.getBorReferenceNumber());
+        encodedResult.append(separator);
+
+        // BOR Approval Status
+        encodedResult.append(bo.getBorApprovalStatus());
+        encodedResult.append(separator);
+
+        // BOR Description
+        encodedResult.append(bo.getBorDescription());
+        encodedResult.append(separator);
+
+        // BOR Ad Branch
+        encodedResult.append(bo.getBorAdBranch());
+        encodedResult.append(separator);
+
+        /* ************************* Misc Details************************** */
+
+        // BOR Created By
+        encodedResult.append(bo.getBorCreatedBy());
+        encodedResult.append(separator);
+
+        // BOR Date Created
+        encodedResult.append(sdf.format(bo.getBorDateCreated()));
+        encodedResult.append(separator);
+
+        // BOR Last Modified By
+        encodedResult.append(bo.getBorLastModifiedBy());
+        encodedResult.append(separator);
+
+        // BOR Date Last Modified
+        encodedResult.append(sdf.format(bo.getBorDateLastModified()));
+        encodedResult.append(separator);
+
+        // end separator
+        encodedResult.append(separator);
+
+        String lineSeparator = "~";
+
+        // begin lineSeparator
+        encodedResult.append(lineSeparator);
+
+        Iterator i = bo.getInvBuildOrderLines().iterator();
+
+        while (i.hasNext()) {
+
+            LocalInvBuildOrderLine bol = (LocalInvBuildOrderLine) i.next();
+
+            // begin separator
+            encodedResult.append(separator);
+
+            // BOL Line Code
+            encodedResult.append(bol.getBolCode());
+            encodedResult.append(separator);
+
+            // BOL Qty Required
+            encodedResult.append(bol.getBolQuantityRequired());
+            encodedResult.append(separator);
+
+            // BOL Qty Assembled
+            encodedResult.append(bol.getBolQuantityAssembled());
+            encodedResult.append(separator);
+
+            // BOL Qty Available
+            encodedResult.append(bol.getBolQuantityAvailable());
+            encodedResult.append(separator);
+
+            // BOR CODE
+            encodedResult.append(bo.getBorCode());
+            encodedResult.append(separator);
+
+            // INV Item Location
+            encodedResult.append(0);
+            encodedResult.append(separator);
+
+            // INV Item
+            encodedResult.append(bol.getInvItemLocation().getInvItem().getIiName());
+            encodedResult.append(separator);
+
+            // INV Location
+            encodedResult.append(bol.getInvItemLocation().getInvLocation().getLocName());
+            encodedResult.append(separator);
+
+            // begin lineSeparator
+            encodedResult.append(lineSeparator);
+        }
+
+        return encodedResult.toString();
+    }
+
+
+    private ApModPurchaseOrderDetails getApPoByPoRcvPoNumberAndSplSupplierCodeAndAdBranch(
+            String PO_RCV_PO_NMBR, String SPL_SPPLR_CODE, Integer AD_BRNCH, Integer AD_CMPNY) {
+
+        ArrayList list = new ArrayList();
+
+        LocalApPurchaseOrder apPurchaseOrder = null;
+
+        try {
+
+            apPurchaseOrder = apPurchaseOrderHome.findByPoRcvPoNumberAndPoReceivingAndSplSupplierCodeAndBrCode(
+                    PO_RCV_PO_NMBR, EJBCommon.FALSE, SPL_SPPLR_CODE, AD_BRNCH, AD_CMPNY);
+
+            // get receiving item line
+            Collection apPurchaseOrderLines = apPurchaseOrder.getApPurchaseOrderLines();
+
+            Iterator i = apPurchaseOrderLines.iterator();
+
+            while (i.hasNext()) {
+
+                LocalApPurchaseOrderLine apPurchaseOrderLine = (LocalApPurchaseOrderLine) i.next();
+
+                ApModPurchaseOrderLineDetails plDetails = new ApModPurchaseOrderLineDetails();
+
+                plDetails.setPlCode(apPurchaseOrderLine.getPlCode());
+                plDetails.setPlLine(apPurchaseOrderLine.getPlLine());
+                plDetails.setPlUnitCost(apPurchaseOrderLine.getPlUnitCost());
+                plDetails.setPlIiName(apPurchaseOrderLine.getInvItemLocation().getInvItem().getIiName());
+                plDetails.setPlLocName(apPurchaseOrderLine.getInvItemLocation().getInvLocation().getLocName());
+                plDetails.setPlUomName(apPurchaseOrderLine.getInvUnitOfMeasure().getUomName());
+                plDetails.setPlIiDescription(apPurchaseOrderLine.getInvItemLocation().getInvItem().getIiDescription());
+                plDetails.setPlDiscount1(apPurchaseOrderLine.getPlDiscount1());
+                plDetails.setPlDiscount2(apPurchaseOrderLine.getPlDiscount2());
+                plDetails.setPlDiscount3(apPurchaseOrderLine.getPlDiscount3());
+                plDetails.setPlDiscount4(apPurchaseOrderLine.getPlDiscount4());
+
+                double RCVD_QTY = 0d;
+                double RCVD_DSCNT = 0d;
+                double RCVD_AMNT = 0d;
+
+                Collection apReceivingItemLines = apPurchaseOrderLineHome.findByPlPlCode(apPurchaseOrderLine.getPlCode(), AD_CMPNY);
+
+                Iterator j = apReceivingItemLines.iterator();
+
+                while (j.hasNext()) {
+
+                    LocalApPurchaseOrderLine apReceivingItemLine = (LocalApPurchaseOrderLine) j.next();
+
+                    if (apReceivingItemLine.getApPurchaseOrder().getPoPosted() == EJBCommon.TRUE) {
+
+                        RCVD_QTY += apReceivingItemLine.getPlQuantity();
+                        RCVD_DSCNT += apReceivingItemLine.getPlTotalDiscount();
+                        RCVD_AMNT += apReceivingItemLine.getPlAmount() + apReceivingItemLine.getPlTaxAmount();
+
+                    }
+
+                }
+
+                double REMAINING_QTY = apPurchaseOrderLine.getPlQuantity() - RCVD_QTY;
+                double REMAINING_DSCNT = apPurchaseOrderLine.getPlTotalDiscount() - RCVD_DSCNT;
+                double REMAINING_AMNT = apPurchaseOrderLine.getPlAmount() - RCVD_AMNT;
+
+                if (REMAINING_QTY <= 0) {
+                    continue;
+                }
+
+                plDetails.setPlRemaining(REMAINING_QTY < 0 ? 0 : REMAINING_QTY);
+                plDetails.setPlQuantity(REMAINING_QTY < 0 ? 0 : REMAINING_QTY);
+                plDetails.setPlTotalDiscount(REMAINING_DSCNT);
+                plDetails.setPlAmount(REMAINING_AMNT);
+
+                list.add(plDetails);
+
+            }
+
+            if (list == null || list.size() == 0) {
+
+                return null;
+
+            }
+
+            ApModPurchaseOrderDetails mdetails = new ApModPurchaseOrderDetails();
+
+            mdetails.setPoCode(apPurchaseOrder.getPoCode());
+            mdetails.setPoTcName(apPurchaseOrder.getApTaxCode().getTcName());
+            mdetails.setPoTcType(apPurchaseOrder.getApTaxCode().getTcType());
+            mdetails.setPoTcRate(apPurchaseOrder.getApTaxCode().getTcRate());
+            mdetails.setPoFcName(apPurchaseOrder.getGlFunctionalCurrency().getFcName());
+            mdetails.setPoPytName(apPurchaseOrder.getAdPaymentTerm().getPytName());
+            mdetails.setPoSplName(apPurchaseOrder.getApSupplier().getSplName());
+            mdetails.setPoConversionDate(apPurchaseOrder.getPoConversionDate());
+            mdetails.setPoConversionRate(apPurchaseOrder.getPoConversionRate());
+
+            mdetails.setPoPlList(list);
+
+            return mdetails;
+
+        }
+        catch (Exception ex) {
+
+            Debug.printStackTrace(ex);
+            throw new EJBException(ex.getMessage());
+
+        }
+
+    }
+
+    private String poRowEncode(ApModPurchaseOrderDetails apModPurchaseOrderDetails) {
+
+        //Debug.print("InvItemSyncControllerBean poRowEncode");
+
+        char separator = EJBCommon.SEPARATOR;
+        StringBuffer encodedResult = new StringBuffer();
+        SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_OUTPUT);
+
+        // Start separator
+        encodedResult.append(separator);
+
+        // PO Code
+        encodedResult.append(apModPurchaseOrderDetails.getPoCode());
+        encodedResult.append(separator);
+
+        // PO Type
+        encodedResult.append(apModPurchaseOrderDetails.getPoType());
+        encodedResult.append(separator);
+
+        // Currency
+        encodedResult.append(apModPurchaseOrderDetails.getPoFcName());
+        encodedResult.append(separator);
+
+        // Tax Code
+        encodedResult.append(apModPurchaseOrderDetails.getPoTcName());
+        encodedResult.append(separator);
+
+        // Supplier Code
+        encodedResult.append(apModPurchaseOrderDetails.getPoSplSupplierCode());
+        encodedResult.append(separator);
+
+        // Payment Term
+        encodedResult.append(apModPurchaseOrderDetails.getPoPytName());
+        encodedResult.append(separator);
+
+        // Document No
+        encodedResult.append(apModPurchaseOrderDetails.getPoDocumentNumber());
+        encodedResult.append(separator);
+
+        // Reference No
+        encodedResult.append(apModPurchaseOrderDetails.getPoReferenceNumber());
+        encodedResult.append(separator);
+
+        // PO Date
+        encodedResult.append(sdf.format(apModPurchaseOrderDetails.getPoDate()));
+        encodedResult.append(separator);
+
+        // Description
+        encodedResult.append(apModPurchaseOrderDetails.getPoDescription());
+        encodedResult.append(separator);
+
+        // Conversion Rate
+        encodedResult.append(apModPurchaseOrderDetails.getPoConversionRate());
+        encodedResult.append(separator);
+
+        // Conversion Date
+        if (apModPurchaseOrderDetails.getPoConversionDate() != null) {
+            encodedResult.append(sdf.format(apModPurchaseOrderDetails.getPoConversionDate()));
+            encodedResult.append(separator);
+        } else {
+            encodedResult.append(sdf.format(apModPurchaseOrderDetails.getPoDate()));
+            encodedResult.append(separator);
+        }
+
+        /************************** Misc Details***************************/
+
+        // Created By
+        encodedResult.append(apModPurchaseOrderDetails.getPoCreatedBy());
+        encodedResult.append(separator);
+
+        // Date Created
+        encodedResult.append(sdf.format(apModPurchaseOrderDetails.getPoDateCreated()));
+        encodedResult.append(separator);
+
+        // Last Modified By
+        encodedResult.append(apModPurchaseOrderDetails.getPoFcName());
+        encodedResult.append(separator);
+
+        // Date Last Modified
+        encodedResult.append(sdf.format(apModPurchaseOrderDetails.getPoDateLastModified()));
+        encodedResult.append(separator);
+
+        // end separator
+        encodedResult.append(separator);
+
+        String lineSeparator = "~";
+
+        // begin lineSeparator
+        encodedResult.append(lineSeparator);
+
+        Iterator i = apModPurchaseOrderDetails.getPoPlList().iterator();
+
+        while (i.hasNext()) {
+
+            ApModPurchaseOrderLineDetails apModPurchaseOrderLineDetails = (ApModPurchaseOrderLineDetails) i.next();
+
+            // begin separator
+            encodedResult.append(separator);
+
+            // Line Code
+            encodedResult.append(apModPurchaseOrderLineDetails.getPlCode());
+            encodedResult.append(separator);
+
+            // Line Number
+            encodedResult.append(apModPurchaseOrderLineDetails.getPlLine());
+            encodedResult.append(separator);
+
+            // Item Name
+            encodedResult.append(apModPurchaseOrderLineDetails.getPlIiName());
+            encodedResult.append(separator);
+
+            // Location Name
+            encodedResult.append(apModPurchaseOrderLineDetails.getPlLocName());
+            encodedResult.append(separator);
+
+
+            // Quantity
+            encodedResult.append(apModPurchaseOrderLineDetails.getPlQuantity());
+            encodedResult.append(separator);
+
+            // Unit of Measure
+            encodedResult.append(apModPurchaseOrderLineDetails.getPlUomName());
+            encodedResult.append(separator);
+
+            // Unit Cost
+            encodedResult.append(apModPurchaseOrderLineDetails.getPlUnitCost());
+            encodedResult.append(separator);
+
+            // Amount
+            encodedResult.append(apModPurchaseOrderLineDetails.getPlAmount());
+            encodedResult.append(separator);
+
+            // PL CODE
+            encodedResult.append(apModPurchaseOrderDetails.getPoCode());
+            encodedResult.append(separator);
+
+            // Discount 1
+            encodedResult.append(apModPurchaseOrderLineDetails.getPlDiscount1());
+            encodedResult.append(separator);
+
+            // Discount 2
+            encodedResult.append(apModPurchaseOrderLineDetails.getPlDiscount2());
+            encodedResult.append(separator);
+
+            // Discount 3
+            encodedResult.append(apModPurchaseOrderLineDetails.getPlDiscount3());
+            encodedResult.append(separator);
+
+            // Discount 4
+            encodedResult.append(apModPurchaseOrderLineDetails.getPlDiscount4());
+            encodedResult.append(separator);
+
+            // Total Discount
+            encodedResult.append(apModPurchaseOrderLineDetails.getPlTotalDiscount());
+            encodedResult.append(separator);
+
+            // begin lineSeparator
+            encodedResult.append(lineSeparator);
+        }
+
+        return encodedResult.toString();
+
+    }
+
 
 }
