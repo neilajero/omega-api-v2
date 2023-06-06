@@ -23,7 +23,7 @@ public class AdBankAccountSyncApi {
     @Inject
     private AdBankAccountSyncController adBankAccountSyncController;
 
-    @GET
+    @POST
     @Path("/new")
     @RolesAllowed({"Admin"})
     public Response getAllNewLength(BankAccountSyncRequest request) {
@@ -39,7 +39,7 @@ public class AdBankAccountSyncApi {
         }
     }
 
-    @GET
+    @POST
     @Path("/updated")
     @RolesAllowed({"Admin"})
     public Response getAllUpdatedLength(BankAccountSyncRequest request) {
@@ -55,7 +55,7 @@ public class AdBankAccountSyncApi {
         }
     }
 
-    @GET
+    @POST
     @Path("/both")
     @RolesAllowed({"Admin"})
     public Response getAllNewAndUpdated(BankAccountSyncRequest request) {
