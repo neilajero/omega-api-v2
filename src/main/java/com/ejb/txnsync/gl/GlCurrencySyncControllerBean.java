@@ -21,10 +21,7 @@ import jakarta.ejb.EJBException;
 import jakarta.ejb.FinderException;
 import jakarta.ejb.Stateless;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.*;
 
 @Stateless(name = "GlCurrencySyncControllerBeanEJB")
 public class GlCurrencySyncControllerBean extends EJBContextClass implements GlCurrencySyncController {
@@ -215,7 +212,7 @@ public class GlCurrencySyncControllerBean extends EJBContextClass implements GlC
             response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_000);
             response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_000_MSG);
             response.setResult(result);
-            response.setStatus("Set all invoice new and void data successfully.");
+            response.setStatus(result.length > 0 ? "Get all currency rates data successfully." : "No record found.");
         }
         catch (Exception ex) {
             response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_007);
@@ -296,30 +293,19 @@ public class GlCurrencySyncControllerBean extends EJBContextClass implements GlC
 
     private String[] removeDuplicate(String[] s) {
 
-        HashSet mySet = new HashSet();
-
-        for (int x = 0; x < s.length; x++) {
-            mySet.add(s[x]);
-            System.out.println("To be added to set = " + s[x]);
-        }
-
-        System.out.println("mySet size=" + mySet.size());
+        HashSet<String> mySet = new HashSet<>();
+        Collections.addAll(mySet, s);
 
         String[] newResults = new String[mySet.size()];
 
         Iterator iter = mySet.iterator();
-
         int newCtr = 0;
-
         String myString;
-
         while (iter.hasNext()) {
             myString = (String) iter.next();
             newResults[newCtr] = myString;
-            System.out.println("Eto yung string = " + myString);
             newCtr++;
         }
-
         return newResults;
     }
 }
