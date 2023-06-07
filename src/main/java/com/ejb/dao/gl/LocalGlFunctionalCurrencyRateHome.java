@@ -59,6 +59,21 @@ public class LocalGlFunctionalCurrencyRateHome {
 		}
 	}
 
+	public java.util.Collection findByFrDate(java.util.Date FR_DT, java.lang.Integer FR_AD_CMPNY, String companyShortName)
+			throws FinderException {
+
+		try {
+			Query query = em.createQueryPerCompany(
+					"SELECT OBJECT(fr) FROM GlFunctionalCurrencyRate fr "
+							+ "WHERE fr.frDate=?1 AND fr.frAdCompany = ?2", companyShortName);
+			query.setParameter(1, FR_DT);
+			query.setParameter(2, FR_AD_CMPNY);
+			return query.getResultList();
+		} catch (Exception ex) {
+			throw ex;
+		}
+	}
+
 	public java.util.Collection findFcrAll(java.lang.Integer FR_AD_CMPNY) throws FinderException {
 
 		try {

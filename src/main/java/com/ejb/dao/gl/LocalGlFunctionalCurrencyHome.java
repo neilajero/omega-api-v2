@@ -66,6 +66,21 @@ public class LocalGlFunctionalCurrencyHome {
         }
     }
 
+    public java.util.Collection findFcAllEnabled(java.util.Date CURR_DATE, Integer FC_AD_CMPNY, String companyShortName) throws FinderException {
+        try {
+            Query query = em.createQueryPerCompany("SELECT OBJECT(fc) FROM GlFunctionalCurrency fc "
+                    + "WHERE fc.fcEnable=1 "
+                    + "AND ((fc.fcDateFrom <= ?1 AND fc.fcDateTo >= ?1) OR (fc.fcDateFrom <= ?1 AND fc.fcDateTo IS NULL)) "
+                    + "AND fc.fcAdCompany = ?2", companyShortName);
+            query.setParameter(1, CURR_DATE);
+            query.setParameter(2, FC_AD_CMPNY);
+            return query.getResultList();
+        }
+        catch (Exception ex) {
+            throw ex;
+        }
+    }
+
     public LocalGlFunctionalCurrency findByFcName(String FC_NM, Integer FC_AD_CMPNY)
             throws FinderException {
 

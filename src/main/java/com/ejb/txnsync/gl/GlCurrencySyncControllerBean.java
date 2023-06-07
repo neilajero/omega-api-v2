@@ -44,8 +44,8 @@ public class GlCurrencySyncControllerBean extends EJBContextClass implements GlC
         Debug.print("GlCurrencySyncControllerBean getGlFcAll");
 
         try {
-            LocalAdCompany adCompany = adCompanyHome.findByPrimaryKey(companyCode);
-            Collection glFunctionalCurrencies = glFunctionalCurrencyHome.findFcAllEnabled(new Date(), companyCode);
+            LocalAdCompany adCompany = adCompanyHome.findByPrimaryKey(companyCode, companyShortName);
+            Collection glFunctionalCurrencies = glFunctionalCurrencyHome.findFcAllEnabled(new Date(), companyCode, companyShortName);
 
             String[] results = new String[glFunctionalCurrencies.size()];
 
@@ -71,7 +71,7 @@ public class GlCurrencySyncControllerBean extends EJBContextClass implements GlC
 
         try {
 
-            LocalAdCompany adCompany = adCompanyHome.findByPrimaryKey(companyCode);
+            LocalAdCompany adCompany = adCompanyHome.findByPrimaryKey(companyCode, companyShortName);
 
             float fcRate;
             boolean isFcExist = true;
@@ -79,9 +79,10 @@ public class GlCurrencySyncControllerBean extends EJBContextClass implements GlC
 
                 // get fc rate to usd
                 LocalGlFunctionalCurrency glFunctionalCurrency = glFunctionalCurrencyHome
-                        .findByFcName(adCompany.getGlFunctionalCurrency().getFcName(), companyCode);
+                        .findByFcName(adCompany.getGlFunctionalCurrency().getFcName(), companyCode, companyShortName);
                 LocalGlFunctionalCurrencyRate glFunctionalCurrencyRate = glFunctionalCurrencyRateHome
-                        .findByFcCodeAndDate(glFunctionalCurrency.getFcCode(), EJBCommon.getGcCurrentDateWoTime().getTime(), companyCode);
+                        .findByFcCodeAndDate(glFunctionalCurrency.getFcCode(),
+                                EJBCommon.getGcCurrentDateWoTime().getTime(), companyCode, companyShortName);
                 fcRate = (float)glFunctionalCurrencyRate.getFrXToUsd();
             } catch (FinderException ex) {
 
@@ -90,7 +91,8 @@ public class GlCurrencySyncControllerBean extends EJBContextClass implements GlC
 
             }
 
-            Collection glFunctionalCurrencyRates = glFunctionalCurrencyRateHome.findByFrDate(EJBCommon.getGcCurrentDateWoTime().getTime(), companyCode);
+            Collection glFunctionalCurrencyRates = glFunctionalCurrencyRateHome
+                    .findByFrDate(EJBCommon.getGcCurrentDateWoTime().getTime(), companyCode, companyShortName);
             String[] results;
             if (isFcExist) {
                 results = new String[glFunctionalCurrencyRates.size() + 1];
@@ -116,7 +118,8 @@ public class GlCurrencySyncControllerBean extends EJBContextClass implements GlC
 
             if (isFcExist) {
                 // for usd
-                LocalGlFunctionalCurrency glUsdFunctionalCurrency = glFunctionalCurrencyHome.findByFcName("USD", companyCode);
+                LocalGlFunctionalCurrency glUsdFunctionalCurrency = glFunctionalCurrencyHome
+                        .findByFcName("USD", companyCode, companyShortName);
                 results[ctr] = this.currencyRateRowEncode(String
                         .valueOf(glUsdFunctionalCurrency.getFcCode()), String
                         .valueOf(1 / fcRate));
@@ -225,8 +228,8 @@ public class GlCurrencySyncControllerBean extends EJBContextClass implements GlC
     private String currencyRowEncode(LocalGlFunctionalCurrency glFunctionalCurrency, LocalAdCompany adCompany) {
 
         char separator = EJBCommon.SEPARATOR;
-        StringBuffer tempResult = new StringBuffer();
-        String encodedResult = new String();
+        StringBuilder tempResult = new StringBuilder();
+        String encodedResult;
 
         // Start separator
         tempResult.append(separator);

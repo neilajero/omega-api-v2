@@ -8,10 +8,7 @@ import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -25,7 +22,7 @@ public class GlCurrencySyncApi {
     @Inject
     private GlCurrencySyncController glCurrencySyncController;
 
-    @GET
+    @POST
     @Path("/all")
     @RolesAllowed({"Admin"})
     public Response getGlFcAll(GlCurrencySyncRequest request) {
@@ -42,7 +39,7 @@ public class GlCurrencySyncApi {
         }
     }
 
-    @GET
+    @POST
     @Path("/rates")
     @RolesAllowed({"Admin"})
     public Response getGlCurrentFcRates(GlCurrencySyncRequest request) {
