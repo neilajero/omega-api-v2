@@ -22,7 +22,7 @@ public class ArStandardMemoLineSyncApi {
     @Inject
     private ArStandardMemoLineSyncController arStandardMemoLineSyncController;
 
-    @GET
+    @POST
     @Path("/new")
     @RolesAllowed({"Admin"})
     public Response getArStandardMemoLineAllNewLength(ArStandardMemoLineSyncRequest request) {
@@ -39,8 +39,8 @@ public class ArStandardMemoLineSyncApi {
         }
     }
 
-    @GET
-    @Path("/updatedlength")
+    @POST
+    @Path("/updated")
     @RolesAllowed({"Admin"})
     public Response getArStandardMemoLineHomeAllUpdatedLength(ArStandardMemoLineSyncRequest request) {
 
@@ -56,8 +56,8 @@ public class ArStandardMemoLineSyncApi {
         }
     }
 
-    @GET
-    @Path("/updated")
+    @POST
+    @Path("/both")
     @RolesAllowed({"Admin"})
     public Response getArStandardMemoLineAllNewAndUpdated(ArStandardMemoLineSyncRequest request) {
 

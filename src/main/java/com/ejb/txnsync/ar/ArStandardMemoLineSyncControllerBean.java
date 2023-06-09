@@ -190,7 +190,7 @@ public class ArStandardMemoLineSyncControllerBean extends EJBContextClass implem
             response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_000);
             response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_000_MSG);
             response.setCount(count);
-            response.setStatus("Set all invoice new and void data successfully.");
+            response.setStatus("Get new standard memo lines count.");
         }
         catch (Exception ex) {
             response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_007);
@@ -257,7 +257,7 @@ public class ArStandardMemoLineSyncControllerBean extends EJBContextClass implem
             response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_000);
             response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_000_MSG);
             response.setCount(count);
-            response.setStatus("Set all invoice new and void data successfully.");
+            response.setStatus("Get updated standard memo lines count.");
         }
         catch (Exception ex) {
             response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_007);
@@ -324,7 +324,7 @@ public class ArStandardMemoLineSyncControllerBean extends EJBContextClass implem
             response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_000);
             response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_000_MSG);
             response.setResult(result);
-            response.setStatus("Set all invoice new and void data successfully.");
+            response.setStatus("Get new and updated standard memo lines count.");
         }
         catch (Exception ex) {
             response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_007);
@@ -390,7 +390,7 @@ public class ArStandardMemoLineSyncControllerBean extends EJBContextClass implem
 
             response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_000);
             response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_000_MSG);
-            response.setStatus("Set all invoice new and void data successfully.");
+            response.setStatus("Set all standard memo line data successfully.");
         }
         catch (Exception ex) {
             response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_007);

@@ -61,12 +61,12 @@ public class LocalAdBranchStandardMemoLineHome {
 	}
 
 	public java.util.Collection findBSMLByBSMLNewAndUpdated(java.lang.Integer BR_CODE, java.lang.Integer AD_CMPNY,
-															char NEW, char UPDATED, char DOWNLOADED_UPDATED, String companyShortName) throws FinderException {
+															char NEW, char UPDATED, char DOWNLOADED_UPDATED, String companyShortName) {
 
 		try {
-			Query query = em.createQuery("SELECT  OBJECT(bsml) FROM AdBranchStandardMemoLine bsml "
+			Query query = em.createQueryPerCompany("SELECT  OBJECT(bsml) FROM AdBranchStandardMemoLine bsml "
 					+ "WHERE (bsml.bsmlStandardMemoLineDownloadStatus = ?3 OR bsml.bsmlStandardMemoLineDownloadStatus = ?4 "
-					+ "OR bsml.bsmlStandardMemoLineDownloadStatus = ?5) AND bsml.adBranch.brCode = ?1 AND bsml.bsmlAdCompany = ?2");
+					+ "OR bsml.bsmlStandardMemoLineDownloadStatus = ?5) AND bsml.adBranch.brCode = ?1 AND bsml.bsmlAdCompany = ?2", companyShortName);
 			query.setParameter(1, BR_CODE);
 			query.setParameter(2, AD_CMPNY);
 			query.setParameter(3, NEW);
