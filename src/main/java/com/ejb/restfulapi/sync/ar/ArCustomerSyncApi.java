@@ -22,7 +22,7 @@ public class ArCustomerSyncApi {
     @Inject
     private ArCustomerSyncController arCustomerSyncController;
 
-    @GET
+    @POST
     @Path("/all")
     @RolesAllowed({"Admin"})
     public Response getArCSTAreaAll(ArCustomerSyncRequest request) {
@@ -39,7 +39,7 @@ public class ArCustomerSyncApi {
         }
     }
 
-    @GET
+    @POST
     @Path("/postedso")
     @RolesAllowed({"Admin"})
     public Response getArSoPostedAllByCstArea(ArCustomerSyncRequest request) {
@@ -56,7 +56,7 @@ public class ArCustomerSyncApi {
         }
     }
 
-    @GET
+    @POST
     @Path("/new")
     @RolesAllowed({"Admin"})
     public Response getArCustomersAllNewLength(ArCustomerSyncRequest request) {
@@ -73,7 +73,7 @@ public class ArCustomerSyncApi {
         }
     }
 
-    @GET
+    @POST
     @Path("/updated")
     @RolesAllowed({"Admin"})
     public Response getArCustomersAllUpdatedLength(ArCustomerSyncRequest request) {
@@ -90,7 +90,7 @@ public class ArCustomerSyncApi {
         }
     }
 
-    @GET
+    @POST
     @Path("/salesperson")
     @RolesAllowed({"Admin"})
     public Response getArSalespersonAll(ArCustomerSyncRequest request) {
@@ -107,7 +107,7 @@ public class ArCustomerSyncApi {
         }
     }
 
-    @GET
+    @POST
     @Path("/draftbalances")
     @RolesAllowed({"Admin"})
     public Response getArCustomerDraftBalances(ArCustomerSyncRequest request) {
@@ -124,7 +124,7 @@ public class ArCustomerSyncApi {
         }
     }
 
-    @GET
+    @POST
     @Path("/details")
     @RolesAllowed({"Admin"})
     public Response getArCustomersNameCodeAddressSlp(ArCustomerSyncRequest request) {
@@ -141,7 +141,7 @@ public class ArCustomerSyncApi {
         }
     }
 
-    @GET
+    @POST
     @Path("/both")
     @RolesAllowed({"Admin"})
     public Response getArCustomersAllNewAndUpdated(ArCustomerSyncRequest request) {
@@ -158,7 +158,7 @@ public class ArCustomerSyncApi {
         }
     }
 
-    @GET
+    @POST
     @Path("/withsalesperson")
     @RolesAllowed({"Admin"})
     public Response getArCustomersAllNewAndUpdatedWithSalesperson(ArCustomerSyncRequest request) {
@@ -175,7 +175,7 @@ public class ArCustomerSyncApi {
         }
     }
 
-    @GET
+    @POST
     @Path("/withclass")
     @RolesAllowed({"Admin"})
     public Response getArCustomersAllNewAndUpdatedWithCustomerClass(ArCustomerSyncRequest request) {
@@ -192,7 +192,7 @@ public class ArCustomerSyncApi {
         }
     }
 
-    @GET
+    @POST
     @Path("/alldownloaded")
     @RolesAllowed({"Admin"})
     public Response getArCustomersBalanceAllDownloaded(ArCustomerSyncRequest request) {

@@ -43,6 +43,23 @@ public class LocalArSalespersonHome {
 		}
 	}
 
+	public LocalArSalesperson findByPrimaryKey(java.lang.Integer pk, String companyShortName) throws FinderException {
+
+		try {
+
+			LocalArSalesperson entity = (LocalArSalesperson) em
+					.findPerCompany(new LocalArSalesperson(), pk, companyShortName);
+			if (entity == null) {
+				throw new FinderException();
+			}
+			return entity;
+		} catch (FinderException ex) {
+			throw new FinderException(ex.getMessage());
+		} catch (Exception ex) {
+			throw ex;
+		}
+	}
+
 	public java.util.Collection findSlpAll(java.lang.Integer SLP_AD_CMPNY) throws FinderException {
 
 		try {

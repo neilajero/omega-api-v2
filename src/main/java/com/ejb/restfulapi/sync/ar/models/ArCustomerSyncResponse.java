@@ -4,8 +4,19 @@ public class ArCustomerSyncResponse {
     private String message;
     private String status;
     private String statusCode;
-    private String[] result;
+    private String[] results;
+    private String result;
     private int count;
+
+    public String getResult() {
+
+        return result;
+    }
+
+    public void setResult(String result) {
+
+        this.result = result;
+    }
 
     public int getCount() {
 
@@ -47,14 +58,14 @@ public class ArCustomerSyncResponse {
         this.statusCode = statusCode;
     }
 
-    public String[] getResult() {
+    public String[] getResults() {
 
-        return result;
+        return results;
     }
 
-    public void setResult(String[] result) {
+    public void setResults(String[] results) {
 
-        this.result = result;
+        this.results = results;
     }
 
 }

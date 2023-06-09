@@ -269,14 +269,14 @@ public class ArCustomerSyncControllerBean extends EJBContextClass implements ArC
             int ctr = 0;
             while (i.hasNext()) {
                 LocalArCustomer arCustomer = (LocalArCustomer)i.next();
-                results[ctr] = customerRowEncode(arCustomer);
+                results[ctr] = customerRowEncode(arCustomer, companyShortName);
                 ctr++;
             }
 
             i = arUpdatedCustomers.iterator();
             while (i.hasNext()) {
                 LocalArCustomer arCustomer = (LocalArCustomer)i.next();
-                results[ctr] = customerRowEncode(arCustomer);
+                results[ctr] = customerRowEncode(arCustomer, companyShortName);
                 ctr++;
             }
             return results;
@@ -302,14 +302,14 @@ public class ArCustomerSyncControllerBean extends EJBContextClass implements ArC
             int ctr = 0;
             while (i.hasNext()) {
                 LocalArCustomer arCustomer = (LocalArCustomer)i.next();
-                results[ctr] = customerRowEncodeWithSalesPerson(arCustomer);
+                results[ctr] = customerRowEncodeWithSalesPerson(arCustomer, companyShortName);
                 ctr++;
             }
 
             i = arUpdatedCustomers.iterator();
             while (i.hasNext()) {
                 LocalArCustomer arCustomer = (LocalArCustomer)i.next();
-                results[ctr] = customerRowEncodeWithSalesPerson(arCustomer);
+                results[ctr] = customerRowEncodeWithSalesPerson(arCustomer, companyShortName);
                 ctr++;
             }
             return results;
@@ -337,14 +337,14 @@ public class ArCustomerSyncControllerBean extends EJBContextClass implements ArC
             int ctr = 0;
             while (i.hasNext()) {
                 LocalArCustomer arCustomer = (LocalArCustomer)i.next();
-                results[ctr] = customerRowEncodeWithClass(arCustomer);
+                results[ctr] = customerRowEncodeWithClass(arCustomer, companyShortName);
                 ctr++;
             }
 
             i = arUpdatedCustomers.iterator();
             while (i.hasNext()) {
                 LocalArCustomer arCustomer = (LocalArCustomer)i.next();
-                results[ctr] = customerRowEncodeWithClass(arCustomer);
+                results[ctr] = customerRowEncodeWithClass(arCustomer, companyShortName);
                 ctr++;
             }
             return results;
@@ -458,7 +458,7 @@ public class ArCustomerSyncControllerBean extends EJBContextClass implements ArC
 
             response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_000);
             response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_000_MSG);
-            response.setResult(result);
+            response.setResults(result);
             response.setStatus("Get all customer data successfully.");
 
         }
@@ -505,7 +505,7 @@ public class ArCustomerSyncControllerBean extends EJBContextClass implements ArC
 
             response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_000);
             response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_000_MSG);
-            response.setResult(result);
+            response.setResults(result);
             response.setStatus("Get all posted SO data successfully.");
 
         }
@@ -707,7 +707,7 @@ public class ArCustomerSyncControllerBean extends EJBContextClass implements ArC
 
             response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_000);
             response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_000_MSG);
-            response.setResult(result);
+            response.setResults(result);
             response.setStatus("Get sales person data successfully.");
         }
         catch (Exception ex) {
@@ -754,7 +754,7 @@ public class ArCustomerSyncControllerBean extends EJBContextClass implements ArC
 
             response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_000);
             response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_000_MSG);
-            response.setResult(result);
+            response.setResults(result);
             response.setStatus("Get customer draft balances successfully.");
         }
         catch (Exception ex) {
@@ -821,7 +821,7 @@ public class ArCustomerSyncControllerBean extends EJBContextClass implements ArC
 
             response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_000);
             response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_000_MSG);
-            response.setResult(result);
+            response.setResults(result);
             response.setStatus("Get customer details successfully.");
         }
         catch (Exception ex) {
@@ -888,7 +888,7 @@ public class ArCustomerSyncControllerBean extends EJBContextClass implements ArC
 
             response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_000);
             response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_000_MSG);
-            response.setResult(result);
+            response.setResults(result);
             response.setStatus("Get customer details successfully.");
         }
         catch (Exception ex) {
@@ -955,7 +955,7 @@ public class ArCustomerSyncControllerBean extends EJBContextClass implements ArC
 
             response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_000);
             response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_000_MSG);
-            response.setResult(result);
+            response.setResults(result);
             response.setStatus("Get customer details with salesperson data successfully.");
         }
         catch (Exception ex) {
@@ -1022,7 +1022,7 @@ public class ArCustomerSyncControllerBean extends EJBContextClass implements ArC
 
             response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_000);
             response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_000_MSG);
-            response.setResult(result);
+            response.setResults(result);
             response.setStatus("Get customer details with class data successfully.");
         }
         catch (Exception ex) {
@@ -1088,8 +1088,8 @@ public class ArCustomerSyncControllerBean extends EJBContextClass implements ArC
             String result = this.getArCustomersBalanceAllDownloaded(branchCode, companyCode, companyShortName);
 
             response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_000);
-            //response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_000_MSG);
-            response.setMessage(result);
+            response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_000_MSG);
+            response.setResult(result);
             response.setStatus("Get customer balances all downloaded data successfully.");
         }
         catch (Exception ex) {
@@ -1156,7 +1156,7 @@ public class ArCustomerSyncControllerBean extends EJBContextClass implements ArC
 
             response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_000);
             response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_000_MSG);
-            response.setStatus("Get customer balances all downloaded data successfully.");
+            response.setStatus("Set customer all new and updated successfully.");
         }
         catch (Exception ex) {
             response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_007);
@@ -1222,7 +1222,7 @@ public class ArCustomerSyncControllerBean extends EJBContextClass implements ArC
 
     }
 
-    private String customerRowEncode(LocalArCustomer arCustomer) {
+    private String customerRowEncode(LocalArCustomer arCustomer, String companyShortName) {
 
         char separator = EJBCommon.SEPARATOR;
         StringBuilder tempResult = new StringBuilder();
@@ -1252,7 +1252,7 @@ public class ArCustomerSyncControllerBean extends EJBContextClass implements ArC
             Collection arCustomerBalances = arCustomerBalanceHome
                     .findByBeforeOrEqualCbDateAndCstCode(
                             EJBCommon.getGcCurrentDateWoTime().getTime(),
-                            arCustomer.getCstCode(), arCustomer.getCstAdCompany());
+                            arCustomer.getCstCode(), arCustomer.getCstAdCompany(), companyShortName);
             LocalArCustomerBalance arCustomerBalance = null;
             Iterator i = arCustomerBalances.iterator();
             while (i.hasNext()) {
@@ -1385,7 +1385,8 @@ public class ArCustomerSyncControllerBean extends EJBContextClass implements ArC
 
         if (arCustomer.getCstArSalesperson2() != null) {
             try {
-                LocalArSalesperson arSalesperson = arSalespersonHome.findByPrimaryKey(arCustomer.getCstArSalesperson2());
+                LocalArSalesperson arSalesperson = arSalespersonHome
+                        .findByPrimaryKey(arCustomer.getCstArSalesperson2(), companyShortName);
                 slName = arSalesperson.getSlpName();
                 slId = arSalesperson.getSlpCode();
             }
@@ -1405,7 +1406,7 @@ public class ArCustomerSyncControllerBean extends EJBContextClass implements ArC
         return encodedResult;
     }
 
-    private String customerRowEncodeWithSalesPerson(LocalArCustomer arCustomer) {
+    private String customerRowEncodeWithSalesPerson(LocalArCustomer arCustomer, String companyShortName) {
 
         char separator = EJBCommon.SEPARATOR;
         StringBuilder tempResult = new StringBuilder();
@@ -1435,7 +1436,7 @@ public class ArCustomerSyncControllerBean extends EJBContextClass implements ArC
             Collection arCustomerBalances = arCustomerBalanceHome
                     .findByBeforeOrEqualCbDateAndCstCode(
                             EJBCommon.getGcCurrentDateWoTime().getTime(),
-                            arCustomer.getCstCode(), arCustomer.getCstAdCompany());
+                            arCustomer.getCstCode(), arCustomer.getCstAdCompany(), companyShortName);
             LocalArCustomerBalance arCustomerBalance = null;
             Iterator i = arCustomerBalances.iterator();
             while (i.hasNext()) {
@@ -1539,7 +1540,8 @@ public class ArCustomerSyncControllerBean extends EJBContextClass implements ArC
         Integer slId = null;
         if (arCustomer.getCstArSalesperson2() != null) {
             try {
-                LocalArSalesperson arSalesperson = arSalespersonHome.findByPrimaryKey(arCustomer.getCstArSalesperson2());
+                LocalArSalesperson arSalesperson = arSalespersonHome
+                        .findByPrimaryKey(arCustomer.getCstArSalesperson2(), companyShortName);
                 slName = arSalesperson.getSlpName();
                 slId = arSalesperson.getSlpCode();
             }
@@ -1591,7 +1593,7 @@ public class ArCustomerSyncControllerBean extends EJBContextClass implements ArC
         return encodedResult;
     }
 
-    private String customerRowEncodeWithClass(LocalArCustomer arCustomer) {
+    private String customerRowEncodeWithClass(LocalArCustomer arCustomer, String companyShortName) {
 
         char separator = EJBCommon.SEPARATOR;
         StringBuilder tempResult = new StringBuilder();
@@ -1621,7 +1623,7 @@ public class ArCustomerSyncControllerBean extends EJBContextClass implements ArC
             Collection arCustomerBalances = arCustomerBalanceHome
                     .findByBeforeOrEqualCbDateAndCstCode(
                             EJBCommon.getGcCurrentDateWoTime().getTime(),
-                            arCustomer.getCstCode(), arCustomer.getCstAdCompany());
+                            arCustomer.getCstCode(), arCustomer.getCstAdCompany(), companyShortName);
             LocalArCustomerBalance arCustomerBalance = null;
             Iterator i = arCustomerBalances.iterator();
             while (i.hasNext()) {
