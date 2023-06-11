@@ -36,101 +36,6 @@ public class GlCurrencySyncControllerBean extends EJBContextClass implements GlC
     private LocalGlFunctionalCurrencyRateHome glFunctionalCurrencyRateHome;
 
     @Override
-    public String[] getGlFcAll(Integer companyCode, String companyShortName) {
-
-        Debug.print("GlCurrencySyncControllerBean getGlFcAll");
-
-        try {
-            LocalAdCompany adCompany = adCompanyHome.findByPrimaryKey(companyCode, companyShortName);
-            Collection glFunctionalCurrencies = glFunctionalCurrencyHome.findFcAllEnabled(new Date(), companyCode, companyShortName);
-
-            String[] results = new String[glFunctionalCurrencies.size()];
-
-            Iterator i = glFunctionalCurrencies.iterator();
-            int ctr = 0;
-            while (i.hasNext()) {
-                LocalGlFunctionalCurrency glFunctionalCurrency = (LocalGlFunctionalCurrency) i.next();
-                results[ctr] = currencyRowEncode(glFunctionalCurrency, adCompany);
-                ctr++;
-            }
-            return removeDuplicate(results);
-
-        } catch (Exception ex) {
-            Debug.printStackTrace(ex);
-            throw new EJBException(ex.getMessage());
-        }
-    }
-
-    @Override
-    public String[] getGlCurrentFcRates(Integer companyCode, String companyShortName) {
-
-        Debug.print("GlCurrencySyncControllerBean getGlCurrentFcRates");
-
-        try {
-
-            LocalAdCompany adCompany = adCompanyHome.findByPrimaryKey(companyCode, companyShortName);
-
-            float fcRate;
-            boolean isFcExist = true;
-            try {
-
-                // get fc rate to usd
-                LocalGlFunctionalCurrency glFunctionalCurrency = glFunctionalCurrencyHome
-                        .findByFcName(adCompany.getGlFunctionalCurrency().getFcName(), companyCode, companyShortName);
-                LocalGlFunctionalCurrencyRate glFunctionalCurrencyRate = glFunctionalCurrencyRateHome
-                        .findByFcCodeAndDate(glFunctionalCurrency.getFcCode(),
-                                EJBCommon.getGcCurrentDateWoTime().getTime(), companyCode, companyShortName);
-                fcRate = (float)glFunctionalCurrencyRate.getFrXToUsd();
-            } catch (FinderException ex) {
-
-                fcRate = 1;
-                isFcExist = false;
-
-            }
-
-            Collection glFunctionalCurrencyRates = glFunctionalCurrencyRateHome
-                    .findByFrDate(EJBCommon.getGcCurrentDateWoTime().getTime(), companyCode, companyShortName);
-            String[] results;
-            if (isFcExist) {
-                results = new String[glFunctionalCurrencyRates.size() + 1];
-            } else {
-                results = new String[glFunctionalCurrencyRates.size()];
-            }
-
-            Iterator i = glFunctionalCurrencyRates.iterator();
-            int ctr = 0;
-            while (i.hasNext()) {
-
-                LocalGlFunctionalCurrencyRate glForeignCurrencyRate = (LocalGlFunctionalCurrencyRate) i
-                        .next();
-                // get foreign currency rate to usd
-                float foreignRate = (float)glForeignCurrencyRate.getFrXToUsd();
-
-                results[ctr] = this.currencyRateRowEncode(String
-                        .valueOf(glForeignCurrencyRate
-                                .getGlFunctionalCurrency().getFcCode()), String
-                        .valueOf(foreignRate / fcRate));
-                ctr++;
-            }
-
-            if (isFcExist) {
-                // for usd
-                LocalGlFunctionalCurrency glUsdFunctionalCurrency = glFunctionalCurrencyHome
-                        .findByFcName("USD", companyCode, companyShortName);
-                results[ctr] = this.currencyRateRowEncode(String
-                        .valueOf(glUsdFunctionalCurrency.getFcCode()), String
-                        .valueOf(1 / fcRate));
-            }
-
-            return removeDuplicate(results);
-
-        } catch (Exception ex) {
-            Debug.printStackTrace(ex);
-            throw new EJBException(ex.getMessage());
-        }
-    }
-
-    @Override
     public GlCurrencySyncResponse getGlFcAll(GlCurrencySyncRequest request) {
 
         Debug.print("GlCurrencySyncControllerBean getGlFcAll");
@@ -220,6 +125,99 @@ public class GlCurrencySyncControllerBean extends EJBContextClass implements GlC
             return response;
         }
         return response;
+    }
+
+    private String[] getGlFcAll(Integer companyCode, String companyShortName) {
+
+        Debug.print("GlCurrencySyncControllerBean getGlFcAll");
+
+        try {
+            LocalAdCompany adCompany = adCompanyHome.findByPrimaryKey(companyCode, companyShortName);
+            Collection glFunctionalCurrencies = glFunctionalCurrencyHome.findFcAllEnabled(new Date(), companyCode, companyShortName);
+
+            String[] results = new String[glFunctionalCurrencies.size()];
+
+            Iterator i = glFunctionalCurrencies.iterator();
+            int ctr = 0;
+            while (i.hasNext()) {
+                LocalGlFunctionalCurrency glFunctionalCurrency = (LocalGlFunctionalCurrency) i.next();
+                results[ctr] = currencyRowEncode(glFunctionalCurrency, adCompany);
+                ctr++;
+            }
+            return removeDuplicate(results);
+
+        } catch (Exception ex) {
+            Debug.printStackTrace(ex);
+            throw new EJBException(ex.getMessage());
+        }
+    }
+
+    private String[] getGlCurrentFcRates(Integer companyCode, String companyShortName) {
+
+        Debug.print("GlCurrencySyncControllerBean getGlCurrentFcRates");
+
+        try {
+
+            LocalAdCompany adCompany = adCompanyHome.findByPrimaryKey(companyCode, companyShortName);
+
+            float fcRate;
+            boolean isFcExist = true;
+            try {
+
+                // get fc rate to usd
+                LocalGlFunctionalCurrency glFunctionalCurrency = glFunctionalCurrencyHome
+                        .findByFcName(adCompany.getGlFunctionalCurrency().getFcName(), companyCode, companyShortName);
+                LocalGlFunctionalCurrencyRate glFunctionalCurrencyRate = glFunctionalCurrencyRateHome
+                        .findByFcCodeAndDate(glFunctionalCurrency.getFcCode(),
+                                EJBCommon.getGcCurrentDateWoTime().getTime(), companyCode, companyShortName);
+                fcRate = (float)glFunctionalCurrencyRate.getFrXToUsd();
+            } catch (FinderException ex) {
+
+                fcRate = 1;
+                isFcExist = false;
+
+            }
+
+            Collection glFunctionalCurrencyRates = glFunctionalCurrencyRateHome
+                    .findByFrDate(EJBCommon.getGcCurrentDateWoTime().getTime(), companyCode, companyShortName);
+            String[] results;
+            if (isFcExist) {
+                results = new String[glFunctionalCurrencyRates.size() + 1];
+            } else {
+                results = new String[glFunctionalCurrencyRates.size()];
+            }
+
+            Iterator i = glFunctionalCurrencyRates.iterator();
+            int ctr = 0;
+            while (i.hasNext()) {
+
+                LocalGlFunctionalCurrencyRate glForeignCurrencyRate = (LocalGlFunctionalCurrencyRate) i
+                        .next();
+                // get foreign currency rate to usd
+                float foreignRate = (float)glForeignCurrencyRate.getFrXToUsd();
+
+                results[ctr] = this.currencyRateRowEncode(String
+                        .valueOf(glForeignCurrencyRate
+                                .getGlFunctionalCurrency().getFcCode()), String
+                        .valueOf(foreignRate / fcRate));
+                ctr++;
+            }
+
+            if (isFcExist) {
+                // for usd
+                LocalGlFunctionalCurrency glUsdFunctionalCurrency = glFunctionalCurrencyHome
+                        .findByFcName("USD", companyCode, companyShortName);
+                results[ctr] = this.currencyRateRowEncode(String
+                        .valueOf(glUsdFunctionalCurrency.getFcCode()), String
+                        .valueOf(1 / fcRate));
+            }
+
+            return removeDuplicate(results);
+
+        } catch (Exception ex) {
+            Debug.printStackTrace(ex);
+            throw new EJBException(ex.getMessage());
+        }
     }
 
     private String currencyRowEncode(LocalGlFunctionalCurrency glFunctionalCurrency, LocalAdCompany adCompany) {
