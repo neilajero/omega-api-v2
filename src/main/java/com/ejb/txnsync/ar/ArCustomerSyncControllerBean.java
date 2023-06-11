@@ -47,383 +47,6 @@ public class ArCustomerSyncControllerBean extends EJBContextClass implements ArC
     private LocalAdBranchCustomerHome adBranchCustomerHome;
 
     @Override
-    public String[] getArCSTAreaAll(Integer companyCode, String companyShortName) {
-
-        Debug.print("ArCustomerSyncControllerBean getArCSTAreaAll");
-
-        String[] results;
-        Collection cstArea = null;
-        try {
-            cstArea = arCustomerHome.findCstArea(companyCode, companyShortName);
-        }
-        catch (FinderException ex) {
-        }
-
-        ArrayList cstAreaList = new ArrayList();
-        Iterator i = cstArea.iterator();
-        int ctr = 0;
-        while (i.hasNext()) {
-            LocalArCustomer arCst = (LocalArCustomer) i.next();
-            if (arCst.getCstArea() == null || arCst.getCstArea().equals("")) {
-                continue;
-            }
-            if (!cstAreaList.contains(arCst.getCstArea().toUpperCase())) {
-                cstAreaList.add(arCst.getCstArea().toUpperCase());
-            }
-        }
-
-        results = new String[cstAreaList.size()];
-        Iterator j = cstAreaList.iterator();
-        ctr = 0;
-        while (j.hasNext()) {
-            results[ctr] = j.next().toString();
-            ctr++;
-        }
-        return results;
-    }
-
-    @Override
-    public String[] getArSoPostedAllByCstArea(String customerArea, Integer companyCode, String companyShortName) {
-
-        Debug.print("ArCustomerSyncControllerBean getArSoPostedAllByCstArea");
-
-        String[] results;
-
-        java.util.Calendar calendar = java.util.Calendar.getInstance();
-        calendar.setTime(new java.util.Date());
-        calendar.add(java.util.Calendar.MONTH, -3);
-        calendar.set(java.util.Calendar.DAY_OF_MONTH, 1);
-        String previousDate = EJBCommon.convertSQLDateToString(calendar.getTime());
-
-        calendar = java.util.Calendar.getInstance();
-        calendar.setTime(new java.util.Date());
-        calendar.set(java.util.Calendar.DAY_OF_MONTH, calendar.getActualMaximum(java.util.Calendar.DAY_OF_MONTH));
-        String nextDate = EJBCommon.convertSQLDateToString(calendar.getTime());
-
-        Collection soPostedColl;
-        soPostedColl = arSalesOrderHome.findSoPostedAndApprovedByDateRangeAndAdCompany(
-                EJBCommon.convertStringToSQLDate(previousDate),
-                EJBCommon.convertStringToSQLDate(nextDate), companyCode, companyShortName);
-
-        ArrayList soList = new ArrayList();
-
-        Iterator i = soPostedColl.iterator();
-        while (i.hasNext()) {
-            LocalArSalesOrder salesOrder = (LocalArSalesOrder) i.next();
-            if (salesOrder.getArCustomer().getCstArea().equals(customerArea)) {
-                String str = "";
-
-                Collection arSOLineColl = salesOrder.getArSalesOrderLines();
-                Iterator j = arSOLineColl.iterator();
-
-                double ctr = 0;
-                while (j.hasNext()) {
-                    LocalArSalesOrderLine arSOLine = (LocalArSalesOrderLine) j.next();
-                    if (arSOLine.getInvUnitOfMeasure().getUomName().equals("CTN")) {
-                        ctr += arSOLine.getSolQuantity();
-                    }
-                }
-
-                if (salesOrder.getSoLock() == (byte) 1) {
-                    str += EJBCommon.convertSQLDateToString(salesOrder.getSoDateApprovedRejected())
-                            + "$" + salesOrder.getArCustomer().getCstName() + "$" + salesOrder.getSoDocumentNumber() + "$" + "1" + "$" + ctr;
-                    soList.add(str);
-                } else {
-                    str += EJBCommon.convertSQLDateToString(salesOrder.getSoDateApprovedRejected())
-                            + "$" + salesOrder.getArCustomer().getCstName() + "$" + salesOrder.getSoDocumentNumber() + "$" + "0" + "$" + ctr;
-                    soList.add(str);
-                }
-            }
-        }
-
-        results = new String[soList.size()];
-        Iterator j = soList.iterator();
-        int ctr = 0;
-        while (j.hasNext()) {
-            results[ctr++] = j.next().toString();
-        }
-
-        return results;
-    }
-
-    @Override
-    public int getArCustomersAllNewLength(Integer branchCode, Integer companyCode, String companyShortName) {
-
-        Debug.print("ArCustomerSyncControllerBean getArCustomersAllNewLength");
-
-        try {
-            Collection arCustomers = arCustomerHome.findCstByCstNewAndUpdated(
-                    branchCode, companyCode, 'N', 'N', 'N', companyShortName);
-            return arCustomers.size();
-        }
-        catch (Exception ex) {
-            Debug.printStackTrace(ex);
-            throw new EJBException(ex.getMessage());
-        }
-    }
-
-    @Override
-    public int getArCustomersAllUpdatedLength(Integer branchCode, Integer companyCode, String companyShortName) {
-
-        return 0;
-    }
-
-    @Override
-    public String[] getArSalespersonAll(Integer branchCode, Integer companyCode, String companyShortName) {
-
-        Debug.print("ArCustomerSyncControllerBean getArSalespersonAll");
-
-        try {
-            Collection arSalespersons = arSalespersonHome.findSlpByBrCode(branchCode, companyCode, companyShortName);
-            String[] results = new String[arSalespersons.size()];
-            Iterator i = arSalespersons.iterator();
-            int ctr = 0;
-            while (i.hasNext()) {
-                LocalArSalesperson arSalesperson = (LocalArSalesperson) i.next();
-                results[ctr] = salespersonRowEncode(arSalesperson);
-                ctr++;
-            }
-            return results;
-        }
-        catch (Exception ex) {
-
-            Debug.printStackTrace(ex);
-            throw new EJBException(ex.getMessage());
-
-        }
-    }
-
-    @Override
-    public String[] getArCustomerDraftBalances(String[] customerCodes, Integer companyCode, String companyShortName) {
-
-        Debug.print("ArCustomerSyncControllerBean getArCustomerDraftBalances");
-
-        try {
-            String[] results = new String[customerCodes.length];
-            for (int i = 0; i < customerCodes.length; i++) {
-                Collection arInvoices = arInvoiceHome.findUnpostedInvByCstCustomerCode(
-                        customerCodes[i], companyCode, companyShortName);
-                double totalDraftBalance = 0;
-                Iterator iter = arInvoices.iterator();
-                while (iter.hasNext()) {
-                    totalDraftBalance += ((LocalArInvoice) iter.next()).getInvAmountDue();
-                }
-                results[i] = "" + totalDraftBalance;
-            }
-            return results;
-
-        }
-        catch (Exception ex) {
-            Debug.printStackTrace(ex);
-            throw new EJBException(ex.getMessage());
-        }
-    }
-
-    @Override
-    public String[] getArCustomersNameCodeAddressSlp(Integer branchCode, Integer companyCode, String companyShortName) {
-
-        Debug.print("ArCustomerSyncControllerBean getArCustomersNameCodeAddressSlp");
-
-        try {
-            Collection arCustomers = arCustomerHome
-                    .findCstByCstNewAndUpdated(branchCode, branchCode, 'N', 'N', 'N', companyShortName);
-            Collection arUpdatedCustomers = arCustomerHome
-                    .findCstByCstNewAndUpdated(branchCode, branchCode, 'U', 'U', 'X', companyShortName);
-
-            String[] results = new String[arCustomers.size() + arUpdatedCustomers.size()];
-            Iterator i = arCustomers.iterator();
-            int ctr = 0;
-            while (i.hasNext()) {
-                LocalArCustomer arCustomer = (LocalArCustomer) i.next();
-                results[ctr] = customerNewRowEncode(arCustomer);
-                ctr++;
-            }
-
-            i = arUpdatedCustomers.iterator();
-            while (i.hasNext()) {
-                LocalArCustomer arCustomer = (LocalArCustomer) i.next();
-                results[ctr] = customerNewRowEncode(arCustomer);
-                ctr++;
-            }
-            return results;
-
-        }
-        catch (Exception ex) {
-            Debug.printStackTrace(ex);
-            throw new EJBException(ex.getMessage());
-        }
-    }
-
-    @Override
-    public String[] getArCustomersAllNewAndUpdated(Integer branchCode, Integer companyCode, String companyShortName) {
-
-        Debug.print("ArCustomerSyncControllerBean getArCustomersAllNewAndUpdated");
-
-        try {
-            Collection arCustomers = arCustomerHome
-                    .findCstByCstNewAndUpdated(branchCode, companyCode, 'N', 'N', 'N', companyShortName);
-            Collection arUpdatedCustomers = arCustomerHome
-                    .findCstByCstNewAndUpdated(branchCode, companyCode, 'U', 'U', 'X', companyShortName);
-            String[] results = new String[arCustomers.size() + arUpdatedCustomers.size()];
-            Iterator i = arCustomers.iterator();
-            int ctr = 0;
-            while (i.hasNext()) {
-                LocalArCustomer arCustomer = (LocalArCustomer)i.next();
-                results[ctr] = customerRowEncode(arCustomer, companyShortName);
-                ctr++;
-            }
-
-            i = arUpdatedCustomers.iterator();
-            while (i.hasNext()) {
-                LocalArCustomer arCustomer = (LocalArCustomer)i.next();
-                results[ctr] = customerRowEncode(arCustomer, companyShortName);
-                ctr++;
-            }
-            return results;
-
-        } catch (Exception ex) {
-            Debug.printStackTrace(ex);
-            throw new EJBException(ex.getMessage());
-        }
-    }
-
-    @Override
-    public String[] getArCustomersAllNewAndUpdatedWithSalesperson(Integer branchCode, Integer companyCode, String companyShortName) {
-
-        Debug.print("ArCustomerSyncControllerBean getArCustomersAllNewAndUpdatedWithSalesperson");
-
-        try {
-            Collection arCustomers = arCustomerHome
-                    .findCstByCstNewAndUpdated(branchCode, companyCode, 'N', 'N', 'N', companyShortName);
-            Collection arUpdatedCustomers = arCustomerHome
-                    .findCstByCstNewAndUpdated(branchCode, companyCode, 'U', 'U', 'X', companyShortName);
-            String[] results = new String[arCustomers.size() + arUpdatedCustomers.size()];
-            Iterator i = arCustomers.iterator();
-            int ctr = 0;
-            while (i.hasNext()) {
-                LocalArCustomer arCustomer = (LocalArCustomer)i.next();
-                results[ctr] = customerRowEncodeWithSalesPerson(arCustomer, companyShortName);
-                ctr++;
-            }
-
-            i = arUpdatedCustomers.iterator();
-            while (i.hasNext()) {
-                LocalArCustomer arCustomer = (LocalArCustomer)i.next();
-                results[ctr] = customerRowEncodeWithSalesPerson(arCustomer, companyShortName);
-                ctr++;
-            }
-            return results;
-
-        } catch (Exception ex) {
-            Debug.printStackTrace(ex);
-            throw new EJBException(ex.getMessage());
-        }
-    }
-
-    @Override
-    public String[] getArCustomersAllNewAndUpdatedWithCustomerClass(Integer branchCode, Integer companyCode, String companyShortName) {
-
-        Debug.print("ArCustomerSyncControllerBean getArCustomersAllNewAndUpdatedWithClass");
-
-        try {
-            Collection arCustomers = arCustomerHome
-                    .findCstByCstNewAndUpdated(branchCode, companyCode, 'N', 'N', 'N', companyShortName);
-            Collection arUpdatedCustomers = arCustomerHome
-                    .findCstByCstNewAndUpdated(branchCode, companyCode, 'U', 'U', 'X', companyShortName);
-
-            String[] results = new String[arCustomers.size() + arUpdatedCustomers.size()];
-
-            Iterator i = arCustomers.iterator();
-            int ctr = 0;
-            while (i.hasNext()) {
-                LocalArCustomer arCustomer = (LocalArCustomer)i.next();
-                results[ctr] = customerRowEncodeWithClass(arCustomer, companyShortName);
-                ctr++;
-            }
-
-            i = arUpdatedCustomers.iterator();
-            while (i.hasNext()) {
-                LocalArCustomer arCustomer = (LocalArCustomer)i.next();
-                results[ctr] = customerRowEncodeWithClass(arCustomer, companyShortName);
-                ctr++;
-            }
-            return results;
-
-        } catch (Exception ex) {
-            Debug.printStackTrace(ex);
-            throw new EJBException(ex.getMessage());
-        }
-    }
-
-    @Override
-    public String getArCustomersBalanceAllDownloaded(Integer branchCode, Integer companyCode, String companyShortName) {
-
-        Debug.print("ArCustomerSyncControllerBean getArCustomersBalanceAllDownloaded");
-
-        char separator = EJBCommon.SEPARATOR;
-        StringBuilder CustomerBalances = new StringBuilder();
-
-        try {
-            Collection arCustomers = arCustomerHome
-                    .findCstByCstNewAndUpdated(branchCode, companyCode, 'D', 'D', 'D', companyShortName);
-
-            Iterator i = arCustomers.iterator();
-            int ctr = 0;
-            while (i.hasNext()) {
-
-                LocalArCustomer arCustomer = (LocalArCustomer) i.next();
-                double currentBalance = 0;
-                // Current Balance
-
-                Collection arCustomerBalances = arCustomerBalanceHome
-                        .findByBeforeOrEqualCbDateAndCstCode(
-                                EJBCommon.getGcCurrentDateWoTime().getTime(),
-                                arCustomer.getCstCode(), arCustomer.getCstAdCompany(), companyShortName);
-
-                if (!arCustomerBalances.isEmpty()) {
-                    ArrayList arCustomerBalanceList = new ArrayList(arCustomerBalances);
-                    LocalArCustomerBalance arCustomerBalance = (LocalArCustomerBalance) arCustomerBalanceList.get(arCustomerBalanceList.size() - 1);
-                    currentBalance = arCustomerBalance.getCbBalance();
-                }
-                CustomerBalances.append(separator);
-                CustomerBalances.append(arCustomer.getCstCode().toString());
-                CustomerBalances.append(separator);
-                CustomerBalances.append(currentBalance);
-                ctr++;
-            }
-            CustomerBalances.append(separator);
-            return CustomerBalances.toString();
-
-        }
-        catch (Exception ex) {
-            Debug.printStackTrace(ex);
-            throw new EJBException(ex.getMessage());
-        }
-    }
-
-    @Override
-    public void setArCustomersAllNewAndUpdatedSuccessConfirmation(Integer branchCode, Integer companyCode, String companyShortName) {
-
-        Debug.print("ArCustomerSyncControllerBean setArCustomersAllNewAndUpdatedSuccessConfirmation");
-
-        LocalAdBranchCustomer adBranchCustomer;
-
-        try {
-            Collection adBranchCustomers = adBranchCustomerHome
-                    .findCstByCstNewAndUpdated(branchCode, companyCode, 'N', 'U', 'X', companyShortName);
-            Iterator i = adBranchCustomers.iterator();
-            while (i.hasNext()) {
-                adBranchCustomer = (LocalAdBranchCustomer)i.next();
-                adBranchCustomer.setBcstCustomerDownloadStatus('D');
-            }
-        } catch (Exception ex) {
-            ctx.setRollbackOnly();
-            Debug.printStackTrace(ex);
-            throw new EJBException(ex.getMessage());
-        }
-    }
-
-    @Override
     public ArCustomerSyncResponse getArCSTAreaAll(ArCustomerSyncRequest request) {
 
         Debug.print("ArCustomerSyncControllerBean getArCSTAreaAll");
@@ -1164,6 +787,371 @@ public class ArCustomerSyncControllerBean extends EJBContextClass implements ArC
             return response;
         }
         return response;
+    }
+
+    private String[] getArCSTAreaAll(Integer companyCode, String companyShortName) {
+
+        Debug.print("ArCustomerSyncControllerBean getArCSTAreaAll");
+
+        String[] results;
+        Collection cstArea = null;
+        try {
+            cstArea = arCustomerHome.findCstArea(companyCode, companyShortName);
+        }
+        catch (FinderException ex) {
+        }
+
+        ArrayList cstAreaList = new ArrayList();
+        Iterator i = cstArea.iterator();
+        int ctr = 0;
+        while (i.hasNext()) {
+            LocalArCustomer arCst = (LocalArCustomer) i.next();
+            if (arCst.getCstArea() == null || arCst.getCstArea().equals("")) {
+                continue;
+            }
+            if (!cstAreaList.contains(arCst.getCstArea().toUpperCase())) {
+                cstAreaList.add(arCst.getCstArea().toUpperCase());
+            }
+        }
+
+        results = new String[cstAreaList.size()];
+        Iterator j = cstAreaList.iterator();
+        ctr = 0;
+        while (j.hasNext()) {
+            results[ctr] = j.next().toString();
+            ctr++;
+        }
+        return results;
+    }
+
+    private String[] getArSoPostedAllByCstArea(String customerArea, Integer companyCode, String companyShortName) {
+
+        Debug.print("ArCustomerSyncControllerBean getArSoPostedAllByCstArea");
+
+        String[] results;
+
+        java.util.Calendar calendar = java.util.Calendar.getInstance();
+        calendar.setTime(new java.util.Date());
+        calendar.add(java.util.Calendar.MONTH, -3);
+        calendar.set(java.util.Calendar.DAY_OF_MONTH, 1);
+        String previousDate = EJBCommon.convertSQLDateToString(calendar.getTime());
+
+        calendar = java.util.Calendar.getInstance();
+        calendar.setTime(new java.util.Date());
+        calendar.set(java.util.Calendar.DAY_OF_MONTH, calendar.getActualMaximum(java.util.Calendar.DAY_OF_MONTH));
+        String nextDate = EJBCommon.convertSQLDateToString(calendar.getTime());
+
+        Collection soPostedColl;
+        soPostedColl = arSalesOrderHome.findSoPostedAndApprovedByDateRangeAndAdCompany(
+                EJBCommon.convertStringToSQLDate(previousDate),
+                EJBCommon.convertStringToSQLDate(nextDate), companyCode, companyShortName);
+
+        ArrayList soList = new ArrayList();
+
+        Iterator i = soPostedColl.iterator();
+        while (i.hasNext()) {
+            LocalArSalesOrder salesOrder = (LocalArSalesOrder) i.next();
+            if (salesOrder.getArCustomer().getCstArea().equals(customerArea)) {
+                String str = "";
+
+                Collection arSOLineColl = salesOrder.getArSalesOrderLines();
+                Iterator j = arSOLineColl.iterator();
+
+                double ctr = 0;
+                while (j.hasNext()) {
+                    LocalArSalesOrderLine arSOLine = (LocalArSalesOrderLine) j.next();
+                    if (arSOLine.getInvUnitOfMeasure().getUomName().equals("CTN")) {
+                        ctr += arSOLine.getSolQuantity();
+                    }
+                }
+
+                if (salesOrder.getSoLock() == (byte) 1) {
+                    str += EJBCommon.convertSQLDateToString(salesOrder.getSoDateApprovedRejected())
+                            + "$" + salesOrder.getArCustomer().getCstName() + "$" + salesOrder.getSoDocumentNumber() + "$" + "1" + "$" + ctr;
+                    soList.add(str);
+                } else {
+                    str += EJBCommon.convertSQLDateToString(salesOrder.getSoDateApprovedRejected())
+                            + "$" + salesOrder.getArCustomer().getCstName() + "$" + salesOrder.getSoDocumentNumber() + "$" + "0" + "$" + ctr;
+                    soList.add(str);
+                }
+            }
+        }
+
+        results = new String[soList.size()];
+        Iterator j = soList.iterator();
+        int ctr = 0;
+        while (j.hasNext()) {
+            results[ctr++] = j.next().toString();
+        }
+
+        return results;
+    }
+
+    private int getArCustomersAllNewLength(Integer branchCode, Integer companyCode, String companyShortName) {
+
+        Debug.print("ArCustomerSyncControllerBean getArCustomersAllNewLength");
+
+        try {
+            Collection arCustomers = arCustomerHome.findCstByCstNewAndUpdated(
+                    branchCode, companyCode, 'N', 'N', 'N', companyShortName);
+            return arCustomers.size();
+        }
+        catch (Exception ex) {
+            Debug.printStackTrace(ex);
+            throw new EJBException(ex.getMessage());
+        }
+    }
+
+    private int getArCustomersAllUpdatedLength(Integer branchCode, Integer companyCode, String companyShortName) {
+
+        return 0;
+    }
+
+    private String[] getArSalespersonAll(Integer branchCode, Integer companyCode, String companyShortName) {
+
+        Debug.print("ArCustomerSyncControllerBean getArSalespersonAll");
+
+        try {
+            Collection arSalespersons = arSalespersonHome.findSlpByBrCode(branchCode, companyCode, companyShortName);
+            String[] results = new String[arSalespersons.size()];
+            Iterator i = arSalespersons.iterator();
+            int ctr = 0;
+            while (i.hasNext()) {
+                LocalArSalesperson arSalesperson = (LocalArSalesperson) i.next();
+                results[ctr] = salespersonRowEncode(arSalesperson);
+                ctr++;
+            }
+            return results;
+        }
+        catch (Exception ex) {
+
+            Debug.printStackTrace(ex);
+            throw new EJBException(ex.getMessage());
+
+        }
+    }
+
+    private String[] getArCustomerDraftBalances(String[] customerCodes, Integer companyCode, String companyShortName) {
+
+        Debug.print("ArCustomerSyncControllerBean getArCustomerDraftBalances");
+
+        try {
+            String[] results = new String[customerCodes.length];
+            for (int i = 0; i < customerCodes.length; i++) {
+                Collection arInvoices = arInvoiceHome.findUnpostedInvByCstCustomerCode(
+                        customerCodes[i], companyCode, companyShortName);
+                double totalDraftBalance = 0;
+                Iterator iter = arInvoices.iterator();
+                while (iter.hasNext()) {
+                    totalDraftBalance += ((LocalArInvoice) iter.next()).getInvAmountDue();
+                }
+                results[i] = "" + totalDraftBalance;
+            }
+            return results;
+
+        }
+        catch (Exception ex) {
+            Debug.printStackTrace(ex);
+            throw new EJBException(ex.getMessage());
+        }
+    }
+
+    private String[] getArCustomersNameCodeAddressSlp(Integer branchCode, Integer companyCode, String companyShortName) {
+
+        Debug.print("ArCustomerSyncControllerBean getArCustomersNameCodeAddressSlp");
+
+        try {
+            Collection arCustomers = arCustomerHome
+                    .findCstByCstNewAndUpdated(branchCode, branchCode, 'N', 'N', 'N', companyShortName);
+            Collection arUpdatedCustomers = arCustomerHome
+                    .findCstByCstNewAndUpdated(branchCode, branchCode, 'U', 'U', 'X', companyShortName);
+
+            String[] results = new String[arCustomers.size() + arUpdatedCustomers.size()];
+            Iterator i = arCustomers.iterator();
+            int ctr = 0;
+            while (i.hasNext()) {
+                LocalArCustomer arCustomer = (LocalArCustomer) i.next();
+                results[ctr] = customerNewRowEncode(arCustomer);
+                ctr++;
+            }
+
+            i = arUpdatedCustomers.iterator();
+            while (i.hasNext()) {
+                LocalArCustomer arCustomer = (LocalArCustomer) i.next();
+                results[ctr] = customerNewRowEncode(arCustomer);
+                ctr++;
+            }
+            return results;
+
+        }
+        catch (Exception ex) {
+            Debug.printStackTrace(ex);
+            throw new EJBException(ex.getMessage());
+        }
+    }
+
+    private String[] getArCustomersAllNewAndUpdated(Integer branchCode, Integer companyCode, String companyShortName) {
+
+        Debug.print("ArCustomerSyncControllerBean getArCustomersAllNewAndUpdated");
+
+        try {
+            Collection arCustomers = arCustomerHome
+                    .findCstByCstNewAndUpdated(branchCode, companyCode, 'N', 'N', 'N', companyShortName);
+            Collection arUpdatedCustomers = arCustomerHome
+                    .findCstByCstNewAndUpdated(branchCode, companyCode, 'U', 'U', 'X', companyShortName);
+            String[] results = new String[arCustomers.size() + arUpdatedCustomers.size()];
+            Iterator i = arCustomers.iterator();
+            int ctr = 0;
+            while (i.hasNext()) {
+                LocalArCustomer arCustomer = (LocalArCustomer)i.next();
+                results[ctr] = customerRowEncode(arCustomer, companyShortName);
+                ctr++;
+            }
+
+            i = arUpdatedCustomers.iterator();
+            while (i.hasNext()) {
+                LocalArCustomer arCustomer = (LocalArCustomer)i.next();
+                results[ctr] = customerRowEncode(arCustomer, companyShortName);
+                ctr++;
+            }
+            return results;
+
+        } catch (Exception ex) {
+            Debug.printStackTrace(ex);
+            throw new EJBException(ex.getMessage());
+        }
+    }
+
+    private String[] getArCustomersAllNewAndUpdatedWithSalesperson(Integer branchCode, Integer companyCode, String companyShortName) {
+
+        Debug.print("ArCustomerSyncControllerBean getArCustomersAllNewAndUpdatedWithSalesperson");
+
+        try {
+            Collection arCustomers = arCustomerHome
+                    .findCstByCstNewAndUpdated(branchCode, companyCode, 'N', 'N', 'N', companyShortName);
+            Collection arUpdatedCustomers = arCustomerHome
+                    .findCstByCstNewAndUpdated(branchCode, companyCode, 'U', 'U', 'X', companyShortName);
+            String[] results = new String[arCustomers.size() + arUpdatedCustomers.size()];
+            Iterator i = arCustomers.iterator();
+            int ctr = 0;
+            while (i.hasNext()) {
+                LocalArCustomer arCustomer = (LocalArCustomer)i.next();
+                results[ctr] = customerRowEncodeWithSalesPerson(arCustomer, companyShortName);
+                ctr++;
+            }
+
+            i = arUpdatedCustomers.iterator();
+            while (i.hasNext()) {
+                LocalArCustomer arCustomer = (LocalArCustomer)i.next();
+                results[ctr] = customerRowEncodeWithSalesPerson(arCustomer, companyShortName);
+                ctr++;
+            }
+            return results;
+
+        } catch (Exception ex) {
+            Debug.printStackTrace(ex);
+            throw new EJBException(ex.getMessage());
+        }
+    }
+
+    private String[] getArCustomersAllNewAndUpdatedWithCustomerClass(Integer branchCode, Integer companyCode, String companyShortName) {
+
+        Debug.print("ArCustomerSyncControllerBean getArCustomersAllNewAndUpdatedWithClass");
+
+        try {
+            Collection arCustomers = arCustomerHome
+                    .findCstByCstNewAndUpdated(branchCode, companyCode, 'N', 'N', 'N', companyShortName);
+            Collection arUpdatedCustomers = arCustomerHome
+                    .findCstByCstNewAndUpdated(branchCode, companyCode, 'U', 'U', 'X', companyShortName);
+
+            String[] results = new String[arCustomers.size() + arUpdatedCustomers.size()];
+
+            Iterator i = arCustomers.iterator();
+            int ctr = 0;
+            while (i.hasNext()) {
+                LocalArCustomer arCustomer = (LocalArCustomer)i.next();
+                results[ctr] = customerRowEncodeWithClass(arCustomer, companyShortName);
+                ctr++;
+            }
+
+            i = arUpdatedCustomers.iterator();
+            while (i.hasNext()) {
+                LocalArCustomer arCustomer = (LocalArCustomer)i.next();
+                results[ctr] = customerRowEncodeWithClass(arCustomer, companyShortName);
+                ctr++;
+            }
+            return results;
+
+        } catch (Exception ex) {
+            Debug.printStackTrace(ex);
+            throw new EJBException(ex.getMessage());
+        }
+    }
+
+    private String getArCustomersBalanceAllDownloaded(Integer branchCode, Integer companyCode, String companyShortName) {
+
+        Debug.print("ArCustomerSyncControllerBean getArCustomersBalanceAllDownloaded");
+
+        char separator = EJBCommon.SEPARATOR;
+        StringBuilder CustomerBalances = new StringBuilder();
+
+        try {
+            Collection arCustomers = arCustomerHome
+                    .findCstByCstNewAndUpdated(branchCode, companyCode, 'D', 'D', 'D', companyShortName);
+
+            Iterator i = arCustomers.iterator();
+            int ctr = 0;
+            while (i.hasNext()) {
+
+                LocalArCustomer arCustomer = (LocalArCustomer) i.next();
+                double currentBalance = 0;
+                // Current Balance
+
+                Collection arCustomerBalances = arCustomerBalanceHome
+                        .findByBeforeOrEqualCbDateAndCstCode(
+                                EJBCommon.getGcCurrentDateWoTime().getTime(),
+                                arCustomer.getCstCode(), arCustomer.getCstAdCompany(), companyShortName);
+
+                if (!arCustomerBalances.isEmpty()) {
+                    ArrayList arCustomerBalanceList = new ArrayList(arCustomerBalances);
+                    LocalArCustomerBalance arCustomerBalance = (LocalArCustomerBalance) arCustomerBalanceList.get(arCustomerBalanceList.size() - 1);
+                    currentBalance = arCustomerBalance.getCbBalance();
+                }
+                CustomerBalances.append(separator);
+                CustomerBalances.append(arCustomer.getCstCode().toString());
+                CustomerBalances.append(separator);
+                CustomerBalances.append(currentBalance);
+                ctr++;
+            }
+            CustomerBalances.append(separator);
+            return CustomerBalances.toString();
+
+        }
+        catch (Exception ex) {
+            Debug.printStackTrace(ex);
+            throw new EJBException(ex.getMessage());
+        }
+    }
+
+    private void setArCustomersAllNewAndUpdatedSuccessConfirmation(Integer branchCode, Integer companyCode, String companyShortName) {
+
+        Debug.print("ArCustomerSyncControllerBean setArCustomersAllNewAndUpdatedSuccessConfirmation");
+
+        LocalAdBranchCustomer adBranchCustomer;
+
+        try {
+            Collection adBranchCustomers = adBranchCustomerHome
+                    .findCstByCstNewAndUpdated(branchCode, companyCode, 'N', 'U', 'X', companyShortName);
+            Iterator i = adBranchCustomers.iterator();
+            while (i.hasNext()) {
+                adBranchCustomer = (LocalAdBranchCustomer)i.next();
+                adBranchCustomer.setBcstCustomerDownloadStatus('D');
+            }
+        } catch (Exception ex) {
+            ctx.setRollbackOnly();
+            Debug.printStackTrace(ex);
+            throw new EJBException(ex.getMessage());
+        }
     }
 
     private String customerNewRowEncode(LocalArCustomer arCustomer) {

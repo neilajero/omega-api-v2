@@ -7,30 +7,6 @@ import jakarta.ejb.Local;
 @Local
 public interface ArCustomerSyncController {
 
-    String[] getArCSTAreaAll(Integer companyCode, String companyShortName);
-
-    String[] getArSoPostedAllByCstArea(String customerArea, Integer companyCode, String companyShortName);
-
-    int getArCustomersAllNewLength(Integer branchCode, Integer companyCode, String companyShortName);
-
-    int getArCustomersAllUpdatedLength(Integer branchCode, Integer companyCode, String companyShortName);
-
-    String[] getArSalespersonAll(Integer branchCode, Integer companyCode, String companyShortName);
-
-    String[] getArCustomerDraftBalances(String[] CST_CSTMR_CODES, Integer companyCode, String companyShortName);
-
-    String[] getArCustomersNameCodeAddressSlp(Integer branchCode, Integer companyCode, String companyShortName);
-
-    String[] getArCustomersAllNewAndUpdated(Integer branchCode, Integer companyCode, String companyShortName);
-
-    String[] getArCustomersAllNewAndUpdatedWithSalesperson(Integer branchCode, Integer companyCode, String companyShortName);
-
-    String[] getArCustomersAllNewAndUpdatedWithCustomerClass(Integer branchCode, Integer companyCode, String companyShortName);
-
-    String getArCustomersBalanceAllDownloaded(Integer branchCode, Integer companyCode, String companyShortName);
-
-    void setArCustomersAllNewAndUpdatedSuccessConfirmation(Integer branchCode, Integer companyCode, String companyShortName);
-
     ArCustomerSyncResponse getArCSTAreaAll(ArCustomerSyncRequest request);
 
     ArCustomerSyncResponse getArSoPostedAllByCstArea(ArCustomerSyncRequest request);
