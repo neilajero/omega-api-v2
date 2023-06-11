@@ -110,9 +110,143 @@ public class ArInvoiceSyncControllerBean extends EJBContextClass implements ArIn
     @EJB
     private LocalAdApprovalQueueHome adApprovalQueueHome;
 
+    @Override
+    public ArInvoiceSyncResponse setArInvoiceAllNewAndVoid(ArInvoiceSyncRequest request) {
+
+        Debug.print("ArInvoiceSyncControllerBean setArInvoiceAllNewAndVoid");
+
+        ArInvoiceSyncResponse response = new ArInvoiceSyncResponse();
+
+        LocalAdCompany adCompany;
+        LocalAdBranch adBranch;
+        Integer companyCode = null;
+        Integer branchCode = null;
+        String companyShortName = null;
+
+        try {
+            // Company Code
+            try {
+                if (request.getCompanyCode() == null) {
+                    response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_041);
+                    response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_041_MSG);
+                    return response;
+                }
+                adCompany = adCompanyHome.findByCmpShortName(request.getCompanyCode());
+                if (adCompany != null) {
+                    companyCode = adCompany.getCmpCode();
+                    companyShortName = adCompany.getCmpShortName();
+                }
+            }
+            catch (FinderException ex) {
+                response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_001);
+                response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_001_MSG);
+                return response;
+            }
+
+            // Branch Code
+            try {
+                if (request.getBranchCode() == null || request.getBranchCode().equals("")) {
+                    response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_047);
+                    response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_047_MSG);
+                    return response;
+                }
+                assert adCompany != null;
+                adBranch = adBranchHome.findByBrBranchCode(request.getBranchCode(), adCompany.getCmpCode(), companyShortName);
+                if (adBranch != null) {
+                    branchCode = adBranch.getBrCode();
+                }
+            }
+            catch (FinderException ex) {
+                response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_065);
+                response.setMessage(String.format(EJBCommonAPIErrCodes.OAPI_ERR_065_MSG, request.getBranchCode()));
+                return response;
+            }
+
+            String[] invoices = request.getInvoices();
+            int count = this.setArInvoiceAllNewAndVoid(invoices, branchCode, companyCode, companyShortName);
+
+            response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_000);
+            response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_000_MSG);
+            response.setCount(count);
+            response.setStatus("Set all invoice new and void data successfully.");
+        }
+        catch (Exception ex) {
+            response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_007);
+            response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_007_MSG);
+            return response;
+        }
+        return response;
+    }
 
     @Override
-    public int setArInvoiceAllNewAndVoid(String[] invoices, Integer branchCode, Integer companyCode, String companyShortName) {
+    public ArInvoiceSyncResponse setArSoNew(ArInvoiceSyncRequest request) {
+
+        Debug.print("ArInvoiceSyncControllerBean setArSoNew");
+
+        ArInvoiceSyncResponse response = new ArInvoiceSyncResponse();
+
+        LocalAdCompany adCompany;
+        LocalAdBranch adBranch;
+        Integer companyCode = null;
+        Integer branchCode = null;
+        String companyShortName = null;
+
+        try {
+            // Company Code
+            try {
+                if (request.getCompanyCode() == null) {
+                    response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_041);
+                    response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_041_MSG);
+                    return response;
+                }
+                adCompany = adCompanyHome.findByCmpShortName(request.getCompanyCode());
+                if (adCompany != null) {
+                    companyCode = adCompany.getCmpCode();
+                    companyShortName = adCompany.getCmpShortName();
+                }
+            }
+            catch (FinderException ex) {
+                response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_001);
+                response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_001_MSG);
+                return response;
+            }
+
+            // Branch Code
+            try {
+                if (request.getBranchCode() == null || request.getBranchCode().equals("")) {
+                    response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_047);
+                    response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_047_MSG);
+                    return response;
+                }
+                assert adCompany != null;
+                adBranch = adBranchHome.findByBrBranchCode(request.getBranchCode(), adCompany.getCmpCode(), companyShortName);
+                if (adBranch != null) {
+                    branchCode = adBranch.getBrCode();
+                }
+            }
+            catch (FinderException ex) {
+                response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_065);
+                response.setMessage(String.format(EJBCommonAPIErrCodes.OAPI_ERR_065_MSG, request.getBranchCode()));
+                return response;
+            }
+
+            String[] salesOrders = request.getInvoices();
+            int count = this.setArSoNew(salesOrders, branchCode, companyCode, companyShortName);
+
+            response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_000);
+            response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_000_MSG);
+            response.setCount(count);
+            response.setStatus("Set all invoice new and void data successfully.");
+        }
+        catch (Exception ex) {
+            response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_007);
+            response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_007_MSG);
+            return response;
+        }
+        return response;
+    }
+
+    private int setArInvoiceAllNewAndVoid(String[] invoices, Integer branchCode, Integer companyCode, String companyShortName) {
 
         Debug.print("ArInvoiceSyncControllerBean setArInvoiceAllNewAndVoid");
 
@@ -449,8 +583,7 @@ public class ArInvoiceSyncControllerBean extends EJBContextClass implements ArIn
         }
     }
 
-    @Override
-    public int setArSoNew(String[] salesOrders, Integer branchCode, Integer companyCode, String companyShortName) {
+    private int setArSoNew(String[] salesOrders, Integer branchCode, Integer companyCode, String companyShortName) {
 
         Debug.print("ArInvoiceSyncControllerBean setArSoNew");
 
@@ -530,142 +663,6 @@ public class ArInvoiceSyncControllerBean extends EJBContextClass implements ArIn
             throw new EJBException(ex.getMessage());
         }
         return 1;
-    }
-
-    @Override
-    public ArInvoiceSyncResponse setArInvoiceAllNewAndVoid(ArInvoiceSyncRequest request) {
-
-        Debug.print("ArInvoiceSyncControllerBean setArInvoiceAllNewAndVoid");
-
-        ArInvoiceSyncResponse response = new ArInvoiceSyncResponse();
-
-        LocalAdCompany adCompany;
-        LocalAdBranch adBranch;
-        Integer companyCode = null;
-        Integer branchCode = null;
-        String companyShortName = null;
-
-        try {
-            // Company Code
-            try {
-                if (request.getCompanyCode() == null) {
-                    response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_041);
-                    response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_041_MSG);
-                    return response;
-                }
-                adCompany = adCompanyHome.findByCmpShortName(request.getCompanyCode());
-                if (adCompany != null) {
-                    companyCode = adCompany.getCmpCode();
-                    companyShortName = adCompany.getCmpShortName();
-                }
-            }
-            catch (FinderException ex) {
-                response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_001);
-                response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_001_MSG);
-                return response;
-            }
-
-            // Branch Code
-            try {
-                if (request.getBranchCode() == null || request.getBranchCode().equals("")) {
-                    response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_047);
-                    response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_047_MSG);
-                    return response;
-                }
-                assert adCompany != null;
-                adBranch = adBranchHome.findByBrBranchCode(request.getBranchCode(), adCompany.getCmpCode(), companyShortName);
-                if (adBranch != null) {
-                    branchCode = adBranch.getBrCode();
-                }
-            }
-            catch (FinderException ex) {
-                response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_065);
-                response.setMessage(String.format(EJBCommonAPIErrCodes.OAPI_ERR_065_MSG, request.getBranchCode()));
-                return response;
-            }
-
-            String[] invoices = request.getInvoices();
-            int count = this.setArInvoiceAllNewAndVoid(invoices, branchCode, companyCode, companyShortName);
-
-            response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_000);
-            response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_000_MSG);
-            response.setCount(count);
-            response.setStatus("Set all invoice new and void data successfully.");
-        }
-        catch (Exception ex) {
-            response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_007);
-            response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_007_MSG);
-            return response;
-        }
-        return response;
-    }
-
-    @Override
-    public ArInvoiceSyncResponse setArSoNew(ArInvoiceSyncRequest request) {
-
-        Debug.print("ArInvoiceSyncControllerBean setArSoNew");
-
-        ArInvoiceSyncResponse response = new ArInvoiceSyncResponse();
-
-        LocalAdCompany adCompany;
-        LocalAdBranch adBranch;
-        Integer companyCode = null;
-        Integer branchCode = null;
-        String companyShortName = null;
-
-        try {
-            // Company Code
-            try {
-                if (request.getCompanyCode() == null) {
-                    response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_041);
-                    response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_041_MSG);
-                    return response;
-                }
-                adCompany = adCompanyHome.findByCmpShortName(request.getCompanyCode());
-                if (adCompany != null) {
-                    companyCode = adCompany.getCmpCode();
-                    companyShortName = adCompany.getCmpShortName();
-                }
-            }
-            catch (FinderException ex) {
-                response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_001);
-                response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_001_MSG);
-                return response;
-            }
-
-            // Branch Code
-            try {
-                if (request.getBranchCode() == null || request.getBranchCode().equals("")) {
-                    response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_047);
-                    response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_047_MSG);
-                    return response;
-                }
-                assert adCompany != null;
-                adBranch = adBranchHome.findByBrBranchCode(request.getBranchCode(), adCompany.getCmpCode(), companyShortName);
-                if (adBranch != null) {
-                    branchCode = adBranch.getBrCode();
-                }
-            }
-            catch (FinderException ex) {
-                response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_065);
-                response.setMessage(String.format(EJBCommonAPIErrCodes.OAPI_ERR_065_MSG, request.getBranchCode()));
-                return response;
-            }
-
-            String[] salesOrders = request.getInvoices();
-            int count = this.setArSoNew(salesOrders, branchCode, companyCode, companyShortName);
-
-            response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_000);
-            response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_000_MSG);
-            response.setCount(count);
-            response.setStatus("Set all invoice new and void data successfully.");
-        }
-        catch (Exception ex) {
-            response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_007);
-            response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_007_MSG);
-            return response;
-        }
-        return response;
     }
 
     private ArModInvoiceDetails invoiceDecode(String invoice) throws Exception {

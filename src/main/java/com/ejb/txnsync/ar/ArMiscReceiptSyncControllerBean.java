@@ -128,17 +128,15 @@ public class ArMiscReceiptSyncControllerBean extends EJBContextClass implements 
     @EJB
     private LocalInvAdjustmentHome invAdjustmentHome;
 
-    @Override
-    public int setArReceiptAllNewAndVoid(String[] receipts, String[] voidReceipt, Integer branchCode, Integer companyCode, String cashier) {
+    private int setArReceiptAllNewAndVoid(String[] receipts, String[] voidReceipt, Integer branchCode, Integer companyCode, String cashier) {
 
         Debug.print("ArMiscReceiptSyncControllerBean setArMiscReceiptAllNewAndVoid");
 
         return 0;
     }
 
-    @Override
-    public int setArMiscReceiptAllNewAndVoid(String[] receipts, String[] voidReceipt, Integer branchCode,
-                                             Integer companyCode, String cashier, String companyShortName) {
+    private int setArMiscReceiptAllNewAndVoid(
+            String[] receipts, String[] voidReceipt, Integer branchCode, Integer companyCode, String cashier, String companyShortName) {
 
         Debug.print("ArMiscReceiptSyncControllerBean setArMiscReceiptAllNewAndVoid");
 
@@ -1094,10 +1092,8 @@ public class ArMiscReceiptSyncControllerBean extends EJBContextClass implements 
             throw new EJBException(ex.getMessage());
         }
     }
-
-    @Override
-    public int setArMiscReceiptAllNewAndVoidUS(String[] receipts, String[] voidReceipt, Integer branchCode,
-                                               Integer companyCode, String cashier, String companyShortName) {
+    private int setArMiscReceiptAllNewAndVoidUS(
+            String[] receipts, String[] voidReceipt, Integer branchCode, Integer companyCode, String cashier, String companyShortName) {
 
         Debug.print("ArMiscReceiptSyncControllerBean setArMiscReceiptAllNewAndVoid");
 
@@ -2339,10 +2335,8 @@ public class ArMiscReceiptSyncControllerBean extends EJBContextClass implements 
             throw new EJBException(ex.getMessage());
         }
     }
-
-    @Override
-    public int setArMiscReceiptAllNewAndVoidWithExpiryDate(String[] receipts, String[] voidReceipt, Integer branchCode,
-                                                           Integer companyCode, String cashier, String companyShortName) {
+    private int setArMiscReceiptAllNewAndVoidWithExpiryDate(
+            String[] receipts, String[] voidReceipt, Integer branchCode, Integer companyCode, String cashier, String companyShortName) {
 
         Debug.print("ArMiscReceiptSyncControllerBean setArMiscReceiptAllNewAndVoidWithExpiryDate");
 
@@ -3073,9 +3067,8 @@ public class ArMiscReceiptSyncControllerBean extends EJBContextClass implements 
         }
     }
 
-    @Override
-    public int setArMiscReceiptAllNewAndVoidWithExpiryDateEnableItemAutoBuild(String[] receipts, String[] voidReceipt,
-                                                                              Integer branchCode, Integer companyCode, String cashier, String companyShortName) {
+    private int setArMiscReceiptAllNewAndVoidWithExpiryDateEnableItemAutoBuild(
+            String[] receipts, String[] voidReceipt, Integer branchCode, Integer companyCode, String cashier, String companyShortName) {
 
         Debug.print("ArMiscReceiptSyncControllerBean setArMiscReceiptAllNewAndVoidWithExpiryDate");
 
@@ -4102,9 +4095,8 @@ public class ArMiscReceiptSyncControllerBean extends EJBContextClass implements 
         }
     }
 
-    @Override
-    public int setArMiscReceiptAllNewAndVoidWithExpiryDateAndEntries(String[] receipts, String[] voidReceipt, Integer branchCode,
-                                                                     Integer companyCode, String cashier, String companyShortName) {
+    private int setArMiscReceiptAllNewAndVoidWithExpiryDateAndEntries(
+            String[] receipts, String[] voidReceipt, Integer branchCode, Integer companyCode, String cashier, String companyShortName) {
 
         Debug.print("ArMiscReceiptSyncControllerBean setArMiscReceiptAllNewAndVoidWithExpiryDateAndEntries");
 
@@ -5123,9 +5115,8 @@ public class ArMiscReceiptSyncControllerBean extends EJBContextClass implements 
         }
     }
 
-    @Override
-    public int setArMiscReceiptAllNewAndVoidWithSalesperson(String[] receipts, String[] voidReceipt, Integer branchCode,
-                                                            Integer companyCode, String cashier, String companyShortName) {
+    private int setArMiscReceiptAllNewAndVoidWithSalesperson(
+            String[] receipts, String[] voidReceipt, Integer branchCode, Integer companyCode, String cashier, String companyShortName) {
 
         Debug.print("ArMiscReceiptSyncControllerBean setArMiscReceiptAllNewAndVoidWithSalesperson");
 
