@@ -22,7 +22,7 @@ public class AdBranchSyncApi {
     @Inject
     private AdBranchSyncController adBranchSyncController;
 
-    @GET
+    @POST
     @Path("/all")
     @RolesAllowed({"Admin"})
     public Response getAdBranchAll(BranchSyncRequest request) {
@@ -39,7 +39,7 @@ public class AdBranchSyncApi {
         }
     }
 
-    @GET
+    @POST
     @Path("/name")
     @RolesAllowed({"Admin"})
     public Response getAdBranchAllWithBranchName(BranchSyncRequest request) {

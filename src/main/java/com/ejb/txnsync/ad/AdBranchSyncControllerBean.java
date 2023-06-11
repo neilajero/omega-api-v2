@@ -30,72 +30,6 @@ public class AdBranchSyncControllerBean extends EJBContextClass implements AdBra
     private ILocalAdCompanyHome adCompanyHome;
 
     @Override
-    public String[] getAdBranchAll(Integer companyCode, String companyShortName) {
-        Debug.print("AdBranchSyncControllerBean getAdBranchAll");
-
-        LocalAdBranch adBranch;
-
-        try {
-            Collection adBranches = adBranchHome.findBrAll(companyCode, companyShortName);
-            String[] results = new String[adBranches.size()];
-            Iterator i = adBranches.iterator();
-            int ctr = 0;
-            while (i.hasNext()) {
-                adBranch = (LocalAdBranch)i.next();
-                results[ctr] = branchRowEncode(adBranch);
-                ctr++;
-            }
-            return results;
-        } catch (Exception ex) {
-            Debug.printStackTrace(ex);
-            throw new EJBException(ex.getMessage());
-        }
-    }
-
-    @Override
-    public String[] getAdBranchAllWithBranchName(Integer companyCode, String companyShortName) {
-        Debug.print("AdBranchSyncControllerBean getAdBranchAllWithBranchName");
-
-        LocalAdBranch adBranch;
-
-        try {
-            Collection adBranches = adBranchHome.findBrAll(companyCode, companyShortName);
-            String[] results = new String[adBranches.size()];
-            Iterator i = adBranches.iterator();
-            int ctr = 0;
-            while (i.hasNext()) {
-                adBranch = (LocalAdBranch)i.next();
-                results[ctr] = branchRowEncodeWithBranchName(adBranch);
-                ctr++;
-            }
-            return results;
-        } catch (Exception ex) {
-            Debug.printStackTrace(ex);
-            throw new EJBException(ex.getMessage());
-        }
-    }
-
-    @Override
-    public void setAdBranchAllSuccessConfirmation(Integer companyCode, String companyShortName) {
-        Debug.print("AdBranchSyncControllerBean setAdBranchAllSuccessConfirmation");
-
-        LocalAdBranch adBranch;
-
-        try {
-            Collection adBranches = adBranchHome.findBrAll(companyCode, companyShortName);
-            Iterator i = adBranches.iterator();
-            while (i.hasNext()) {
-                adBranch = (LocalAdBranch)i.next();
-                adBranch.setBrDownloadStatus('D');
-            }
-        } catch (Exception ex) {
-            ctx.setRollbackOnly();
-            Debug.printStackTrace(ex);
-            throw new EJBException(ex.getMessage());
-        }
-    }
-
-    @Override
     public BranchSyncResponse getAdBranchAll(BranchSyncRequest request) {
         Debug.print("AdBranchSyncControllerBean getAdBranchAll");
 
@@ -230,6 +164,69 @@ public class AdBranchSyncControllerBean extends EJBContextClass implements AdBra
             return response;
         }
         return response;
+    }
+
+    private String[] getAdBranchAll(Integer companyCode, String companyShortName) {
+        Debug.print("AdBranchSyncControllerBean getAdBranchAll");
+
+        LocalAdBranch adBranch;
+
+        try {
+            Collection adBranches = adBranchHome.findBrAll(companyCode, companyShortName);
+            String[] results = new String[adBranches.size()];
+            Iterator i = adBranches.iterator();
+            int ctr = 0;
+            while (i.hasNext()) {
+                adBranch = (LocalAdBranch)i.next();
+                results[ctr] = branchRowEncode(adBranch);
+                ctr++;
+            }
+            return results;
+        } catch (Exception ex) {
+            Debug.printStackTrace(ex);
+            throw new EJBException(ex.getMessage());
+        }
+    }
+
+    private String[] getAdBranchAllWithBranchName(Integer companyCode, String companyShortName) {
+        Debug.print("AdBranchSyncControllerBean getAdBranchAllWithBranchName");
+
+        LocalAdBranch adBranch;
+
+        try {
+            Collection adBranches = adBranchHome.findBrAll(companyCode, companyShortName);
+            String[] results = new String[adBranches.size()];
+            Iterator i = adBranches.iterator();
+            int ctr = 0;
+            while (i.hasNext()) {
+                adBranch = (LocalAdBranch)i.next();
+                results[ctr] = branchRowEncodeWithBranchName(adBranch);
+                ctr++;
+            }
+            return results;
+        } catch (Exception ex) {
+            Debug.printStackTrace(ex);
+            throw new EJBException(ex.getMessage());
+        }
+    }
+
+    private void setAdBranchAllSuccessConfirmation(Integer companyCode, String companyShortName) {
+        Debug.print("AdBranchSyncControllerBean setAdBranchAllSuccessConfirmation");
+
+        LocalAdBranch adBranch;
+
+        try {
+            Collection adBranches = adBranchHome.findBrAll(companyCode, companyShortName);
+            Iterator i = adBranches.iterator();
+            while (i.hasNext()) {
+                adBranch = (LocalAdBranch)i.next();
+                adBranch.setBrDownloadStatus('D');
+            }
+        } catch (Exception ex) {
+            ctx.setRollbackOnly();
+            Debug.printStackTrace(ex);
+            throw new EJBException(ex.getMessage());
+        }
     }
 
     private String branchRowEncode(LocalAdBranch adBranch){
