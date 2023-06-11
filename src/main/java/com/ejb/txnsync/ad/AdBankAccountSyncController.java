@@ -7,14 +7,6 @@ import jakarta.ejb.Local;
 @Local
 public interface AdBankAccountSyncController {
 
-    int getAdBankAccountAllNewLength(Integer branchCode, Integer companyCode, String companyShortName);
-
-    int getAdBankAccountAllUpdatedLength(Integer branchCode, Integer companyCode, String companyShortName);
-
-    String[] getAdBankAccountAllNewAndUpdated(Integer branchCode, Integer companyCode, String companyShortName);
-
-    void setAdBankAccountsAllNewAndUpdatedSuccessConfirmation(Integer branchCode, Integer companyCode, String companyShortName);
-
     BankAccountSyncResponse getAllNewLength(BankAccountSyncRequest request);
 
     BankAccountSyncResponse getAllUpdatedLength(BankAccountSyncRequest request);

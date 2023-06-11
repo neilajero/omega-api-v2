@@ -41,13 +41,12 @@ public class AdBankAccountSyncControllerBean extends EJBContextClass implements 
     @EJB
     private ILocalAdCompanyHome adCompanyHome;
 
-    @Override
-    public int getAdBankAccountAllNewLength(Integer branchCode, Integer companyCode, String companyShortName) {
-        Debug.print("AdBankAccountSyncControllerBean getAdBankAccountAllNewLength");
+    public int getBankAccountsStatusCount(Integer branchCode, Integer companyCode, String companyShortName, char[] downloadStatus) {
+        Debug.print("AdBankAccountSyncControllerBean getBankAccountsStatusCount");
 
         try {
             Collection adBankAccounts = adBankAccountHome.findBaByBaNewAndUpdated(
-                    branchCode, companyCode, 'N', 'N', 'N', companyShortName);
+                    branchCode, companyCode, downloadStatus[0], downloadStatus[1], downloadStatus[2], companyShortName);
             return adBankAccounts.size();
         }
         catch (Exception ex) {
@@ -56,30 +55,19 @@ public class AdBankAccountSyncControllerBean extends EJBContextClass implements 
         }
     }
 
-    @Override
-    public int getAdBankAccountAllUpdatedLength(Integer branchCode, Integer companyCode, String companyShortName) {
-        Debug.print("AdBankAccountSyncControllerBean getAdBankAccountAllUpdatedLength");
-
-        try {
-            Collection adBankAccounts = adBankAccountHome
-                    .findBaByBaNewAndUpdated(branchCode, companyCode, 'U', 'U', 'X', companyShortName);
-            return adBankAccounts.size();
-        }
-        catch (Exception ex) {
-            Debug.printStackTrace(ex);
-            throw new EJBException(ex.getMessage());
-        }
-    }
-
-    @Override
     public String[] getAdBankAccountAllNewAndUpdated(Integer branchCode, Integer companyCode, String companyShortName) {
         Debug.print("AdBankAccountSyncControllerBean getAdBankAccountAllNewAndUpdated");
 
+        char[] downloadNewStatus = {'N', 'N', 'N'};
+        char[] downloadUpdatedStatus = {'U', 'U', 'X'};
+
         try {
             Collection adBankAccounts = adBankAccountHome
-                    .findBaByBaNewAndUpdated(branchCode, companyCode, 'N', 'N', 'N', companyShortName);
+                    .findBaByBaNewAndUpdated(branchCode, companyCode,
+                            downloadNewStatus[0], downloadNewStatus[1], downloadNewStatus[2], companyShortName);
             Collection adUpdatedBankAccounts = adBankAccountHome
-                    .findBaByBaNewAndUpdated(branchCode, companyCode, 'U', 'U', 'X', companyShortName);
+                    .findBaByBaNewAndUpdated(branchCode, companyCode,
+                            downloadUpdatedStatus[0], downloadUpdatedStatus[1], downloadUpdatedStatus[2], companyShortName);
 
             String[] results = new String[adBankAccounts.size() + adUpdatedBankAccounts.size()];
 
@@ -106,15 +94,16 @@ public class AdBankAccountSyncControllerBean extends EJBContextClass implements 
         }
     }
 
-    @Override
     public void setAdBankAccountsAllNewAndUpdatedSuccessConfirmation(Integer branchCode, Integer companyCode, String companyShortName) {
         Debug.print("AdBankAccountSyncControllerBean setAdBankAccountAllNewAndUpdatedSuccessConfirmation");
 
         LocalAdBranchBankAccount adBranchBankAccount;
+        char[] downloadNewUpdatedStatus = {'N', 'U', 'X'};
 
         try {
             Collection adBranchBankAccounts = adBranchBankAccountHome
-                    .findBBaByBaNewAndUpdated(branchCode, companyCode, 'N', 'U', 'X', companyShortName);
+                    .findBBaByBaNewAndUpdated(branchCode, companyCode,
+                            downloadNewUpdatedStatus[0], downloadNewUpdatedStatus[1], downloadNewUpdatedStatus[2], companyShortName);
             Iterator i = adBranchBankAccounts.iterator();
             while (i.hasNext()) {
                 adBranchBankAccount = (LocalAdBranchBankAccount) i.next();
@@ -139,6 +128,7 @@ public class AdBankAccountSyncControllerBean extends EJBContextClass implements 
         Integer companyCode = null;
         Integer branchCode = null;
         String companyShortName = null;
+        char[] downloadNewStatus = {'N', 'N', 'N'};
 
         try {
             // Company Code
@@ -179,7 +169,7 @@ public class AdBankAccountSyncControllerBean extends EJBContextClass implements 
                 return response;
             }
 
-            int count = this.getAdBankAccountAllNewLength(branchCode, companyCode, companyShortName);
+            int count = this.getBankAccountsStatusCount(branchCode, companyCode, companyShortName, downloadNewStatus);
 
             response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_000);
             response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_000_MSG);
@@ -206,6 +196,7 @@ public class AdBankAccountSyncControllerBean extends EJBContextClass implements 
         Integer companyCode = null;
         Integer branchCode = null;
         String companyShortName = null;
+        char[] downloadUpdatedStatus = {'U', 'U', 'X'};
 
         try {
             // Company Code
@@ -246,7 +237,7 @@ public class AdBankAccountSyncControllerBean extends EJBContextClass implements 
                 return response;
             }
 
-            int count = this.getAdBankAccountAllUpdatedLength(branchCode, companyCode, companyShortName);
+            int count = this.getBankAccountsStatusCount(branchCode, companyCode, companyShortName, downloadUpdatedStatus);
 
             response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_000);
             response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_000_MSG);
@@ -340,6 +331,7 @@ public class AdBankAccountSyncControllerBean extends EJBContextClass implements 
         Integer companyCode = null;
         Integer branchCode = null;
         String companyShortName = null;
+
 
         try {
             // Company Code
