@@ -39,7 +39,6 @@ public class ArStandardMemoLineSyncControllerBean extends EJBContextClass implem
     @EJB
     private LocalAdBranchHome adBranchHome;
 
-    @Override
     public int getArStandardMemoLineAllNewLength(Integer branchCode, Integer companyCode, String companyShortName) {
 
         Debug.print("ArStandardMemoLineSyncControllerBean getArStandardMemoLineAllNewLength");
@@ -56,7 +55,6 @@ public class ArStandardMemoLineSyncControllerBean extends EJBContextClass implem
         }
     }
 
-    @Override
     public int getArStandardMemoLineHomeAllUpdatedLength(Integer branchCode, Integer companyCode, String companyShortName) {
 
         Debug.print("ArCustomerSyncControllerBean getArCustomersAllUpdatedLength");
@@ -75,7 +73,6 @@ public class ArStandardMemoLineSyncControllerBean extends EJBContextClass implem
         }
     }
 
-    @Override
     public String[] getArStandardMemoLineAllNewAndUpdated(Integer branchCode, Integer companyCode, String companyShortName) {
 
         Debug.print(" ArStandardMemoLineSyncControllerBean getArStandardMemoLineAllNewAndUpdated");
@@ -114,7 +111,6 @@ public class ArStandardMemoLineSyncControllerBean extends EJBContextClass implem
         }
     }
 
-    @Override
     public void setArStandardMemoLineAllNewAndUpdatedSuccessConfirmation(Integer branchCode, Integer companyCode, String companyShortName) {
 
         Debug.print(" ArStandardMemoLineSyncControllerBean setArStandardMemoLineAllNewAndUpdatedSuccessConfirmation");
