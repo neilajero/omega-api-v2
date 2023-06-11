@@ -4,13 +4,11 @@ import com.ejb.PersistenceBeanClass;
 import com.ejb.dao.ad.ILocalAdCompanyHome;
 import com.ejb.dao.ad.LocalAdBranchHome;
 import com.ejb.dao.ad.LocalAdBranchStandardMemoLineHome;
-import com.ejb.dao.ad.LocalAdCompanyHome;
 import com.ejb.dao.ar.LocalArStandardMemoLineHome;
 import com.ejb.entities.ad.LocalAdBranch;
 import com.ejb.entities.ad.LocalAdBranchStandardMemoLine;
 import com.ejb.entities.ad.LocalAdCompany;
 import com.ejb.entities.ar.LocalArStandardMemoLine;
-import com.ejb.restfulapi.sync.ar.models.ArMiscReceiptSyncResponse;
 import com.ejb.restfulapi.sync.ar.models.ArStandardMemoLineSyncRequest;
 import com.ejb.restfulapi.sync.ar.models.ArStandardMemoLineSyncResponse;
 import com.util.Debug;
@@ -39,96 +37,6 @@ public class ArStandardMemoLineSyncControllerBean extends EJBContextClass implem
     @EJB
     private LocalAdBranchHome adBranchHome;
 
-    public int getArStandardMemoLineAllNewLength(Integer branchCode, Integer companyCode, String companyShortName) {
-
-        Debug.print("ArStandardMemoLineSyncControllerBean getArStandardMemoLineAllNewLength");
-
-        try {
-            Collection arStandardMemoLines = arStandardMemoLineHome
-                    .findSmlBySmlNewAndUpdated(branchCode, companyCode,
-                            'N', 'N', 'N', companyShortName);
-            return arStandardMemoLines.size();
-        }
-        catch (Exception ex) {
-            Debug.printStackTrace(ex);
-            throw new EJBException(ex.getMessage());
-        }
-    }
-
-    public int getArStandardMemoLineHomeAllUpdatedLength(Integer branchCode, Integer companyCode, String companyShortName) {
-
-        Debug.print("ArCustomerSyncControllerBean getArCustomersAllUpdatedLength");
-
-        try {
-            Collection arStandardMemoLines = arStandardMemoLineHome
-                    .findSmlBySmlNewAndUpdated(branchCode, companyCode,
-                            'U', 'U', 'X', companyShortName);
-            return arStandardMemoLines.size();
-        }
-        catch (Exception ex) {
-
-            Debug.printStackTrace(ex);
-            throw new EJBException(ex.getMessage());
-
-        }
-    }
-
-    public String[] getArStandardMemoLineAllNewAndUpdated(Integer branchCode, Integer companyCode, String companyShortName) {
-
-        Debug.print(" ArStandardMemoLineSyncControllerBean getArStandardMemoLineAllNewAndUpdated");
-
-        try {
-            Collection arStandardMemoLines = arStandardMemoLineHome
-                    .findSmlBySmlNewAndUpdated(branchCode, companyCode,
-                            'N', 'N', 'N', companyShortName);
-
-            Collection arUpdatedStandardMemoLines = arStandardMemoLineHome
-                    .findSmlBySmlNewAndUpdated(branchCode, companyCode,
-                            'U', 'U', 'X', companyShortName);
-
-            String[] results = new String[arStandardMemoLines.size() + arUpdatedStandardMemoLines.size()];
-
-            Iterator i = arStandardMemoLines.iterator();
-            int ctr = 0;
-            while (i.hasNext()) {
-                LocalArStandardMemoLine arStandardMemoLine = (LocalArStandardMemoLine) i.next();
-                results[ctr] = standardMemoLineRowEncode(arStandardMemoLine);
-                ctr++;
-            }
-
-            i = arUpdatedStandardMemoLines.iterator();
-            while (i.hasNext()) {
-                LocalArStandardMemoLine arStandardMemoLine = (LocalArStandardMemoLine) i.next();
-                results[ctr] = standardMemoLineRowEncode(arStandardMemoLine);
-                ctr++;
-
-            }
-            return results;
-        }
-        catch (Exception ex) {
-            Debug.printStackTrace(ex);
-            throw new EJBException(ex.getMessage());
-        }
-    }
-
-    public void setArStandardMemoLineAllNewAndUpdatedSuccessConfirmation(Integer branchCode, Integer companyCode, String companyShortName) {
-
-        Debug.print(" ArStandardMemoLineSyncControllerBean setArStandardMemoLineAllNewAndUpdatedSuccessConfirmation");
-
-        try {
-            Collection adBranchStandardMemoLines = adBranchStandardMemoLineHome
-                    .findBSMLByBSMLNewAndUpdated(branchCode, companyCode, 'N', 'U', 'X', companyShortName);
-            for (Object adBranchStandardMemoLine : adBranchStandardMemoLines) {
-                LocalAdBranchStandardMemoLine retObj = (LocalAdBranchStandardMemoLine) adBranchStandardMemoLine;
-                retObj.setBsmlStandardMemoLineDownloadStatus('D');
-            }
-        } catch (Exception ex) {
-            ctx.setRollbackOnly();
-            Debug.printStackTrace(ex);
-            throw new EJBException(ex.getMessage());
-        }
-    }
-
     @Override
     public ArStandardMemoLineSyncResponse getArStandardMemoLineAllNewLength(ArStandardMemoLineSyncRequest request) {
 
@@ -141,6 +49,7 @@ public class ArStandardMemoLineSyncControllerBean extends EJBContextClass implem
         Integer companyCode = null;
         Integer branchCode = null;
         String companyShortName = null;
+        char[] downloadNewStatus = {'N', 'N', 'N'};
 
         try {
             // Company Code
@@ -181,7 +90,7 @@ public class ArStandardMemoLineSyncControllerBean extends EJBContextClass implem
                 return response;
             }
 
-            int count = this.getArStandardMemoLineAllNewLength(branchCode, companyCode, companyShortName);
+            int count = this.getStandardMemoLineStatusCount(branchCode, companyCode, companyShortName, downloadNewStatus);
 
             response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_000);
             response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_000_MSG);
@@ -208,6 +117,7 @@ public class ArStandardMemoLineSyncControllerBean extends EJBContextClass implem
         Integer companyCode = null;
         Integer branchCode = null;
         String companyShortName = null;
+        char[] downloadNewStatus = {'U', 'U', 'X'};
 
         try {
             // Company Code
@@ -248,7 +158,7 @@ public class ArStandardMemoLineSyncControllerBean extends EJBContextClass implem
                 return response;
             }
 
-            int count = this.getArStandardMemoLineHomeAllUpdatedLength(branchCode, companyCode, companyShortName);
+            int count = this.getStandardMemoLineStatusCount(branchCode, companyCode, companyShortName, downloadNewStatus);
 
             response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_000);
             response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_000_MSG);
@@ -396,6 +306,85 @@ public class ArStandardMemoLineSyncControllerBean extends EJBContextClass implem
         return response;
     }
 
+    private int getStandardMemoLineStatusCount(Integer branchCode, Integer companyCode, String companyShortName, char[] downloadStatus) {
+
+        Debug.print("ArStandardMemoLineSyncControllerBean getStandardMemoLineStatusCount");
+
+        try {
+            Collection arStandardMemoLines = arStandardMemoLineHome
+                    .findSmlBySmlNewAndUpdated(branchCode, companyCode,
+                            downloadStatus[0], downloadStatus[1], downloadStatus[2], companyShortName);
+            return arStandardMemoLines.size();
+        }
+        catch (Exception ex) {
+            Debug.printStackTrace(ex);
+            throw new EJBException(ex.getMessage());
+        }
+    }
+
+    private String[] getArStandardMemoLineAllNewAndUpdated(Integer branchCode, Integer companyCode, String companyShortName) {
+
+        Debug.print(" ArStandardMemoLineSyncControllerBean getArStandardMemoLineAllNewAndUpdated");
+
+        char[] downloadNewStatus = {'N', 'N', 'N'};
+        char[] downloadUpdatedStatus = {'U', 'U', 'X'};
+
+        try {
+            Collection arStandardMemoLines = arStandardMemoLineHome
+                    .findSmlBySmlNewAndUpdated(branchCode, companyCode,
+                            downloadNewStatus[0], downloadNewStatus[1], downloadNewStatus[2], companyShortName);
+
+            Collection arUpdatedStandardMemoLines = arStandardMemoLineHome
+                    .findSmlBySmlNewAndUpdated(branchCode, companyCode,
+                            downloadUpdatedStatus[0], downloadUpdatedStatus[1], downloadUpdatedStatus[2], companyShortName);
+
+            String[] results = new String[arStandardMemoLines.size() + arUpdatedStandardMemoLines.size()];
+
+            Iterator i = arStandardMemoLines.iterator();
+            int ctr = 0;
+            while (i.hasNext()) {
+                LocalArStandardMemoLine arStandardMemoLine = (LocalArStandardMemoLine) i.next();
+                results[ctr] = standardMemoLineRowEncode(arStandardMemoLine);
+                ctr++;
+            }
+
+            i = arUpdatedStandardMemoLines.iterator();
+            while (i.hasNext()) {
+                LocalArStandardMemoLine arStandardMemoLine = (LocalArStandardMemoLine) i.next();
+                results[ctr] = standardMemoLineRowEncode(arStandardMemoLine);
+                ctr++;
+
+            }
+            return results;
+        }
+        catch (Exception ex) {
+            Debug.printStackTrace(ex);
+            throw new EJBException(ex.getMessage());
+        }
+    }
+
+    private void setArStandardMemoLineAllNewAndUpdatedSuccessConfirmation(Integer branchCode, Integer companyCode, String companyShortName) {
+
+        Debug.print(" ArStandardMemoLineSyncControllerBean setArStandardMemoLineAllNewAndUpdatedSuccessConfirmation");
+
+        char[] downloadNewUpdatedStatus = {'N', 'U', 'X'};
+
+        try {
+            Collection adBranchStandardMemoLines = adBranchStandardMemoLineHome
+                    .findBSMLByBSMLNewAndUpdated(branchCode, companyCode,
+                            downloadNewUpdatedStatus[0], downloadNewUpdatedStatus[1], downloadNewUpdatedStatus[2], companyShortName);
+            for (Object adBranchStandardMemoLine : adBranchStandardMemoLines) {
+                LocalAdBranchStandardMemoLine retObj = (LocalAdBranchStandardMemoLine) adBranchStandardMemoLine;
+                retObj.setBsmlStandardMemoLineDownloadStatus('D');
+            }
+        }
+        catch (Exception ex) {
+            ctx.setRollbackOnly();
+            Debug.printStackTrace(ex);
+            throw new EJBException(ex.getMessage());
+        }
+    }
+
     private String standardMemoLineRowEncode(LocalArStandardMemoLine arStandardMemoLine) {
 
         char separator = EJBCommon.SEPARATOR;
@@ -444,15 +433,12 @@ public class ArStandardMemoLineSyncControllerBean extends EJBContextClass implem
         tempResult.append(arStandardMemoLine.getSmlSubjectToCommission());
         tempResult.append(separator);
 
-        if(arStandardMemoLine.getSmlUnitOfMeasure()!=null)
-        {
+        if (arStandardMemoLine.getSmlUnitOfMeasure() != null) {
             //  SML Unit of Measure
             Debug.print("Get Unit of Measure " + arStandardMemoLine.getSmlUnitOfMeasure());
             tempResult.append(arStandardMemoLine.getSmlUnitOfMeasure());
             tempResult.append(separator);
-        }
-        else
-        {
+        } else {
             //  SML Unit of Measure
             Debug.print("Get Unit of Measure " + arStandardMemoLine.getSmlUnitOfMeasure());
             tempResult.append("0");
@@ -475,4 +461,5 @@ public class ArStandardMemoLineSyncControllerBean extends EJBContextClass implem
 
         return encodedResult;
     }
+
 }

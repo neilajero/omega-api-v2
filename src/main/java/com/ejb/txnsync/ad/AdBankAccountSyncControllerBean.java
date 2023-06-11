@@ -41,82 +41,6 @@ public class AdBankAccountSyncControllerBean extends EJBContextClass implements 
     @EJB
     private ILocalAdCompanyHome adCompanyHome;
 
-    public int getBankAccountsStatusCount(Integer branchCode, Integer companyCode, String companyShortName, char[] downloadStatus) {
-        Debug.print("AdBankAccountSyncControllerBean getBankAccountsStatusCount");
-
-        try {
-            Collection adBankAccounts = adBankAccountHome.findBaByBaNewAndUpdated(
-                    branchCode, companyCode, downloadStatus[0], downloadStatus[1], downloadStatus[2], companyShortName);
-            return adBankAccounts.size();
-        }
-        catch (Exception ex) {
-            Debug.printStackTrace(ex);
-            throw new EJBException(ex.getMessage());
-        }
-    }
-
-    public String[] getAdBankAccountAllNewAndUpdated(Integer branchCode, Integer companyCode, String companyShortName) {
-        Debug.print("AdBankAccountSyncControllerBean getAdBankAccountAllNewAndUpdated");
-
-        char[] downloadNewStatus = {'N', 'N', 'N'};
-        char[] downloadUpdatedStatus = {'U', 'U', 'X'};
-
-        try {
-            Collection adBankAccounts = adBankAccountHome
-                    .findBaByBaNewAndUpdated(branchCode, companyCode,
-                            downloadNewStatus[0], downloadNewStatus[1], downloadNewStatus[2], companyShortName);
-            Collection adUpdatedBankAccounts = adBankAccountHome
-                    .findBaByBaNewAndUpdated(branchCode, companyCode,
-                            downloadUpdatedStatus[0], downloadUpdatedStatus[1], downloadUpdatedStatus[2], companyShortName);
-
-            String[] results = new String[adBankAccounts.size() + adUpdatedBankAccounts.size()];
-
-            Iterator i = adBankAccounts.iterator();
-            int ctr = 0;
-            while (i.hasNext()) {
-                LocalAdBankAccount adBankAccount = (LocalAdBankAccount) i.next();
-                results[ctr] = bankAccountRowEncode(adBankAccount, companyShortName);
-                ctr++;
-            }
-
-            i = adUpdatedBankAccounts.iterator();
-            while (i.hasNext()) {
-                LocalAdBankAccount adBankAccount = (LocalAdBankAccount) i.next();
-                results[ctr] = bankAccountRowEncode(adBankAccount, companyShortName);
-                ctr++;
-            }
-            return results;
-
-        }
-        catch (Exception ex) {
-            Debug.printStackTrace(ex);
-            throw new EJBException(ex.getMessage());
-        }
-    }
-
-    public void setAdBankAccountsAllNewAndUpdatedSuccessConfirmation(Integer branchCode, Integer companyCode, String companyShortName) {
-        Debug.print("AdBankAccountSyncControllerBean setAdBankAccountAllNewAndUpdatedSuccessConfirmation");
-
-        LocalAdBranchBankAccount adBranchBankAccount;
-        char[] downloadNewUpdatedStatus = {'N', 'U', 'X'};
-
-        try {
-            Collection adBranchBankAccounts = adBranchBankAccountHome
-                    .findBBaByBaNewAndUpdated(branchCode, companyCode,
-                            downloadNewUpdatedStatus[0], downloadNewUpdatedStatus[1], downloadNewUpdatedStatus[2], companyShortName);
-            Iterator i = adBranchBankAccounts.iterator();
-            while (i.hasNext()) {
-                adBranchBankAccount = (LocalAdBranchBankAccount) i.next();
-                adBranchBankAccount.setBbaDownloadStatus('D');
-            }
-        }
-        catch (Exception ex) {
-            ctx.setRollbackOnly();
-            Debug.printStackTrace(ex);
-            throw new EJBException(ex.getMessage());
-        }
-    }
-
     @Override
     public BankAccountSyncResponse getAllNewLength(BankAccountSyncRequest request) {
         Debug.print("AdBankAccountSyncControllerBean getAllNewLength");
@@ -385,6 +309,82 @@ public class AdBankAccountSyncControllerBean extends EJBContextClass implements 
             return response;
         }
         return response;
+    }
+
+    private int getBankAccountsStatusCount(Integer branchCode, Integer companyCode, String companyShortName, char[] downloadStatus) {
+        Debug.print("AdBankAccountSyncControllerBean getBankAccountsStatusCount");
+
+        try {
+            Collection adBankAccounts = adBankAccountHome.findBaByBaNewAndUpdated(
+                    branchCode, companyCode, downloadStatus[0], downloadStatus[1], downloadStatus[2], companyShortName);
+            return adBankAccounts.size();
+        }
+        catch (Exception ex) {
+            Debug.printStackTrace(ex);
+            throw new EJBException(ex.getMessage());
+        }
+    }
+
+    private String[] getAdBankAccountAllNewAndUpdated(Integer branchCode, Integer companyCode, String companyShortName) {
+        Debug.print("AdBankAccountSyncControllerBean getAdBankAccountAllNewAndUpdated");
+
+        char[] downloadNewStatus = {'N', 'N', 'N'};
+        char[] downloadUpdatedStatus = {'U', 'U', 'X'};
+
+        try {
+            Collection adBankAccounts = adBankAccountHome
+                    .findBaByBaNewAndUpdated(branchCode, companyCode,
+                            downloadNewStatus[0], downloadNewStatus[1], downloadNewStatus[2], companyShortName);
+            Collection adUpdatedBankAccounts = adBankAccountHome
+                    .findBaByBaNewAndUpdated(branchCode, companyCode,
+                            downloadUpdatedStatus[0], downloadUpdatedStatus[1], downloadUpdatedStatus[2], companyShortName);
+
+            String[] results = new String[adBankAccounts.size() + adUpdatedBankAccounts.size()];
+
+            Iterator i = adBankAccounts.iterator();
+            int ctr = 0;
+            while (i.hasNext()) {
+                LocalAdBankAccount adBankAccount = (LocalAdBankAccount) i.next();
+                results[ctr] = bankAccountRowEncode(adBankAccount, companyShortName);
+                ctr++;
+            }
+
+            i = adUpdatedBankAccounts.iterator();
+            while (i.hasNext()) {
+                LocalAdBankAccount adBankAccount = (LocalAdBankAccount) i.next();
+                results[ctr] = bankAccountRowEncode(adBankAccount, companyShortName);
+                ctr++;
+            }
+            return results;
+
+        }
+        catch (Exception ex) {
+            Debug.printStackTrace(ex);
+            throw new EJBException(ex.getMessage());
+        }
+    }
+
+    private void setAdBankAccountsAllNewAndUpdatedSuccessConfirmation(Integer branchCode, Integer companyCode, String companyShortName) {
+        Debug.print("AdBankAccountSyncControllerBean setAdBankAccountAllNewAndUpdatedSuccessConfirmation");
+
+        LocalAdBranchBankAccount adBranchBankAccount;
+        char[] downloadNewUpdatedStatus = {'N', 'U', 'X'};
+
+        try {
+            Collection adBranchBankAccounts = adBranchBankAccountHome
+                    .findBBaByBaNewAndUpdated(branchCode, companyCode,
+                            downloadNewUpdatedStatus[0], downloadNewUpdatedStatus[1], downloadNewUpdatedStatus[2], companyShortName);
+            Iterator i = adBranchBankAccounts.iterator();
+            while (i.hasNext()) {
+                adBranchBankAccount = (LocalAdBranchBankAccount) i.next();
+                adBranchBankAccount.setBbaDownloadStatus('D');
+            }
+        }
+        catch (Exception ex) {
+            ctx.setRollbackOnly();
+            Debug.printStackTrace(ex);
+            throw new EJBException(ex.getMessage());
+        }
     }
 
     private String bankAccountRowEncode(LocalAdBankAccount adBankAccount, String companyShortName) {
