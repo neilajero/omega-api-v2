@@ -5,7 +5,6 @@ import com.ejb.dao.ad.ILocalAdCompanyHome;
 import com.ejb.dao.ad.LocalAdBranchHome;
 import com.ejb.entities.ad.LocalAdBranch;
 import com.ejb.entities.ad.LocalAdCompany;
-import com.ejb.restfulapi.sync.ad.models.BankAccountSyncResponse;
 import com.ejb.restfulapi.sync.ad.models.BranchSyncRequest;
 import com.ejb.restfulapi.sync.ad.models.BranchSyncResponse;
 import com.util.Debug;
@@ -63,7 +62,7 @@ public class AdBranchSyncControllerBean extends EJBContextClass implements AdBra
 
             response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_000);
             response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_000_MSG);
-            response.setResult(result);
+            response.setResults(result);
             response.setStatus("Get all branch data successfully.");
 
         }
@@ -109,7 +108,7 @@ public class AdBranchSyncControllerBean extends EJBContextClass implements AdBra
 
             response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_000);
             response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_000_MSG);
-            response.setResult(result);
+            response.setResults(result);
             response.setStatus("Get all branch data successfully.");
 
         }

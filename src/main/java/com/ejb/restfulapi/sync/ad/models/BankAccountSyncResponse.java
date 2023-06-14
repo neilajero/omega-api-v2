@@ -5,7 +5,7 @@ public class BankAccountSyncResponse {
     private String status;
     private String statusCode;
     private int count;
-    private String[] result;
+    private String[] results;
 
     public String getMessage() {
 
@@ -37,14 +37,14 @@ public class BankAccountSyncResponse {
         this.statusCode = statusCode;
     }
 
-    public String[] getResult() {
+    public String[] getResults() {
 
-        return result;
+        return results;
     }
 
-    public void setResult(String[] result) {
+    public void setResults(String[] results) {
 
-        this.result = result;
+        this.results = results;
     }
 
     public int getCount() {

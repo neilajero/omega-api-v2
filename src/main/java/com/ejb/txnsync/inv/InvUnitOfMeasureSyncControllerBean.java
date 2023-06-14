@@ -112,7 +112,7 @@ public class InvUnitOfMeasureSyncControllerBean extends EJBContextClass implemen
 
             response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_000);
             response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_000_MSG);
-            response.setResult(result);
+            response.setResults(result);
             response.setStatus("Get all unit of measures data successfully.");
         }
         catch (Exception ex) {

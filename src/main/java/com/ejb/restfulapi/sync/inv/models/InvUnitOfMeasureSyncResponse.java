@@ -5,7 +5,7 @@ public class InvUnitOfMeasureSyncResponse {
     private String status;
     private String statusCode;
     private int count;
-    private String[] result;
+    private String[] results;
 
     public int getCount() {
 
@@ -17,14 +17,14 @@ public class InvUnitOfMeasureSyncResponse {
         this.count = count;
     }
 
-    public String[] getResult() {
+    public String[] getResults() {
 
-        return result;
+        return results;
     }
 
-    public void setResult(String[] result) {
+    public void setResults(String[] results) {
 
-        this.result = result;
+        this.results = results;
     }
 
     public String getMessage() {

@@ -232,7 +232,7 @@ public class AdBankAccountSyncControllerBean extends EJBContextClass implements 
 
             response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_000);
             response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_000_MSG);
-            response.setResult(result);
+            response.setResults(result);
             response.setStatus("Retrieved bank account data successfully.");
 
         }

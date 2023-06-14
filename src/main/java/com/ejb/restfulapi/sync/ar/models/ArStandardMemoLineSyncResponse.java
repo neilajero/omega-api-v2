@@ -6,16 +6,16 @@ public class ArStandardMemoLineSyncResponse {
     private String status;
     private String statusCode;
     private int count;
-    private String[] result;
+    private String[] results;
 
-    public String[] getResult() {
+    public String[] getResults() {
 
-        return result;
+        return results;
     }
 
-    public void setResult(String[] result) {
+    public void setResults(String[] results) {
 
-        this.result = result;
+        this.results = results;
     }
 
     public String getMessage() {

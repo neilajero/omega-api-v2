@@ -229,7 +229,7 @@ public class ArStandardMemoLineSyncControllerBean extends EJBContextClass implem
 
             response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_000);
             response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_000_MSG);
-            response.setResult(result);
+            response.setResults(result);
             response.setStatus("Get new and updated standard memo lines count.");
         }
         catch (Exception ex) {

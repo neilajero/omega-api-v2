@@ -2,14 +2,11 @@ package com.ejb.txnsync.gl;
 
 import com.ejb.PersistenceBeanClass;
 import com.ejb.dao.ad.ILocalAdCompanyHome;
-import com.ejb.dao.ar.LocalArStandardMemoLineHome;
 import com.ejb.dao.gl.LocalGlFunctionalCurrencyHome;
 import com.ejb.dao.gl.LocalGlFunctionalCurrencyRateHome;
-import com.ejb.entities.ad.LocalAdBranch;
 import com.ejb.entities.ad.LocalAdCompany;
 import com.ejb.entities.gl.LocalGlFunctionalCurrency;
 import com.ejb.entities.gl.LocalGlFunctionalCurrencyRate;
-import com.ejb.restfulapi.sync.ar.models.ArStandardMemoLineSyncResponse;
 import com.ejb.restfulapi.sync.gl.models.GlCurrencySyncRequest;
 import com.ejb.restfulapi.sync.gl.models.GlCurrencySyncResponse;
 import com.util.Debug;
@@ -70,7 +67,7 @@ public class GlCurrencySyncControllerBean extends EJBContextClass implements GlC
 
             response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_000);
             response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_000_MSG);
-            response.setResult(result);
+            response.setResults(result);
             response.setStatus("Set all invoice new and void data successfully.");
         }
         catch (Exception ex) {
@@ -116,7 +113,7 @@ public class GlCurrencySyncControllerBean extends EJBContextClass implements GlC
 
             response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_000);
             response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_000_MSG);
-            response.setResult(result);
+            response.setResults(result);
             response.setStatus(result.length > 0 ? "Get all currency rates data successfully." : "No record found.");
         }
         catch (Exception ex) {

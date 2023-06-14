@@ -8,10 +8,7 @@ import com.ejb.dao.inv.LocalInvItemLocationHome;
 import com.ejb.entities.ad.LocalAdBranch;
 import com.ejb.entities.ad.LocalAdBranchItemLocation;
 import com.ejb.entities.ad.LocalAdCompany;
-import com.ejb.entities.inv.LocalInvItemLocation;
 import com.ejb.entities.inv.LocalInvLocation;
-import com.ejb.restfulapi.sync.ar.models.ArInvoiceSyncResponse;
-import com.ejb.restfulapi.sync.gl.models.GlCurrencySyncResponse;
 import com.ejb.restfulapi.sync.inv.models.InvLocationSyncRequest;
 import com.ejb.restfulapi.sync.inv.models.InvLocationSyncResponse;
 import com.util.Debug;
@@ -321,7 +318,7 @@ public class InvLocationSyncControllerBean  extends EJBContextClass implements I
 
             response.setStatusCode(EJBCommonAPIErrCodes.OAPI_ERR_000);
             response.setMessage(EJBCommonAPIErrCodes.OAPI_ERR_000_MSG);
-            response.setResult(result);
+            response.setResults(result);
             response.setStatus("Set all invoice new and void data successfully.");
         }
         catch (Exception ex) {

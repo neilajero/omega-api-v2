@@ -5,16 +5,16 @@ public class GlCurrencySyncResponse {
     private String message;
     private String status;
     private String statusCode;
-    private String[] result;
+    private String[] results;
 
-    public String[] getResult() {
+    public String[] getResults() {
 
-        return result;
+        return results;
     }
 
-    public void setResult(String[] result) {
+    public void setResults(String[] results) {
 
-        this.result = result;
+        this.results = results;
     }
 
     public String getMessage() {
