@@ -22,7 +22,7 @@ public class InvUnitOfMeasureSyncApi {
     @Inject
     private InvUnitOfMeasureSyncController invUnitOfMeasureSyncController;
 
-    @GET
+    @POST
     @Path("/all")
     @RolesAllowed({"Admin"})
     public Response getInvUnitOfMeasuresAll(InvUnitOfMeasureSyncRequest request) {
